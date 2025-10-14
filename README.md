@@ -1,4 +1,25 @@
-# **The Kubernetes Guidebook: Mastering Cloud-Native Orchestration From Fundamentals to Production.** 
+# **Guidebooks and Resources in this Repository**
+
+# **Git & GitHub Automation: From Zero to CI/CD in 2 Hours**
+
+### **The Problem:**
+Companies lose $1.2 trillion annually to poor software quality, with 23% of production bugs preventable through automated testing. A startup lost $10,000 in one night because untested code reached production—a 15-line automation workflow would have prevented it entirely.
+
+### **The Solution:**
+A comprehensive but intensive 2-hour course with 70% hands-on practice hope to transforms beginners into competent DevOps practitioners. Students build a real, working CI/CD pipeline that automatically tests code, prevents bugs, and enables confident deployment. 
+
+* **Module 1:** Git Essentials for Automation (25 min)
+* **Module 2:** GitHub Actions Fundamentals (40 min)
+* **Module 3:** Build Your First CI Pipeline (30 min)
+* **Module 4:** Troubleshooting & Debugging (10 min)
+* **Module 5:** Next Steps & Resources (5 min)
+
+### **Target Audience:**
+* The course serves individual developers, corporate training programs, and educational institutions globally. With unlimited scalability (digital, self-paced), it democratizes access to career-transforming DevOps knowledge.
+
+===========================
+
+# **The Kubernetes Guidebook: Mastering Cloud-Native Orchestration From Fundamentals to Production** 
 
 ## **A Practical Journey from Core Concepts to Production Excellence**
 
