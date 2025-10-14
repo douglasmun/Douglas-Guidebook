@@ -19,6 +19,15 @@ A comprehensive but intensive 2-hour course with 70% hands-on practice hope to t
 
 ===========================
 
+# **C Secure Coding & Fuzzing Lecture Lab: Samsung QuramSoft CVE-2025-21043 (DNG Parser Bug)**
+
+**CVE-2025-21043** was a critical vulnerability discovered in Samsung's closed-source library `libimagecodec.quram.so`. It affected the **DNG (Digital Negative)** image parser, which handles "opcode lists" inside raw images. The vulnerability allowed **remote code execution**: just receiving a malicious DNG image could compromise a device.
+
+This lab demonstrates how small input-validation mistakes in C lead to memory corruption and remote code execution in real products. Using a compact, educational "look-alike" of Samsung's QuramSoft DNG opcode parser, students practice building, fuzzing, and triaging a heap out-of-bounds write. A fixed version models proper defenses. This lab integrates forensic-level analysis of the actual vulnerability, production detection strategies, and real-world attack campaign context.
+
+
+===========================
+
 # **The Kubernetes Guidebook: Mastering Cloud-Native Orchestration From Fundamentals to Production** 
 
 ## **A Practical Journey from Core Concepts to Production Excellence**
