@@ -15,6 +15,8 @@ Learn more about the three phrases:
 
 Modern defense hinges on treating the perimeter as an adversarial zone, shifting the engagement terms in your favor.
 
+===========================
+
 # **Git & GitHub Automation: From Zero to CI/CD in 2 Hours**
 
 ### **The Problem:**
