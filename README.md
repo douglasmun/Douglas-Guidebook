@@ -17,6 +17,22 @@ Modern defense hinges on treating the perimeter as an adversarial zone, shifting
 
 ===========================
 
+# **CVE-2025-24257 iOS Integer Underflow Vulnerability: Educational Lab**
+
+## Overview
+This lab demonstrates CVE-2025-24257, an integer underflow vulnerability in Apple's IOGPUFamily kernel driver. We'll reproduce the core issue in safe userland C code, then learn to detect it through fuzzing.
+
+**Learning Objectives:**
+- Understand integer underflow vulnerabilities
+- Learn safe input validation patterns
+- Practice coverage-guided fuzzing with AFL++
+- Apply secure coding principles
+
+This lab takes technical reference from an article titled "Depicting an iOS Vulnerability" by Tomi Tokics, @tomitokics, from Dataflow Forensics & Ben Sparkes, @iBSparkes, from Dataflow Security. Credits to them. 
+https://blog.dfsec.com/ios/2025/10/14/Depicting-an-iOS-Vulnerability/
+
+===========================
+
 # **Git & GitHub Automation: From Zero to CI/CD in 2 Hours**
 
 ### **The Problem:**
@@ -41,7 +57,6 @@ A comprehensive but intensive 2-hour course with 70% hands-on practice hope to t
 **CVE-2025-21043** was a critical vulnerability discovered in Samsung's closed-source library `libimagecodec.quram.so`. It affected the **DNG (Digital Negative)** image parser, which handles "opcode lists" inside raw images. The vulnerability allowed **remote code execution**: just receiving a malicious DNG image could compromise a device.
 
 This lab demonstrates how small input-validation mistakes in C lead to memory corruption and remote code execution in real products. Using a compact, educational "look-alike" of Samsung's QuramSoft DNG opcode parser, students practice building, fuzzing, and triaging a heap out-of-bounds write. A fixed version models proper defenses. This lab integrates forensic-level analysis of the actual vulnerability, production detection strategies, and real-world attack campaign context.
-
 
 ===========================
 
