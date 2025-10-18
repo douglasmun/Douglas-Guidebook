@@ -1,5 +1,20 @@
 # **Guidebooks and Resources in this Repository**
 
+# **Edge Appliances: The New Tier-0 Battlefield**
+
+### **The Problem:**
+Recent cyber breaches underline the importance of edge appliances in cybersecurity. These devices form the first line of defense against external threats. If compromised, they can allow attackers to infiltrate networks, steal data, and deploy ransomware.
+
+### **The Solution:**
+Treat internet-facing edges as Tier-0 infrastructure: inherently hostile, isolated from internal management, patched immediately, and equipped with independent telemetry.
+
+Learn more about the three phrases:
+1. **Prevent**: Fortify the Edge Before It’s Tested
+2. **Detect**: Assume the Box Can Lie
+3. **Response**: The 72-Hour Containment Cycle
+
+Modern defense hinges on treating the perimeter as an adversarial zone, shifting the engagement terms in your favor.
+
 # **Git & GitHub Automation: From Zero to CI/CD in 2 Hours**
 
 ### **The Problem:**
