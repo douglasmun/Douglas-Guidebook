@@ -80,6 +80,10 @@ A comprehensive but intensive 2-hour course with 70% hands-on practice hope to t
 
 This lab demonstrates how small input-validation mistakes in C lead to memory corruption and remote code execution in real products. Using a compact, educational "look-alike" of Samsung's QuramSoft DNG opcode parser, students practice building, fuzzing, and triaging a heap out-of-bounds write. A fixed version models proper defenses. This lab integrates forensic-level analysis of the actual vulnerability, production detection strategies, and real-world attack campaign context.
 
+This lab takes technical reference from reseachers listed below. Credits to them:
+- **@__suto (qriousec)**: Vulnerability analysis and decompilation
+- **Matt Suiche**: ELEGANTBOUNCER detection framework and forensic research
+
 ===========================
 
 # **The Kubernetes Guidebook: Mastering Cloud-Native Orchestration From Fundamentals to Production** 
