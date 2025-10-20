@@ -1,5 +1,27 @@
 # **Guidebooks and Resources in this Repository**
 
+# **AWS DynamoDB Comprehensive Review Notes**
+
+This document provides a detailed technical reference and architectural best practices guide for Amazon DynamoDB, AWS's fully managed, high-performance NoSQL key-value and document database service.
+
+## **Key Takeaways**
+
+**Foundational Concepts:** Comprehensive explanation of primary key types (Partition and Composite) and the schema-less attribute data type descriptors (S, N, L, M, etc.) required for API interactions.
+
+**CLI Operations:** Step-by-step AWS CLI commands are provided for administrative tasks (Table creation, description, deletion) and core data manipulation (PutItem, UpdateItem, GetItem, Query, and Scan).
+
+**Read Consistency & Capacity:** Distinguishes between Eventually Consistent (default, cheaper) and Strongly Consistent reads, and outlines the methodology for calculating Read and Write Capacity Units (RCU/WCU) in Provisioned Mode.
+
+**Advanced Architectural Patterns:** Deep dives into critical NoSQL best practices, including:
+
+* Conditional Writes and Optimistic Locking for ensuring data integrity and concurrency control.
+* Single-Table Design (STD), which leverages composite keys and prefixes to co-locate related entities for maximum query efficiency.
+* DynamoDB Streams, TTL, DAX, and Global Tables for event-driven architecture, automated cleanup, caching, and multi-region high availability.
+
+The notes serve as an essential resource for developers and architects seeking to optimize performance, manage cost, and ensure data integrity in DynamoDB environments.
+
+===========================
+
 # **Edge Appliances: The New Tier-0 Battlefield**
 
 ### **The Problem:**
