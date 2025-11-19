@@ -1,5 +1,13 @@
 # **Guidebooks and Resources in this Repository**
 
+# **Secure Coding: The Dangers of Unhandled Errors**
+
+Lessons learned from The Cloudflare Nov 18, 2025 outage
+
+Yesterday's massive Cloudflare outage highlights a critical principle in secure coding: error handling must function as a security boundary. The failure was caused not by a cyberattack, but by a backend configuration change that resulted in an oversized feature file exceeding a 200-feature resource limit in the FL2 Rust proxy engine. 
+
+The software written in RUST failed because it used unsafe code. .unwrap() method to process the check, which, upon encountering the Err (error) value, immediately triggered a panic! And crashed the entire worker thread. This flaw converted a predictable resource validation failure into an uncontrolled system crash (Denial-of-Service), demonstrating that developers must replace fatal methods like .unwrap() with secure alternatives like the ? Operator to gracefully propagate errors and maintain system stability.
+
 # **AWS DynamoDB Comprehensive Review Notes**
 
 This document provides a detailed technical reference and architectural best practices guide for Amazon DynamoDB, AWS's fully managed, high-performance NoSQL key-value and document database service.
