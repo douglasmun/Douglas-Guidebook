@@ -1,5 +1,21 @@
 # **Guidebooks and Resources in this Repository**
 
+# **30 Best Practices That Make Claude Cowork 100x More Powerful**
+
+Adapted and expanded from Nav Toor's original "17 Best Practices That Make Claude Cowork 100x More Powerful."
+
+Build on Nav's foundational work; an additional 13 practices identified through Anthropic's official documentation, community workflows, and independent research.
+
+* **Part 1:** Context Architecture (Practices 1–5)
+* **Part 2:** Task Design (Practices 6–10)
+* **Part 3:** Automation & Scheduling (Practices 11–13)
+* **Part 4:** Plugins & Skills (Practices 14–16)
+* **Part 5:** Safety & Efficiency (Practice 17)
+* **Part 6:** Continuity & Quality Assurance (Practices 18–22)
+* **Part 7:** Workflow Intelligence (Practices 23–30)
+
+===========================
+
 # **Secure Coding: The Dangers of Unhandled Errors**
 
 Lessons learned from The Cloudflare Nov 18, 2025 outage
