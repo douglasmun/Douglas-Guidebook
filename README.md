@@ -1,5 +1,23 @@
 # **Guidebooks and Resources in this Repository**
 
+# **Your Secrets Are Already in the Cloud. Your AI Coding Agent Sent Them There.**
+
+How Cloud AI Coding Agents Silently Expose Your Secrets — Without Warning
+
+Deep in an agentic coding session with Claude Code, the agent was scaffolding files — normal workflow. Then this:
+❌ API Error: 400 — "Output blocked by content filtering policy"
+
+I ignored it three times. Continue. Retry. Continue.
+My final reaction was very different.
+
+The filter wasn't broken. It was working. It detected a credential pattern and blocked it — but by the time it fired, the request had already left my machine, carrying everything the agent was authorised to read from my project directory. Including my .env.local file. Including the secrets inside it.
+This isn't a Claude Code bug. It isn't a developer mistake. It's how every cloud AI coding agent works.
+I documented the full chain and wrote up the lessons learned — link in the comments.
+
+#AISecurity #DeveloperSecurity #AIAgents
+
+===========================
+
 # **30 Best Practices That Make Claude Cowork 100x More Powerful**
 
 Adapted and expanded from Nav Toor's original "17 Best Practices That Make Claude Cowork 100x More Powerful."
