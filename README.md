@@ -1,5 +1,27 @@
 # **Guidebooks and Resources in this Repository**
 
+# **TeamPCP Supply Chain Attack Campaign v1.0_TLP-Clear_20260328**
+
+I compiled a technical report on the TeamPCP supply chain attack campaign, a significant multi-ecosystem credential-chaining operation. This incident demonstrates how Team PCP exploited security scanners and the CI/CD pipeline for weeks.
+
+The report analyses several key elements, including:
+ • The claw hackerbot for initial access.
+ •⁠ ⁠The CanisterWorm, the first self-propagating npm worm using blockchain for C2.
+ •⁠ ⁠A Kubernetes wiper targeting Iran.
+ •⁠ ⁠The LiteLLM auto-execution trick with .pth files.
+ •⁠ ⁠The Telnyx WAV steganography method for malware delivery.
+
+Included are IOCs with hashes, C2 infrastructure details, and behavioural hunt indicators sourced from organisations such as Wiz, Datadog, Microsoft, and more than 20 others.
+
+An impact assessment compares this campaign to SolarWinds and Log4j, highlighting that while it may be less ubiquitous and strategic, it poses a greater structural threat by weaponising build processes.
+
+Actionable remediation strategies are provided for immediate to medium-term responses.
+
+The main takeaway is that the risk initially lies not in mass exploitation but in the theft of secrets that can compromise CI/CD processes and, in turn, downstream software. If your organisation uses related tools or manages sensitive credentials, this report will be valuable.
+
+#TeamPCP #SupplyChainSecurity #CICD #DevOps #CyberSecurity
+
+
 # **Your Secrets Are Already in the Cloud. Your AI Coding Agent Sent Them There.**
 
 How Cloud AI Coding Agents Silently Expose Your Secrets — Without Warning
@@ -7,11 +29,11 @@ How Cloud AI Coding Agents Silently Expose Your Secrets — Without Warning
 Deep in an agentic coding session with Claude Code, the agent was scaffolding files — normal workflow. Then this:
 ❌ API Error: 400 — "Output blocked by content filtering policy"
 
-I ignored it three times. Continue. Retry. Continue.
+I ignored it three times. Continue. Retry. Continue. 
 My final reaction was very different.
 
 The filter wasn't broken. It was working. It detected a credential pattern and blocked it — but by the time it fired, the request had already left my machine, carrying everything the agent was authorised to read from my project directory. Including my .env.local file. Including the secrets inside it.
-This isn't a Claude Code bug. It isn't a developer mistake. It's how every cloud AI coding agent works.
+This isn't a Claude Code bug. It isn't a developer mistake. It's how every cloud AI coding agent works. 
 I documented the full chain and wrote up the lessons learned — link in the comments.
 
 #AISecurity #DeveloperSecurity #AIAgents
