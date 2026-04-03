@@ -1,6 +1,15 @@
 # **Guidebooks and Resources in this Repository**
 
-# **TeamPCP Supply Chain Attack Campaign v1.0_TLP-Clear_20260328**
+# **GOOGLE GEMMA 4 Technical Summary** 
+
+Version 2.0 (Revised with Model Card & p-RoPE Analysis)
+
+On 2 April 2026, Google DeepMind released Gemma 4, a family of four open-weight multimodal models based on the Gemini 3 research. 
+
+Gemma 4 is the first in the series to use the Apache License 2.0, replacing the earlier Gemma license, which limited use and allowed unilateral modifications by Google. The family includes four models, ranging from sub-3B edge models to a 31B dense model, supporting text, images, and audio, with context windows up to 256K tokens. All are available on Hugging Face, Kaggle, and Ollama, with day-one support for inference frameworks like llama.cpp, vLLM, MLX, and Ollama.
+
+
+# **TeamPCP Supply Chain Attack Campaign 20260328**
 
 I compiled a technical report on the TeamPCP supply chain attack campaign, a significant multi-ecosystem credential-chaining operation. This incident demonstrates how Team PCP exploited security scanners and the CI/CD pipeline for weeks.
 
