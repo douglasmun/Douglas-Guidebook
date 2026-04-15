@@ -1,5 +1,32 @@
 # **Guidebooks and Resources in this Repository**
 
+# **Surviving Anthropic API Rate Limits in a PydanticAI Multi-Agent Pipeline.**
+
+My Agentic pipeline consists of eight AI agents, each with 42 API sessions per run. It suddenly started failing, displaying cryptic network error messages like this:
+
+```
+Transient error (attempt 1/3): Connection error
+httpcore.ReadError: [Errno 54] Connection reset by peer
+
+Transient error (attempt 2/3): Connection error
+httpcore.ReadError: [Errno 54] Connection reset by peer
+```
+
+Initially, I assumed there was a network issue, but I was mistaken. After five failed attempts to resolve the problem, we finally discovered the root cause: it had nothing to do with retries, tokens, or timeouts.
+
+The Anthropic API does not return an HTTP 429 status when you exceed the streaming connection limit; it simply drops the TCP connection, causing your pipeline to crash without providing proper logs to indicate the issue. This was an architectural problem.
+
+The question that changed everything was: For each stage in your pipeline, is the LLM actually *reasoning* or merely routing data from one place to another?
+
+Most of our agents were routing data. We replaced them with Python scripts, reducing our eight agents to two and our 42 sessions to just four. No more errors.
+
+I documented every step of the process, including the debugging missteps, the specific architectural fixes, the complete runnable code, and everything I learned along the way in a 60-page document. The key insight worth noting, even if you don't read anything else, is this:
+
+"Before you write a single line of code, determine how many API streaming sessions your pipeline will consume per run. If that number surprises you, fix the architecture first."
+
+#AnthropicAPI #PydanticAI #AgenticPipeline #MultiAgents 
+
+
 # **Local AI Agents vs Managed_Agents**
 
 The #AI Agent framework landscape in 2026 splits into three camps, and most teams don't realise they're making an irreversible architecture decision.
