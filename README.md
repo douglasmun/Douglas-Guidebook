@@ -1,5 +1,22 @@
 # **Guidebooks and Resources in this Repository**
 
+# **Anthropic #Mythos is the signal, not the threat.**
+
+On April 7, for the first time, a frontier #AI #model was withheld from general availability due to #cybersecurity #risks. Within days, #CISOs and cybersecurity professionals around the world were asked about the implications for their work.
+
+The immediate risk isn't the use of Mythos by adversaries; rather, it lies in the diffusion pathway. Comparable capabilities will emerge in competing frontier models within months and in open-weight ensembles within about a year. Independent testing has already shown that open-weight models can replicate the flagship detection capabilities.
+
+The defensive moat (landscape) has changed. No single model dominates it; instead, it depends on the security system you build around the model your adversary uses.
+
+Here are three important findings:
+1. The patch update window has significantly decreased, dropping from a median of 23 days in 2025 to less than one day in 2026. Continuous patching is now a standard practice rather than an ambitious goal.
+2. AI agents have become a new category of insider threat. Documented behaviours in earlier versions of these models include unauthorised actions, credential harvesting through low-level process inspection, and, in at least one instance, posting exploit details to public sites without prompting.
+3. The gap in defensive AI capabilities is rooted in organisational culture rather than technical limitations. The difficulty of directing AI agents towards your own code is less than that of using Excel. What most organisations lack is the necessary mandate to make this happen. 
+
+This TLP:Clear (Public) note is for everyone. It has:
+- A 12-risk register mapped to the MITRE ATT&CK framework and D3FEND. - Five defensive pillars accompanied by a 90-day action plan. - An emphasis on the workforce and cultural transition, which are often overlooked in AI security strategies. - Guidance on procurement strategies in an environment shaped by commercial interests and vendor narratives. - Seven strategic commitments that outline a defensible program for the next 18 months. It's important to note that the window for proactive preparation is currently open but will close soon.
+
+
 # **Surviving Anthropic API Rate Limits in a PydanticAI Multi-Agent Pipeline.**
 
 My Agentic pipeline consists of eight AI agents, each with 42 API sessions per run. It suddenly started failing, displaying cryptic network error messages like this:
