@@ -1,5 +1,22 @@
 # **Guidebooks and Resources in this Repository**
 
+# **My Ultimate Claude Code Cheat Sheet**
+
+If you’ve been using Claude Code as much as I have, you know how quickly things can change! It seems like the tool gets updates faster than we can keep up with our favorite tips. That’s why I decided to create this ultimate reference guide, meticulously verified against the official documentation on code.claude.com.
+
+What’s inside the guide?
+- A full rundown of slash commands, CLI flags, hook events, and environment variables.
+- Newly added commands are highlighted with a ★, while removed commands are crossed out with version numbers for clarity.
+- Keyboard shortcuts, Vim commands, and transcripts tailored for macOS Option-as-Meta users.
+- Official plugin marketplace, featuring language server protocols, integrations, and optimized workflows.
+
+A dedicated section on how to leverage Claude Code to build the ultimate #Obsidian #vault, knowledge you won’t want to miss.
+
+Many users end up spending far more tokens than necessary, often because they lack an understanding of key practices. I share four essential tips to elevate your efficiency.
+
+Try these tips, set yourself apart as a skilled user, transforming from competence to true expertise. Happy vibing!
+
+
 # **Anthropic #Mythos is the signal, not the threat.**
 
 On April 7, for the first time, a frontier #AI #model was withheld from general availability due to #cybersecurity #risks. Within days, #CISOs and cybersecurity professionals around the world were asked about the implications for their work.
