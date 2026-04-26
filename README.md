@@ -1,5 +1,50 @@
 # **Guidebooks and Resources in this Repository**
 
+# **TurboQuant — KV Cache Compression for LLM Inference**
+
+Want to learn the latest local LLM technique? TurboQuant — KV Cache Compression for LLM Inference is worth your attention.
+
+The KV cache is the memory bottleneck nobody talks about. A 70B model at 128k context generates ~42 GB of KV cache before a single user sends a message. At 10 concurrent users, that’s 419 GB, four times the model weights.
+
+I’ve put together a structured practical learning guide covering everything from the algorithm to running it on Apple Silicon. Based on Google Research / ICLR 2026 (arXiv:2504.19874).
+
+What’s inside:
+• The two-stage algorithm — why the paper’s QJL stage is skipped in production
+• vLLM preset reference for CUDA deployments
+• Exact working flags for vllm-mlx on Apple Silicon M-series
+• Benchmark comparison: TurboQuant vs KIVI vs SnapKV
+• Full setup guide: arm64 Homebrew, Python 3.12 venv, nightly build, shell wrapper, Python client
+
+Why it matters:
+• 6× smaller KV cache
+• No retraining required
+• Works on Llama, Qwen, Mistral, Gemma — any transformer
+• Already merged into vLLM upstream
+
+Personally tested on an M5 MacBook Pro 128GB running Qwen3.6-27B-MLX-8bit at 4-bit KV cache compression. 
+
+
+# **OpenClaw Security Hardening Guide**
+
+#OpenClaw has quickly become a popular self-hosted tool in 2026, but it faces serious scrutiny due to multiple security issues, including over 156 security advisories. 
+•⁠  ⁠Approximately 30,000 to 42,900 instances exposed online, with around 15,200 vulnerable to remote code execution (RCE). 
+•⁠  ⁠An increase of malicious skills on ClawHub from 341 to over 800 (Koi Security). 
+•⁠  ⁠The emergence of the Vidar infostealer targeting AI agent credentials in February 2026. 
+•⁠  ⁠User reports of wiped databases and unauthorized messaging. 
+
+After testing OpenClaw on macOS, I've created this free, publicly available security-hardening guide (TLP: CLEAR). 
+
+It’s designed for home lab enthusiasts and includes: 
+•⁠  ⁠Three deployment patterns: host, Docker, and VM-isolated. 
+•⁠  ⁠Strategies for gateway hardening and sandbox isolation. 
+•⁠  ⁠A workflow for installing ClawHub. 
+•⁠  ⁠A 15-step runbook for handling compromises. 
+•⁠  ⁠A 38-point validation checklist. 
+•⁠  ⁠References to over 15 documented OpenClaw CVEs. 
+
+Also available at: https://douglasmun.github.io/openclaw_guide_v1.html
+
+
 # **My Ultimate Claude Code Cheat Sheet**
 
 If you’ve been using Claude Code as much as I have, you know how quickly things can change! It seems like the tool gets updates faster than we can keep up with our favorite tips. That’s why I decided to create this ultimate reference guide, meticulously verified against the official documentation on code.claude.com.
