@@ -1,5 +1,50 @@
 # **Guidebooks and Resources in this Repository**
 
+# **The Harness Era Survey - A Critical Survey of LLM-Driven Vulnerability Research**
+
+What does the landscape of #LLM #vulnerability #research look like in mid-2026? This survey analyzed 28 systems across academia, industry, competition teams, and commercial products to find out.
+
+The main finding is that 86% of these systems independently converged on the same architectural blueprint: specialized agents, structured static-analysis input, runtime feedback channels, and reflection loops.
+
+This convergence is not just a matter of stylistic preference; it is the result of a unique structural fit for the challenges at hand, and it has significant implications.
+
+Here are a few uncomfortable conclusions:
+• Anthropic's #Mythos Preview (released in April 2026) and Microsoft's #MDASH (released in May 2026)—separated by only 35 days—represent the public face of two complementary maturation curves. One curve focuses on capability, while the other emphasizes engineering. Both have endpoints, and we are approaching those endpoints.
+• The major constraint in the next phase will no longer be model capability or #harness #engineering in isolation. Instead, it will be deployment economics: determining whether MDASH-class defensive engineering reaches tier-three organisations before Mythos-class offensive capabilities proliferate through open-weight diffusion. The critical window for this is 12 to 18 months.
+
+
+# **Teaching a Language Model to Solve Sudoku.**
+
+No cloud GPUs. No API costs. Entirely on an Apple Silicon laptop, LoRA fine-tuning with mlx_lm, and seven training runs.
+
+Final results: Easy puzzles: 81%; Medium: 33%; Hard: 0% solved.
+
+I've written up the full journey: every mistake, every fix, and the failure modes that aren't well covered in the standard AI courses and tutorials. Everything is documented, including the full source. Learn and share!
+
+
+# **Self-paced technical course covering Claude Code and Cowork — Anthropic's agentic AI tools for developers and knowledge workers**
+
+The course is free, runs entirely in the browser (single HTML file), and has been vetted against live product documentation as of May 2026.
+
+Course link: https://douglasmun.github.io/claude-code-course.html
+Companion code repo: https://github.com/douglasmun/claude-code-course-starter
+Companion cheat sheet: https://douglasmun.github.io/claude-code-cheatsheet-v1.0.html
+
+The course covers both surfaces — Claude Code for engineering and Cowork for non-technical roles (marketing, legal, finance, ops. It includes a progressive project, scored assessments, and a capstone that produces a reusable team setup
+
+Structure:
+• 4 levels, 24 modules, 3 foundation labs
+• Estimated time: 90 minutes of reading + 30 hours of optional lab work
+• Flexible pacing: sprint it in a week, or steady over 4 weeks
+
+
+# **Gemma4 MTP and TurboQuant for local LLM Inference**
+
+There's not much improvement for small and mid-size models on my 128GB unified ram M5 Macbook Pro. The real value of TurboQuant on a 128 GB Mac: Fit a second concurrent session, or push context length to 64K+ before hitting memory pressure. Not throughput — headroom.
+
+The real value of MTP on Apple Silicon: Potentially reduces time-to-first-token in multi-request batched scenarios, not tested in these (my) experiments.
+
+
 # **TurboQuant — KV Cache Compression for LLM Inference**
 
 Want to learn the latest local LLM technique? TurboQuant — KV Cache Compression for LLM Inference is worth your attention.
