@@ -1,5 +1,28 @@
 # **Guidebooks and Resources in this Repository**
 
+##**OSS Supply Chain Attack Campaign Analysis 2024–2026**
+**TLP:CLEAR | v1.1 | 22 May 2026**
+
+A comprehensive OSINT threat intelligence report covering the full 2024–2026 open-source software supply chain attack landscape — from the Ultralytics cryptominer (December 2024) through the GitHub internal breach (May 2026).
+
+### What's inside
+
+- **Five threat actor clusters** profiled with consistent confidence tiers: TeamPCP (UNC6780/SANDCLOCK), Lazarus Group (Contagious Interview/graphalgo), PCPJack, and unattributed actors behind tj-actions and Ultralytics
+- **Complete incident timeline** — 25+ events across npm, PyPI, GitHub Actions, Docker Hub, OpenVSX, and the Visual Studio Marketplace
+- **Full IOC tables** for TeamPCP Phases 1–6, Mini Shai-Hulud/TanStack (CVE-2026-45321), Lazarus, Shai-Hulud Gen 1–2, Context.ai/Vercel, and PCPJack
+- **MITRE ATT&CK mappings** for all three primary actors (Sections 10.1–10.3), including the first documented defeat of SLSA Build Level 3 provenance (T1195.002)
+- **Worm generation taxonomy** — Gen 1 (Shai-Hulud) through Gen 4 (Mini Shai-Hulud): technique evolution, C2 infrastructure, and novel capabilities at each generation
+- **9 broken security assumptions** with minimum viable fixes (Section 17) — mutable tags, pull_request_target, SLSA provenance, OIDC cache poisoning, IDE extension trust, and more
+- **8 cross-campaign lessons learned** (Section 18) and a practitioner-addressed call to action for OSS maintainers, platform operators, and enterprise consumers (Section 19)
+- **TeamPCP's own defensive advice** from a public interview, with full analyst assessment of each recommendation
+
+### Key findings
+
+The worm's source code is public (as of May 12, 2026). A criminal contest is actively incentivising new actors to use it. PCPJack is evicting TeamPCP from compromised machines and stealing the same credentials. The interval between major campaigns has compressed from years to weeks.
+
+No single trust signal — not hash pinning, not SLSA provenance, not official namespace, not verified publisher badge — has survived this campaign period intact.
+
+
 # **The Harness Era Survey - A Critical Survey of LLM-Driven Vulnerability Research**
 
 What does the landscape of #LLM #vulnerability #research look like in mid-2026? This survey analyzed 28 systems across academia, industry, competition teams, and commercial products to find out.
