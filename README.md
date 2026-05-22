@@ -1,6 +1,6 @@
 # **Guidebooks and Resources in this Repository**
 
-##**OSS Supply Chain Attack Campaign Analysis 2024–2026**
+# **OSS Supply Chain Attack Campaign Analysis 2024–2026**
 **TLP:CLEAR | v1.1 | 22 May 2026**
 
 A comprehensive OSINT threat intelligence report covering the full 2024–2026 open-source software supply chain attack landscape — from the Ultralytics cryptominer (December 2024) through the GitHub internal breach (May 2026).
