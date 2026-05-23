@@ -1,5 +1,16 @@
 # **Guidebooks and Resources in this Repository**
 
+# **Technical Assessment of Anthropic's #Project #Glasswing Initial Update**
+**TLP:CLEAR | v1.0 | 22 May 2026**
+
+#FrontierAI is now identifying #vulnerabilities faster than the security industry can address them, highlighting a significant transition period.
+
+For instance, in May 2026, a single Firefox release included 271 fixes; Palo Alto Networks (PAN) issued 75 advisories; and Microsoft Patch Tuesday included 118 CVEs.
+
+A key finding concerns the wolfSSL cluster, which has 10 CVEs affecting about 5 billion embedded devices. These vulnerabilities stem from logic-level correctness failures and are undetectable by traditional methods, requiring deep reasoning through cryptographic specifications.
+
+PAN estimates it will take adversaries 3 to 5 months to acquire similar detection capabilities. Additionally, ExploitBench reports that #Mythos achieved arbitrary code execution across 21 of 41 V8 CVEs. The next-best model: 2. Every other model tested: 0.
+
 
 # **OSS Supply Chain Attack Campaign Analysis 2024–2026**
 **TLP:CLEAR | v1.0 | 22 May 2026**
