@@ -1,5 +1,10 @@
 # **Guidebooks and Resources in this Repository**
 
+# ** GitHub Agentic Workflows: From Scripts to Autonomous Intelligence* *
+
+GitHub Actions have evolved from simple scripts to autonomous, decision-making Agentic Workflows. Natural Language Automation now involves an intelligent agent that manages tasks, triages issues, resolves problems, analyzes failures, and updates documentation, moving beyond fixed commands. A layered security framework ensures safety: a Read-Only Sandbox for isolation, Credential Isolation with separate write permissions, Threat Detection with filters and monitoring, and Lifecycle Governance to limit access and review code.   Here is a guide that complements my earlier “Git & GitHub Automation Textbook” https://github.com/douglasmun/Douglas-Guidebook/blob/main/Git_GitHub_Automation_Textbook_v4.md and shows how to transform plain Markdown objectives into secure GitHub Actions workflows using the gh aw toolchain. It covers a two-file authoring model, writing effective natural-language objectives, real-world use cases like issue triage and PR review, and detailed security measures. The book concludes by integrating agentic review into the pull-request and CI pipeline, with GitHub Agentic Workflows in technical preview (as of June 2026).
+
+
 # **Technical Assessment of Anthropic's #Project #Glasswing Initial Update**
 **TLP:CLEAR | v1.0 | 22 May 2026**
 
