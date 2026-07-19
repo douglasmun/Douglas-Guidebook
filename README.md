@@ -1,5 +1,20 @@
 # **Guidebooks and Resources in this Repository**
 
+# **AI Harness — Architecture, Authority, and Practice**
+
+### What is an AI harness? Ask 10 people and you'll get 10 different answers.
+
+The funny thing: the word predates the hype. It entered machine learning through *evaluation* harnesses long before "AI agents" were a thing — and today it describes the layer where most of the real engineering of agentic AI actually happens.
+
+So I put together a full write-up, compiled with AI assistance and then hardened through multiple rounds of adversarial AI audits until every dimension graded A.
+
+A few ideas from it that changed how I think:
+→ The model proposes; the harness authorizes, executes, and verifies.
+→ Tool availability is not authorization — a payment tool existing doesn't authorize every amount and destination.
+→ Benchmark scores are harness-relative. Same model, different harness, very different results.
+→ Today's agent security is partly "security by incompetence" — and every model upgrade is a security-relevant change.
+
+
 # **GitHub Agentic Workflows: From Scripts to Autonomous Intelligence**
 
 GitHub Actions have evolved from simple scripts to autonomous, decision-making Agentic Workflows. Natural Language Automation now involves an intelligent agent that manages tasks, triages issues, resolves problems, analyzes failures, and updates documentation, moving beyond fixed commands. A layered security framework ensures safety: a Read-Only Sandbox for isolation, Credential Isolation with separate write permissions, Threat Detection with filters and monitoring, and Lifecycle Governance to limit access and review code.   
