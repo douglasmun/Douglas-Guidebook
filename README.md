@@ -1,5 +1,85 @@
 # **Guidebooks and Resources in this Repository**
 
+# **Static Analysis — Sality Parasitic File Infector in a Signed Oracle jusched.exe**
+**TLP:CLEAR | 10 September 2026**
+
+Five layers to a kernel-mode traffic filter: a signed 32-bit Java Update Scheduler carrying 69,632 bytes of viral code spliced into its relocation section, whose network component is an `amsint32` kernel driver that attaches to the TCP/IP stack, blocks 23 security-vendor domains by substring, and terminates processes from kernel mode.
+
+The report walks the full decrypt chain — infected host, entry-point transfer, viral body decryptor, decrypted loader body, UPX layer — then covers the 90,516-byte code island belonging to no program, the infection routine, the public key with no consumer, and the encrypted blocklist, which is the single best static rule surface in the sample. Includes adjudicated false positives and tool failures, and a correction where a vendor technique had been applied to the wrong layer.
+
+Static analysis only. No stage was executed and no adversary infrastructure was contacted. At least one hostname in the indicators is a compromised victim site and must not be treated as attacker infrastructure.
+
+
+# **Sality and the Anatomy of a Peer-to-Peer Takedown**
+**TLP:CLEAR | v1.0 | 2 September 2026**
+
+A technical and actor deep dive on the Sality P2P botnet, the actor CrowdStrike tracks as SALTY SPIDER, and the multinational disruption executed on 31 August 2026 — read for what it teaches about attacking decentralised overlays.
+
+→ >15,000 machines payload-reachable at disruption, roughly two orders of magnitude down from peak
+→ 23 years in operation; first public sample June 2003, RSA keys unchanged since at least 2011
+→ 2 disjoint networks — v3 and v4, one codebase, one operator, incompatible protocols, different keys
+
+Built as a takedown-applicability baseline, covering protocol ossification, host-side architecture, the actor profile, the 2003–2026 timeline, and the technique lineage. Every judgement carries its own confidence rating — there is deliberately no single overall rating. Prepared from open sources: CrowdStrike Counter Adversary Operations, US DoJ CDCA release 26-149, Falliere (Symantec, 2011), P2PWNED (IEEE S&P 2013), Kleissner (Botconf 2015), and Dragos ICS research.
+
+
+# **The Four Caches in LLM Serving — A Technical Note on Inference Economics**
+**5 September 2026**
+
+Four independent caches sit between a prompt and a token. They are owned by different parties, keyed on different things, and only one of them can change what the model says. This note derives each from first principles — the arithmetic, the latency it buys, the architecture that makes it correct, and the code that implements it.
+
+→ **85% less input spend** per 30-turn agent episode with a provider prompt cache — 879,000 billed tokens down to 131,600
+→ **35× faster time-to-first-token** when 97% of a 21,200-token prompt is served from prefix-cached blocks: ~7.0 s to ~0.2 s
+→ **1 of 4 layers is lossy** — three reuse attention state and are lossless; the semantic cache matches on meaning and can return a wrong answer
+
+What you will be able to do: estimate KV-cache memory and decode-step latency for any model from its config file; predict how much prefill a prefix cache will save for a given prompt layout, and lay prompts out to maximise it; compute break-even and total cost for provider prompt caching in a multi-turn agent; decide whether a semantic cache is worth deploying and tune its threshold with a measured precision/recall curve; and explain which of the four layers changes model output.
+
+For engineers who call or serve LLMs and want to reason about latency and cost from first principles, not folklore. Assumes familiarity with a transformer layer and what attention computes. No serving-engine experience required.
+
+
+# **ClickFix Chain: Fake Cloudflare Lure to SnappyClient RAT**
+**TLP:CLEAR | 1 September 2026**
+
+A static analysis of a ClickFix intrusion chain that ends in the SnappyClient/SilabRAT remote-access trojan — a fake Cloudflare lure, a 332 KB camouflage layer, an MSI drop, a DLL search-order sideload, and a HijackLoader (GhostPulse / IDAT Loader) stage that decodes the RAT from a repeating-XOR blob.
+
+SHA-256 `3478aecf5ed50a426524264a2822ab4c49797132e17acd2cd5fd8dda5a5ddd81`, 332,032 bytes. The report breaks the chain down stage by stage, including the signal/filler partition of the camouflage layer and — usefully — what that camouflage is designed to make an analyst say.
+
+Static analysis only; nothing was executed and no adversary infrastructure was contacted. At least one hostname in the indicators is a compromised victim site.
+
+
+# **CTI Report — parkpeark.xyz Malvertising Lure and Multi-Stage iOS Exploitation Chain**
+**30 August 2026**
+
+A cyber threat intelligence report on a malvertising lure leading to a multi-stage iOS exploitation chain: a server-side filter, a client-side version dispatcher, a Branch A exploitation framework, and a loaded JavaScript stage with a JSC type-confusion groom, arbitrary read/write with PAC handling, anti-forensic Worker staging, and a failure-code beacon.
+
+Includes BLUF and the five Ws, a detailed timeline and sequence of events, a defender-facing code walkthrough, figures of the lure site and its open directories (uniform clone timestamps across 15 municipal logos), and indicators tiered by class — directly observed, module identifiers, behavioural — cross-checked against a related earlier report. Correlates the chain against Apple patches: the iOS 18.4 dispatcher boundary, pointer authentication, the Safari 17.3 offset-database ceiling, and the iOS 17.4 tested boundary. Confidence is labelled inline wherever it is not High.
+
+
+# **Multi-Stage Malware Infection Chain Analysis — tcpsync.com ClickFix Campaign**
+**TLP:CLEAR | 21 August 2026**
+
+From browser lure to remote control: a six-stage PowerShell loader, PNG steganography, and a configuration-weaponised NetSupport Manager implant. 50 pages, with MITRE ATT&CK mapping, three capability flow diagrams, indicators, and detection opportunities.
+
+Every decoding step was performed by re-implementing the sample's own transformations in Python — never by letting PowerShell evaluate them. One deliberate exception to the no-contact rule is disclosed up front: the Stage 5 carrier (`basic.png`) exists only on the attacker's server, so it was retrieved with a plain unauthenticated HTTPS GET, alongside DNS and WHOIS lookups. No C2 protocol was spoken, the NetSupport gateways were never contacted, and the Telegram bot was never messaged. The operational cost — a fetch visible in the operator's web logs — is recorded so the reader can weigh it.
+
+
+# **Violet v6.5 RAT — Malware Analyst Report**
+**TLP:CLEAR | 18 August 2026**
+
+A 42-page static analysis of a four-stage chain: a ClickFix lure, an `HJHAGK.bat` dropper, a `final.exe` crypter stub, and the Violet v6.5 RAT recovered by decrypting Stage 3's embedded resource in place — not by running it. Nothing in the chain was executed and the C2 was never contacted.
+
+Covers Stage 1 infrastructure via DNS and registry measurement, IOC provenance and the grounding gate, the chain timeline, and the observation that Google Safe Browsing did not list the domain. The external-corroboration section is worth reading for where the sources conflict — that conflict is itself the finding — and for what no source covers. Ships machine-readable detection rules.
+
+
+# **Win64/Reasonix.CrackerDrv — Windows x64 Kernel-Mode Rootkit Driver**
+**TLP:CLEAR | 6 July 2026**
+
+Despite its `.exe` extension, the sample is an unsigned x86-64 **kernel-mode driver**, compiled roughly two days before analysis. Static reverse engineering (radare2, FLOSS, ClamAV) confirms a fully-featured rootkit with eight capabilities, each confirmed via direct disassembly.
+
+The registry callback that anchors control flow is a single unified 92-branch opcode dispatcher whose case-gated branches include a complete remote code-execution and token-theft toolkit: kernel-mode `RtlCreateUserThread` remote thread injection, a chained `LoadLibraryA` DLL-injection primitive, four `KeStackAttachProcess`/`ZwAllocateVirtualMemory` shellcode-staging routines, and a raw primary-token content-swap capable of granting one process another's security context. None run at driver load; all are dormant until triggered by a specific registry operation. Alongside these: process-protection/EDR-blinding via handle-access-mask manipulation, a `mov reg, cr3` physical-to-virtual resolution routine, anti-forensic self-deletion while resident, a system-wide registry filter, manual module resolution, and kernel-mode abuse of the win32k GUI syscall table.
+
+At scan time the sample carried 13/70 on VirusTotal and no MalwareBazaar family tag — consistent with a fresh, purpose-built tool. A community YARA hit against a 2017-era Winnti/ZxShell rule is a stylistic pattern match, **not** an actor attribution. Verdict: malicious, high confidence.
+
+
 # **AI Harness — Architecture, Authority, and Practice**
 
 ### What is an AI harness? Ask 10 people and you'll get 10 different answers.
