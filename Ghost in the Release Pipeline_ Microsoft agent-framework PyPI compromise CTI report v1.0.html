@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="en-SG">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ghost in the Release Pipeline: Microsoft agent-framework PyPI compromise CTI report, v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light dark;
+  --viewer:#D9DCD5; --viewer-ink:#3A4244;
+  --paper:#F4F5F0; --ink:#1C2326; --muted:#56615F; --rule:#C3C9C3; --shade:#E6E9E2; --box:#EEF0EA;
+  --red:#A8322D; --orange:#B8530A; --yellow:#CDBA62; --grey:#BFC8C9; --green:#1F7A46;
+  --red-soft:#F2DEDB; --orange-soft:#F6E5D6; --green-soft:#DCEBE0; --grey-soft:#E3E8E8;
+  --on-dark:#FFFFFF; --tlp-bg:#000000; --tlp-green:#33FF00;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--viewer:#1D2123;--viewer-ink:#C9D0CE;color-scheme:dark;}}
+:root[data-theme="dark"]{--viewer:#1D2123;--viewer-ink:#C9D0CE;color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;background:var(--viewer);color:var(--viewer-ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+.viewer{padding:24px 12px 40px;display:flex;flex-direction:column;align-items:center;gap:24px;overflow-x:auto;}
+.page{width:794px;height:1123px;flex:0 0 auto;position:relative;overflow:hidden;background:var(--paper);color:var(--ink);color-scheme:light;
+  padding:30px 44px 34px;box-shadow:0 1px 3px rgba(0,0,0,.18);zoom:var(--fit,1);font-size:10.8px;line-height:1.44;}
+.run{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:8.6px;color:var(--muted);
+  border-bottom:1px solid var(--rule);padding-bottom:6px;margin-bottom:12px;}
+.tlp{font-family:var(--mono);font-weight:700;background:var(--tlp-bg);color:var(--on-dark);padding:2px 6px;}
+.run .mid{flex:1;text-align:center;}
+.kicker{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--red);margin:0 0 2px;}
+h1{font-family:var(--mono);font-weight:800;font-size:31px;line-height:1.05;letter-spacing:-.02em;margin:0 0 6px;}
+.standfirst{font-size:11.6px;line-height:1.4;margin:0 0 8px;max-width:680px;}
+.meta{display:grid;grid-template-columns:repeat(5,auto);gap:4px 20px;justify-content:start;margin:0 0 10px;font-size:9.2px;}
+.meta dt{font-family:var(--mono);font-size:8.2px;color:var(--muted);}
+.meta dd{margin:0;font-weight:500;}
+.meta div{display:flex;flex-direction:column;}
+h2{font-family:var(--mono);font-size:12px;font-weight:700;line-height:1.3;margin:0 0 6px;padding-top:6px;border-top:2px solid var(--ink);}
+section{margin-bottom:10px;}
+p{margin:0 0 6px;}
+.lead{font-size:11.4px;line-height:1.48;}
+.small{font-size:10px;line-height:1.46;}
+.muted{color:var(--muted);}
+.chip{display:inline-block;font-family:var(--mono);font-size:8.2px;font-weight:700;line-height:1;padding:3px 5px;border-radius:2px;white-space:nowrap;vertical-align:1px;}
+.c-ok,.k-h,.a-no{background:var(--green);color:var(--on-dark);}
+.c-rep,.a-open{background:var(--grey);color:var(--ink);}
+.c-over,.k-m{background:var(--orange);color:var(--on-dark);}
+.c-no{background:var(--red);color:var(--on-dark);}
+.k-l{background:var(--yellow);color:var(--ink);}
+.placeholder{background:#FFF3B8;padding:0 2px;}
+.nw{white-space:nowrap;}
+/* verdict banner + stats */
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:center;background:var(--ink);color:var(--paper);padding:12px 16px 12px 14px;border-left:8px solid var(--green);margin:0 0 8px;}
+.verdict .vq{font-family:var(--mono);font-size:11px;color:#B9C3C0;}
+.verdict .va{font-family:var(--mono);font-weight:800;font-size:22px;line-height:1.05;grid-row:2;}
+.verdict .vt{grid-row:1 / span 2;grid-column:2;font-size:10.4px;line-height:1.45;color:#E7EBE6;}
+.verdict .vt b{color:#FFFFFF;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--rule);margin:0 0 10px;}
+.stats div{padding:6px 9px;border-right:1px solid var(--rule);}
+.stats div:last-child{border-right:0;}
+.stats div:nth-child(even){background:var(--shade);}
+.stats .n{font-family:var(--mono);font-weight:800;font-size:18px;line-height:1.1;display:block;}
+.stats .l{font-size:8.8px;line-height:1.3;color:var(--muted);display:block;}
+/* front boxes */
+.front{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;margin-bottom:10px;}
+.box{border:1px solid var(--rule);background:var(--box);padding:7px 9px;font-size:9px;line-height:1.38;}
+.box h3{font-family:var(--mono);font-size:9px;font-weight:700;margin:0 0 3px;}
+.box p{margin:0 0 3px;}
+.box ul{margin:0;padding-left:12px;}
+.box li{margin:0 0 2px;}
+.keyrow{display:flex;flex-wrap:wrap;align-items:center;gap:3px 4px;margin:0 0 4px;}
+.keyrow .lab{font-family:var(--mono);font-size:8px;color:var(--muted);width:100%;}
+.keynote{font-size:8.4px;color:var(--muted);line-height:1.35;}
+/* five Ws */
+.ws{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);border-left:1px solid var(--rule);}
+.ws div{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:6px 8px;font-size:9.8px;line-height:1.4;}
+.ws div:nth-child(even){background:var(--shade);}
+.ws b{display:block;font-family:var(--mono);font-size:8.6px;margin-bottom:1px;}
+/* key judgements */
+.kj{display:grid;grid-template-columns:42px 1fr;gap:0 8px;padding:8px 0;border-bottom:1px solid var(--rule);}
+.kj:last-of-type{border-bottom:0;}
+.kj .id{font-family:var(--mono);font-weight:800;font-size:11px;padding-top:1px;}
+.kj .hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 3px;}
+.kj h4{font-family:var(--sans);font-size:11.8px;font-weight:700;margin:0;line-height:1.3;}
+.kj .tags{font-size:8.8px;color:var(--muted);white-space:nowrap;}
+.kj p{margin:0 0 3px;font-size:10.5px;line-height:1.46;}
+.kj .gap{color:var(--muted);}
+.kj .gap b{color:var(--ink);font-weight:600;}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:9.6px;line-height:1.36;}
+.audit{font-size:8.9px;line-height:1.33;}
+th{font-family:var(--mono);font-size:8.2px;font-weight:700;text-align:left;padding:4px 5px;border-bottom:1.5px solid var(--ink);vertical-align:bottom;}
+td{padding:4px 5px;vertical-align:top;border-bottom:1px solid var(--rule);}
+.audit td{padding:3px 5px;}
+tbody tr:nth-child(even) td{background:var(--shade);}
+td.n,td.by,td.t,.act td:first-child,.mit td:first-child,.pir td:first-child{font-family:var(--mono);font-size:8.2px;white-space:nowrap;}
+.act td:first-child,.mit td:first-child,.pir td:first-child{font-weight:700;}
+td.v{white-space:nowrap;}
+.reg col.c-cl{width:52% !important;}.reg col.c-v{width:76px;}
+.audit col.c-n{width:20px;}.audit col.c-by{width:44px;}.audit col.c-v{width:80px;}.audit col.c-cl{width:43%;}
+.act col.c-id{width:30px;}.act col.c-ow{width:72px;}.act col.c-hz{width:74px;}.act col.c-ck{width:104px;}
+.atk col.c-e{width:30%;}.atk col.c-r{width:70px;}
+.mit col.c-id{width:28px;}.mit col.c-t{width:70px;}.mit col.c-s{width:96px;}.mit col.c-x{width:34%;}
+.pir col.c-id{width:30px;}.pir col.c-kj{width:52px;}
+/* figures */
+figure{margin:0 0 6px;}
+figcaption{font-size:9px;color:var(--muted);line-height:1.35;margin-top:3px;}
+svg{display:block;width:100%;height:auto;overflow:visible;}
+svg text{font-family:var(--sans);fill:var(--ink);}
+svg .m{font-family:var(--mono);}
+svg .b{font-weight:700;}
+svg .mu{fill:var(--muted);}
+svg .wt{fill:#FFFFFF;}
+/* quotes */
+.phase{font-family:var(--mono);font-size:11.2px;font-weight:700;margin:12px 0 2px;padding:4px 0 3px;border-bottom:1px solid var(--ink);display:flex;gap:8px;align-items:baseline;}
+.phase .pt{font-weight:400;color:var(--muted);font-size:8.6px;}
+.q{display:grid;grid-template-columns:112px 1fr;gap:0 14px;padding:13px 0 14px;border-bottom:1px solid var(--rule);}
+.q:last-child{border-bottom:0;}
+.qmeta{font-family:var(--mono);font-size:8.8px;color:var(--muted);line-height:1.4;}
+.qmeta .qt{display:block;font-size:16px;font-weight:800;color:var(--ink);}
+.q blockquote{margin:0 0 7px;font-size:15.4px;line-height:1.34;font-style:italic;font-weight:500;padding-left:9px;border-left:3px solid var(--ink);}
+.q p{margin:0;font-size:11.3px;line-height:1.52;}
+.q p b{font-weight:600;}
+.src{font-size:8.7px;line-height:1.4;color:var(--muted);}
+.src b{color:var(--ink);font-weight:600;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.watch col.c-s{width:36%;}.watch col.c-w{width:24%;}
+.tri col.c-p{width:46%;}.tri col.c-y{width:74px;}
+.callout{border:1px solid var(--ink);border-left:6px solid var(--ink);background:var(--box);padding:9px 12px;margin-top:4px;}
+.callout h3{font-family:var(--mono);font-size:10.6px;font-weight:700;margin:0 0 4px;}
+.callout p{font-size:10.4px;line-height:1.48;margin:0 0 4px;}
+
+.faq{border:1px solid var(--ink);}
+.faq .fh{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:9.6px;font-weight:700;padding:5px 10px;}
+.faq .row{display:grid;grid-template-columns:200px 1fr;border-top:1px solid var(--rule);}
+.faq .row:nth-child(even){background:var(--shade);}
+.faq .qq{font-family:var(--mono);font-size:9.2px;font-weight:700;padding:6px 10px;}
+.faq .aa{font-size:9.8px;line-height:1.42;padding:6px 10px;}
+.analogy{border-left:6px solid var(--orange);background:var(--orange-soft);padding:9px 12px;margin:8px 0;}
+.analogy h3{font-family:var(--mono);font-size:10.4px;margin:0 0 4px;}
+.analogy p{font-size:10.4px;line-height:1.5;margin:0;}
+.stage{display:grid;grid-template-columns:120px 1fr;gap:0 14px;padding:9px 0 10px;border-bottom:1px solid var(--rule);}
+.stage:last-child{border-bottom:0;}
+.stage .sn{font-family:var(--mono);font-weight:800;font-size:12px;}
+.stage .sn span{display:block;font-size:8.4px;font-weight:400;color:var(--muted);margin-top:3px;}
+.stage h4{font-size:11.4px;margin:0 0 4px;}
+.stage p{font-size:10.2px;line-height:1.48;margin:0 0 4px;}
+.stage .lesson{background:var(--box);border-left:3px solid var(--green);padding:5px 8px;font-size:10px;}
+.stage .lesson b{font-family:var(--mono);font-size:8.6px;color:var(--green);}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.card{border:1px solid var(--red);background:var(--paper);}
+.card .ch{background:var(--red);color:var(--on-dark);font-family:var(--mono);font-weight:700;font-size:9.4px;padding:5px 8px;}
+.card .cb{padding:7px 9px;font-size:9.4px;line-height:1.42;}
+.card .cb b{font-family:var(--mono);font-size:8.2px;color:var(--muted);display:block;margin-top:5px;}
+.card .cb b:first-child{margin-top:0;}
+.notice{border:1px dashed var(--ink);background:var(--box);padding:10px 14px;}
+.notice h3{font-family:var(--mono);font-size:10px;margin:0 0 6px;}
+.notice p{font-size:10.6px;line-height:1.52;margin:0 0 5px;font-style:italic;}
+.tier{font-family:var(--mono);font-size:9.4px;font-weight:700;background:var(--ink);color:var(--paper);}
+.tier td{background:var(--ink)!important;color:var(--paper);padding:4px 6px;}
+.ach{font-size:9px;}
+.ach th{font-size:7.8px;}
+.ach td.c,.ach td.i,.ach td.n{text-align:center;font-family:var(--mono);font-weight:700;font-size:8.4px;width:66px;}
+.ach td.c{background:var(--green-soft)!important;color:var(--green);}
+.ach td.i{background:var(--red-soft)!important;color:var(--red);}
+.ach td.n{background:var(--grey-soft)!important;color:var(--muted);}
+.ach tr.score td{font-family:var(--mono);font-weight:800;border-top:1.5px solid var(--ink);}
+.refs{font-size:8.8px;line-height:1.42;}
+.refs h3{font-family:var(--mono);font-size:9.6px;margin:10px 0 3px;}
+.refs ol{margin:0;padding-left:18px;}
+.refs li{margin:0 0 3px;}
+.refs .u{font-family:var(--mono);font-size:7.8px;color:var(--muted);word-break:break-all;}
+.imp col.c-s{width:96px;}.imp col.c-src{width:150px;}
+.ind col.c-i{width:30%;}.ind col.c-w{width:24%;}
+.prec col.c-e{width:118px;}
+.resp col.c-id{width:34px;}
+.q{padding:10px 0 11px!important;}.q blockquote{font-size:14.2px!important;margin:0 0 5px!important;}.q p{font-size:10.9px!important;line-height:1.48!important;}.resp col.c-ow{width:92px;}.resp col.c-hz{width:72px;}.resp col.c-ck{width:100px;}
+
+
+.q p.hs{margin-top:5px;font-size:10.2px!important;line-height:1.45;background:var(--green-soft);border-left:3px solid var(--green);padding:4px 8px;}
+.q p.hs b{font-family:var(--mono);font-size:8.4px;color:var(--green);margin-right:4px;}
+.kj p.corr{background:var(--orange-soft);border-left:3px solid var(--orange);padding:3px 7px;color:var(--ink);}
+.kj p.corr b{font-family:var(--mono);font-size:8.4px;color:var(--orange);}
+.score col.c-c{width:30%;}.score col.c-o{width:96px;}.score col.c-v{width:62px;}
+.lessons col.c-a{width:26%;}.lessons col.c-c{width:34%;}
+.ans col.c-q{width:42%;}
+.kicker2{font-family:var(--mono);font-size:8.6px;color:var(--muted);}
+
+@page{size:A4;margin:0;}
+@media print{
+  :root{padding:0;}
+  body{background:#FFFFFF;}
+  .viewer{display:block;padding:0;gap:0;overflow:visible;}
+  .page{zoom:.92;margin:49px auto 0;box-shadow:none;break-after:page;page-break-after:always;}
+  .page:last-child{break-after:auto;page-break-after:auto;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+
+/* ===== additions for Ghost in the Release Pipeline ===== */
+.verdict.bad{border-left-color:var(--red);}
+.o-held{background:var(--green);color:var(--on-dark);}
+.o-byp{background:var(--orange);color:var(--on-dark);}
+.o-fail{background:var(--red);color:var(--on-dark);}
+.o-abs{background:var(--grey);color:var(--ink);}
+code{font-family:var(--mono);font-size:.9em;background:var(--shade);padding:0 2px;border-radius:2px;}
+td code{background:transparent;padding:0;}
+.brk{word-break:break-all;}
+.tile{display:grid;grid-template-columns:160px 1fr;gap:0 14px;align-items:center;border:1px solid var(--ink);border-left:6px solid var(--ink);background:var(--box);padding:10px 12px;}
+.tile .big{font-family:var(--mono);font-weight:800;font-size:34px;line-height:1;}
+.tile .big small{display:block;font-size:8.4px;font-weight:600;color:var(--muted);margin-top:5px;line-height:1.3;}
+.tile p{margin:0 0 4px;font-size:10.2px;line-height:1.46;}
+.tile p:last-child{margin:0;}
+.ctl col.c-c{width:96px;}.ctl col.c-k{width:24%;}.ctl col.c-o{width:70px;}
+.dis col.c-t{width:104px;}.dis col.c-s{width:116px;}
+.atk2 col.c-tac{width:92px;}.atk2 col.c-id{width:66px;}.atk2 col.c-nm{width:150px;}.atk2 col.c-st{width:72px;}
+.ioc col.c-i{width:37%;}.ioc col.c-w{width:24%;}
+.inf col.c-o{width:132px;}.inf col.c-r{width:25%;}.inf col.c-s{width:74px;}
+.rt col.c-r{width:132px;}.rt col.c-f{width:38%;}
+.cw col.c-w{width:118px;}.cw col.c-m{width:104px;}.cw col.c-h{width:112px;}
+.diff col.c-a{width:96px;}.diff col.c-x{width:40%;}
+.gaps col.c-id{width:30px;}.gaps col.c-kj{width:56px;}.gaps col.c-w{width:34%;}
+.gl{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;font-size:9.3px;line-height:1.4;}
+.gl div b{font-family:var(--mono);font-size:8.6px;display:block;margin-bottom:1px;}
+.hash td{font-family:var(--mono);font-size:7.6px;word-break:break-all;line-height:1.35;}
+.hash td.f{font-family:var(--sans);font-size:8.8px;word-break:normal;}
+.hash col.c-f{width:190px;}.hash col.c-s{width:122px;}
+.lane-note{font-size:9.6px;line-height:1.44;}
+.two .callout{margin-top:0;}
+.callout.red{border-color:var(--red);border-left-color:var(--red);background:var(--red-soft);}
+.callout.green{border-color:var(--green);border-left-color:var(--green);background:var(--green-soft);}
+.callout.orange{border-color:var(--orange);border-left-color:var(--orange);background:var(--orange-soft);}
+.rule-box{border:1px solid var(--rule);background:var(--box);padding:7px 10px;font-family:var(--mono);font-size:8.2px;line-height:1.5;white-space:pre-wrap;word-break:break-all;}
+.stage .tag{display:inline-block;margin-left:6px;}
+.ach td.c,.ach td.i,.ach td.n{width:60px;}
+.sig col.c-t{width:31%;}.sig col.c-wt{width:27%;}
+.nw{white-space:nowrap;}
+.snip h3{font-family:var(--mono);font-size:9.4px;font-weight:700;margin:10px 0 4px;}
+.snip .two>div>h3:first-child{margin-top:2px;}
+.snip .rule-box+p{margin-top:4px;}
+/* ===== GitHub Actions controls (C-1..C-7) ===== */
+.gha{margin:6px 0 2px;border:1px solid #C9CEC6;background:#EEF0EA;}
+.gha .gh,.gfile .gh{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:7.8px;font-weight:700;padding:3px 8px;background:var(--ink);color:var(--paper);}
+.gha .gh span:last-child,.gfile .gh span:last-child{font-weight:400;opacity:.8;white-space:nowrap;}
+.gha pre,.gfile pre{margin:0;padding:5px 9px;font-family:var(--mono);font-size:7.9px;line-height:1.42;white-space:pre;overflow:hidden;color:var(--ink);}
+.gha .two-pre,.gfile .gcols{display:grid;grid-template-columns:1fr 1fr;}
+.gha .two-pre pre+pre,.gfile .gcols pre+pre{border-left:1px solid #C9CEC6;}
+pre .cm{color:#56625D;}
+.gfile{border:1px solid #C9CEC6;background:#EEF0EA;margin:6px 0 10px;}
+.gfile .gcols pre{font-size:7.5px;line-height:1.38;}
+.glance col.c-s{width:96px;}.glance col.c-f{width:112px;}.glance col.c-w{width:70px;}.glance col.c-a{width:72px;}
+.glance td b{font-family:var(--mono);font-size:8.4px;}
+.tested col.c-c{width:96px;}.tested col.c-r{width:34%;}
+ol.setup{margin:4px 0 0;padding-left:18px;font-size:9.8px;line-height:1.45;}
+ol.setup li{margin-bottom:3px;}
+ol.setup b{font-family:var(--mono);font-size:8.4px;}
+.gha pre,.gfile pre,.rule-box,code{font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0;}
+.gfile .gcols.one{grid-template-columns:1fr;}
+
+</style>
+</head>
+<body>
+<main class="viewer">
+<!-- id:cover -->
+<!-- ==================== PAGE: COVER ==================== -->
+<article class="page" aria-label="Page 1 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 1 of 21</span></header>
+
+  <p class="kicker">CTI Report</p>
+  <h1>Ghost in the Release Pipeline</h1>
+  <p class="standfirst">How a stolen Microsoft release credential and an open-source AI pentest agent shipped a credential stealer as Microsoft’s own agent-framework package on PyPI on 17 November 2026, and what consumers and publishers should change.</p>
+  <dl class="meta">
+    <div><dt>Author</dt><dd>Douglas Mun with AI assistance</dd></div>
+    <div><dt>Issued</dt><dd>19 Nov 2026</dd></div>
+    <div><dt>Version</dt><dd>1.0</dd></div>
+    <div><dt>Information cut-off</dt><dd>19 Nov 2026, 02:00 UTC</dd></div>
+    <div><dt>Marking</dt><dd>TLP:CLEAR</dd></div>
+  </dl>
+  <figure>
+    <svg viewBox="0 0 706 300" role="img" aria-label="Release path: a Cairn AI agent holding a stolen ESRP certificate was blocked by ESRP's IP filter from AWS Singapore, retried from Microsoft-owned IP space, passed automatic approval and the malware scan, and went live on PyPI under Microsoft's account; three victims' secrets went to a public webhook that also received the attacker's own beacons.">
+<defs><marker id="cvk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1C2326"/></marker><marker id="cvr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#A8322D"/></marker><marker id="cvo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B8530A"/></marker></defs>
+<!-- attacker column -->
+<rect x="12" y="22" width="120" height="46" fill="#F2DEDB" stroke="#A8322D" stroke-dasharray="4 3"/>
+<text x="20" y="37" class="b" font-size="8.4">Stolen ESRP client</text>
+<text x="20" y="49" class="b" font-size="8.4">certificate + key</text>
+<text x="20" y="61" class="m mu" font-size="7.2">route unknown (Q-1)</text>
+<line x1="72" y1="68" x2="72" y2="76" stroke="#1C2326" stroke-width="1.2" marker-end="url(#cvk)"/>
+<rect x="12" y="78" width="120" height="58" fill="#EEF0EA" stroke="#1C2326"/>
+<text x="20" y="93" class="b" font-size="8.4">Cairn AI agent</text>
+<text x="20" y="105" font-size="8">Pi harness, GLM model</text>
+<text x="20" y="117" class="m" font-size="7.4">AWS Singapore</text>
+<text x="20" y="128" class="m mu" font-size="7.2">13.215.157[.]103</text>
+<line x1="72" y1="136" x2="72" y2="168" stroke="#B8530A" stroke-width="1.4" marker-end="url(#cvo)"/>
+<text x="78" y="151" class="m" font-size="7.2" fill="#B8530A">after the 403,</text>
+<text x="78" y="161" class="m" font-size="7.2" fill="#B8530A">retried 4 min later</text>
+<rect x="12" y="172" width="142" height="36" fill="#F6E5D6" stroke="#B8530A"/>
+<text x="20" y="187" class="b" font-size="8.2">Host in Microsoft-owned</text>
+<text x="20" y="199" class="b" font-size="8.2">IP space (unidentified)</text>
+<!-- gates -->
+<text x="177" y="14" text-anchor="middle" class="m b" font-size="8.2">ESRP IP filter</text>
+<text x="269" y="14" text-anchor="middle" class="m b" font-size="8.2">Release approval</text>
+<text x="361" y="14" text-anchor="middle" class="m b" font-size="8.2">Malware scan</text>
+<rect x="170" y="22" width="14" height="192" fill="#BFC8C9" stroke="#56615F"/>
+<rect x="262" y="22" width="14" height="192" fill="#BFC8C9" stroke="#56615F"/>
+<rect x="354" y="22" width="14" height="192" fill="#BFC8C9" stroke="#56615F"/>
+<rect x="169" y="182" width="16" height="16" fill="#F4F5F0"/>
+<rect x="261" y="182" width="16" height="16" fill="#F4F5F0"/>
+<rect x="353" y="182" width="16" height="16" fill="#F4F5F0"/>
+<!-- blocked attempt -->
+<line x1="132" y1="100" x2="166" y2="100" stroke="#A8322D" stroke-width="2" marker-end="url(#cvr)"/>
+<line x1="172" y1="94" x2="182" y2="106" stroke="#A8322D" stroke-width="2.4"/><line x1="182" y1="94" x2="172" y2="106" stroke="#A8322D" stroke-width="2.4"/>
+<text x="192" y="97" class="m b" font-size="7.8" fill="#A8322D">HTTP 403</text>
+<text x="192" y="108" class="m mu" font-size="7.2">20:28:56</text>
+<text x="192" y="118" class="m mu" font-size="7.2">from AWS</text>
+<!-- successful path -->
+<line x1="154" y1="190" x2="408" y2="190" stroke="#A8322D" stroke-width="2.4" marker-end="url(#cvr)"/>
+<text x="190" y="170" class="m" font-size="7.2">submitted</text><text x="190" y="180" class="m" font-size="7.2">20:33:00</text>
+<text x="282" y="170" class="m" font-size="7.2">approved</text><text x="282" y="180" class="m" font-size="7.2">20:33:08</text>
+<!-- gate chips -->
+<rect x="135" y="222" width="84" height="14" fill="#B8530A"/><text x="177" y="232" text-anchor="middle" class="m b wt" font-size="7.2">BYPASSED</text>
+<rect x="227" y="222" width="84" height="14" fill="#A8322D"/><text x="269" y="232" text-anchor="middle" class="m b wt" font-size="7.2">AUTO-APPROVED</text>
+<rect x="319" y="222" width="84" height="14" fill="#A8322D"/><text x="361" y="232" text-anchor="middle" class="m b wt" font-size="7.2">PASSED STEALER</text>
+<!-- PyPI -->
+<rect x="412" y="160" width="124" height="60" fill="#F2DEDB" stroke="#A8322D" stroke-width="2"/>
+<text x="420" y="175" class="b" font-size="8.4">PyPI, Microsoft account</text>
+<text x="420" y="188" class="m" font-size="7.6">agent-framework 1.26.1</text>
+<text x="420" y="200" class="m b" font-size="7.4" fill="#A8322D">live 20:35:20 → 21:06</text>
+<text x="420" y="212" class="m mu" font-size="7.2">1.26.2: 21:08 → by 21:16</text>
+<!-- victims -->
+<text x="566" y="124" class="m b" font-size="7.8">Victims: 3 seen</text>
+<rect x="566" y="132" width="140" height="24" fill="#F2DEDB" stroke="#A8322D"/><text x="574" y="147" font-size="8">Azure DevOps build pool</text>
+<rect x="566" y="160" width="140" height="24" fill="#F2DEDB" stroke="#A8322D"/><text x="574" y="175" font-size="8">GitHub Actions runner</text>
+<rect x="566" y="188" width="140" height="24" fill="#F2DEDB" stroke="#A8322D"/><text x="574" y="203" font-size="8">Azure App Service</text>
+<rect x="566" y="216" width="140" height="20" fill="none" stroke="#A8322D" stroke-dasharray="3 2"/><text x="574" y="229" class="mu" font-size="7.6">others, unseen (KJ-5)</text>
+<line x1="536" y1="190" x2="562" y2="146" stroke="#A8322D" stroke-width="1.4" marker-end="url(#cvr)"/>
+<line x1="536" y1="190" x2="562" y2="173" stroke="#A8322D" stroke-width="1.4" marker-end="url(#cvr)"/>
+<line x1="536" y1="190" x2="562" y2="200" stroke="#A8322D" stroke-width="1.4" marker-end="url(#cvr)"/>
+<line x1="536" y1="190" x2="562" y2="224" stroke="#A8322D" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#cvr)"/>
+<line x1="636" y1="236" x2="636" y2="249" stroke="#A8322D" stroke-width="1.6" marker-end="url(#cvr)"/>
+<text x="628" y="247" text-anchor="end" class="m" font-size="7.2" fill="#A8322D">secrets + tokens</text>
+<!-- webhook -->
+<rect x="412" y="252" width="294" height="44" fill="#EEF0EA" stroke="#1C2326"/>
+<text x="420" y="267" class="b" font-size="8.4">webhook.site: free, public request bin</text>
+<text x="420" y="279" class="m" font-size="7.2">/d381fd80-ec62-42ad-8f5c-d1b15103c9bb?t=telemetry</text>
+<text x="420" y="290" class="mu" font-size="7.4">50 requests logged 20:25–20:49; readable by anyone with the URL</text>
+<!-- beacons -->
+<path d="M5,136 L5,274 L408,274" fill="none" stroke="#1C2326" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#cvk)"/>
+<line x1="5" y1="136" x2="12" y2="136" stroke="#1C2326" stroke-width="1.2"/>
+<text x="170" y="269" class="m" font-size="7.2">attacker’s own status beacons: same public webhook</text>
+</svg>
+    <figcaption>Times UTC, 17 November 2026 (SGT = UTC+8). Gate outcomes and times come from the attacker’s own beacons as published by Wiz Research. The credential’s route and the Microsoft-side host are unknown (Q-1, Q-3).</figcaption>
+  </figure>
+  <div class="verdict bad">
+    <div class="vq">Did it come from Microsoft?</div>
+    <div class="va">Yes.</div>
+    <div class="vt">It went out through Microsoft’s own release service under Microsoft’s PyPI account, after that service’s approval and malware scan. Nothing on PyPI set it apart from a genuine release: Microsoft’s genuine releases carry no provenance attestations either. We assess that an outsider holding a stolen release credential did the publishing (<b>KJ-1 to KJ-3</b>).</div>
+  </div>
+  <div class="stats">
+    <div><span class="n">10 min 14 s</span><span class="l">from the attacker’s first probe (20:25:06) to a live release (20:35:20)</span></div>
+    <div><span class="n">2 min 20 s</span><span class="l">from submission to Microsoft’s release service to live on PyPI</span></div>
+    <div><span class="n">≤39 min</span><span class="l">that a malicious version was installable: 31 for 1.26.1, up to 8 for 1.26.2</span></div>
+    <div><span class="n">0 of 428</span><span class="l">Microsoft PyPI files we checked that carry provenance attestations</span></div>
+  </div>
+  <div class="faq">
+    <div class="fh">Six questions, short answers</div>
+    <div class="row"><div class="qq">Am I affected?</div><div class="aa">Only if something installed agent-framework 1.26.1 or 1.26.2: from PyPI between 20:35 and 21:16 UTC on 17 Nov (04:35–05:16 SGT, 18 Nov), or later from a mirror or cache that kept a copy. Pinned 1.26.0 or earlier is clean.</div></div>
+    <div class="row"><div class="qq">What did it take?</div><div class="aa">Secrets from the environment and from credential files, including any Azure DevOps pipeline token, plus freshly minted Azure and GitHub Actions tokens, posted to a public webhook (page 9).</div></div>
+    <div class="row"><div class="qq">How did it get in?</div><div class="aa">Through Microsoft’s own release service, most likely with a stolen client certificate. Every gate checked something other than where the package was built (KJ-2, KJ-3).</div></div>
+    <div class="row"><div class="qq">Who did it?</div><div class="aa">Unattributed. The tooling named itself Cairn, an open-source AI pentest framework, and an AI agent most likely ran it (KJ-4). An opportunistic operator is likely (KJ-6).</div></div>
+    <div class="row"><div class="qq">What should we do now?</div><div class="aa">Hunt for the versions and files, rotate every secret on hosts that ran them, and review Entra ID and OIDC sign-ins (page 14). GitHub Actions controls for every stage are in Appendix C (page 20).</div></div>
+    <div class="row"><div class="qq">Is it over?</div><div class="aa">Both versions are gone. Microsoft has not said how the credential leaked or whether it is revoked (KJ-7, Q-1, Q-2).</div></div>
+  </div>
+
+</article>
+
+<!-- id:front -->
+<!-- ==================== PAGE: FRONT MATTER ==================== -->
+<article class="page" aria-label="Page 2 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 2 of 21</span></header>
+
+  <div class="front">
+    <div class="box">
+      <h3>Disclaimer</h3>
+      <p>Built from public reporting and our own checks. Microsoft has not published a root cause, and Wiz’s account of the release path rests on the attacker’s own beacons. Times read from Wiz’s published charts are approximate to about ten seconds. Times are UTC, with Singapore time (SGT, UTC+8) in brackets. Indicators are defanged in prose.</p>
+    </div>
+    <div class="box">
+      <h3>Scope, method and sourcing</h3>
+      <p><b>Scope:</b> the agent-framework releases of 17 November 2026, the tooling and infrastructure behind them, and what they mean for consumers and publishers.</p>
+      <p><b>Method:</b> cross-checking eight vendor analyses, whose hashes agree where they overlap; reading the Cairn source code (commit 8e7e0ea); scanning 428 Microsoft files on PyPI for provenance; reviewing the attacker IP’s passive scan history; and testing the commands and GitHub Actions controls we publish. Sources are graded with the Admiralty code (page 18).</p>
+    </div>
+    <div class="box">
+      <h3>Keys</h3>
+      <div class="keyrow"><span class="lab">Confidence in a judgement</span><span class="chip k-h">High</span><span class="chip k-m">Moderate</span><span class="chip k-l">Low</span></div>
+      <div class="keyrow"><span class="lab">Status of a fact (page 17)</span><span class="chip c-ok">Confirmed</span><span class="chip k-l">Reported</span><span class="chip k-m">Assessed</span><span class="chip c-rep">Open</span></div>
+      <div class="keyrow"><span class="lab">Control outcome on 17 Nov</span><span class="chip o-held">Held</span><span class="chip o-byp">Bypassed</span><span class="chip o-fail">Failed</span><span class="chip o-abs">Absent</span></div>
+      <p class="keynote">Confirmed: two or more independent sources, or a primary artefact. Reported: one source. Likelihood follows ICD 203: almost no chance 1–5%, very unlikely 5–20%, unlikely 20–45%, roughly even chance 45–55%, likely 55–80%, very likely 80–95%, almost certain 95–99%.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2>Two poisoned releases, shipped by Microsoft’s own release service, were live for up to 39 minutes</h2>
+    <p class="lead">On 17 November 2026 an unauthorised party published two trojanised versions of Microsoft’s agent-framework Python package, 1.26.1 and 1.26.2, to PyPI through Microsoft’s own release service. Any environment that installed them ran a credential stealer at every Python start. It sent secrets, including any Azure DevOps pipeline token in the environment, and freshly minted Azure and GitHub Actions tokens to a public webhook. Wiz assesses that the attacker held a stolen client certificate for ESRP, Microsoft’s release pipeline. The attacker’s tooling was the open-source Cairn framework, and we assess that an AI agent did the work in about ten minutes. Organisations that installed either version, from PyPI between 20:35 and 21:16 UTC (04:35–05:16 SGT, 18 November) or later from a mirror that cached it, should treat every secret on those hosts as exposed and rotate it within 24 hours.</p>
+  </section>
+
+  <section>
+    <div class="ws">
+      <div><b>What</b>Two trojanised releases of Microsoft’s agent-framework Python package, 1.26.1 and 1.26.2, carrying a credential stealer in a .pth startup hook.</div>
+      <div><b>When</b>Live 20:35–21:06 and 21:08 to no later than 21:16 UTC, 17 Nov (04:35–05:16 SGT, 18 Nov). The operation began with a probe at 20:25:06.</div>
+      <div><b>Who</b>An unattributed operator running the open-source Cairn AI pentest framework. Victims: any environment that installed either version; Wiz saw three.</div>
+      <div><b>Where</b>PyPI, worldwide, under Microsoft’s own account. Attacker hosts in AWS Singapore (<span class="nw">ap-southeast-1</span>) and in Microsoft-owned IP space.</div>
+      <div><b>Why</b>Credential theft: cloud, CI/CD and registry secrets, above all minted Azure and GitHub Actions identity tokens. Wider intent unknown.</div>
+      <div><b>How</b>A stolen ESRP client certificate and key (assessed) let the attacker submit through Microsoft’s release service, which auto-approved and scanned the wheel.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The third way into Microsoft’s open-source supply chain this year</h2>
+    <figure>
+      <svg viewBox="0 0 706 160" role="img" aria-label="2026 timeline: 19 May durabletask via a PyPI token kept in GitHub secrets; 5 to 7 June the Miasma worm disabled 73 Microsoft repositories; 17 November agent-framework via the central release service.">
+<line x1="40" y1="40" x2="690" y2="40" stroke="#1C2326" stroke-width="1.4"/>
+<g class="m mu" font-size="7.6" text-anchor="middle"><text x="40" y="30">Apr</text><text x="111.2" y="30">May</text><text x="184.7" y="30">Jun</text><text x="255.9" y="30">Jul</text><text x="329.4" y="30">Aug</text><text x="403.0" y="30">Sep</text><text x="474.1" y="30">Oct</text><text x="547.7" y="30">Nov</text><text x="618.8" y="30">Dec</text></g>
+<g stroke="#56615F" stroke-width="0.8"><line x1="40" y1="36" x2="40" y2="44"/><line x1="111.2" y1="36" x2="111.2" y2="44"/><line x1="184.7" y1="36" x2="184.7" y2="44"/><line x1="255.9" y1="36" x2="255.9" y2="44"/><line x1="329.4" y1="36" x2="329.4" y2="44"/><line x1="403.0" y1="36" x2="403.0" y2="44"/><line x1="474.1" y1="36" x2="474.1" y2="44"/><line x1="547.7" y1="36" x2="547.7" y2="44"/><line x1="618.8" y1="36" x2="618.8" y2="44"/></g>
+<text x="0" y="14" class="m b" font-size="8.2">2026</text>
+<circle cx="153.9" cy="40" r="6.5" fill="#1C2326"/>
+<rect x="193.2" y="34" width="6.7" height="12" fill="#1C2326"/>
+<circle cx="585.6" cy="40" r="7.5" fill="#A8322D"/>
+<line x1="153.9" y1="47" x2="153.9" y2="58" stroke="#56615F"/>
+<path d="M196.5,46 L196.5,52 L357,52 L357,58" fill="none" stroke="#56615F"/>
+<line x1="585.6" y1="48" x2="585.6" y2="58" stroke="#A8322D"/>
+<rect x="60" y="58" width="190" height="74" fill="#EEF0EA" stroke="#C3C9C3"/>
+<text x="68" y="72" class="m b" font-size="8.2">19 May · durabletask 1.4.1–1.4.3</text>
+<text x="68" y="85" font-size="8">Path: a PyPI token kept in</text>
+<text x="68" y="97" font-size="8">GitHub secrets; straight to PyPI</text>
+<rect x="68" y="106" width="58" height="13" fill="#BFC8C9"/><text x="97" y="115.5" text-anchor="middle" class="m b" font-size="7">TeamPCP</text>
+<rect x="262" y="58" width="190" height="74" fill="#EEF0EA" stroke="#C3C9C3"/>
+<text x="270" y="72" class="m b" font-size="8.2">5–7 Jun · Miasma worm</text>
+<text x="270" y="85" font-size="8">Path: repositories and CI, aimed</text>
+<text x="270" y="97" font-size="8">at AI coding agents; 73 repos disabled</text>
+<rect x="270" y="106" width="92" height="13" fill="#BFC8C9"/><text x="316" y="115.5" text-anchor="middle" class="m b" font-size="7">Miasma campaign</text>
+<rect x="490" y="58" width="216" height="74" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.4"/>
+<text x="498" y="72" class="m b" font-size="8.2">17 Nov · agent-framework 1.26.1/.2</text>
+<text x="498" y="85" font-size="8">Path: the central release service</text>
+<text x="498" y="97" font-size="8">(ESRP), under Microsoft’s account</text>
+<rect x="498" y="106" width="74" height="13" fill="#A8322D"/><text x="535" y="115.5" text-anchor="middle" class="m b wt" font-size="7">Unattributed</text>
+<defs><marker id="frk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#56615F"/></marker></defs>
+<line x1="60" y1="144" x2="700" y2="144" stroke="#56615F" stroke-width="1.2" marker-end="url(#frk)"/>
+<text x="60" y="157" class="mu" font-size="7.6">Each path sat deeper inside Microsoft’s own pipeline: registry token, then source and CI, then the release service (our reading).</text>
+</svg>
+      <figcaption>Sources: Wiz and SafeDep (durabletask), Phoenix Security citing StepSecurity (Miasma), Wiz (agent-framework). Each incident used a different route; we found no evidence linking them.</figcaption>
+    </figure>
+    <div class="analogy">
+      <h3>An analogy: a copied staff pass at the courier depot</h3>
+      <p>A courier firm lets anyone with a valid staff pass load parcels into its vans, provided they come in through the firm’s own gate. A stranger with a copied pass is turned away at the public gate, walks round to the staff entrance, and four minutes later is waved through. The scanner looks for known dangerous items, not for whether the parcel was packed at the depot. The parcel leaves in a branded van, and recipients sign for it because the van is real.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="callout">
+      <h3>Why it matters in Singapore</h3>
+      <p>The attacker’s working host sat in AWS’s Singapore region: check local logs for 13.215.157[.]103 around 17 November, remembering that AWS reassigns addresses (page 12). The exposure window fell at 04:35–05:16 SGT on Wednesday 18 November, when scheduled overnight builds run unattended, so CI systems are the likeliest local installs. And the UTC+8 clock in the malicious wheel is a default of the attacker’s tool, not evidence of a local operator (page 11).</p>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:kj -->
+<!-- ==================== PAGE: KEY JUDGEMENTS ==================== -->
+<article class="page" aria-label="Page 3 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 3 of 21</span></header>
+
+  <section>
+    <h2>Key judgements: seven, as of 02:00 UTC on 19 November</h2>
+    <div class="kj">
+      <div class="id">KJ-1</div>
+      <div>
+        <div class="hd"><h4>Two trojanised agent-framework releases shipped through Microsoft’s own release path and ran a stealer at every Python start.</h4><span class="tags">Almost certain <span class="chip k-h">High</span></span></div>
+        <p>We have high confidence: at least eight vendors analysed the wheels independently, their hashes agree where they overlap, and a Microsoft maintainer confirmed on GitHub that both releases were pulled.</p>
+        <p class="gap"><b>Gap:</b> PyPI has not published when it quarantined 1.26.2; JFrog places both removals by 21:16 UTC, Wiz by 21:30.</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id">KJ-2</div>
+      <div>
+        <div class="hd"><h4>The attacker most likely published with a stolen ESRP client certificate and private key.</h4><span class="tags">Likely <span class="chip k-m">Moderate</span></span></div>
+        <p>Confidence is moderate. Wiz’s reading rests on the attacker’s own beacons, which carried the full ESRP release record, and the release artefact fits it: no matching tag, wheel-only, repacked by hand, uploaded by a .NET client. Microsoft has not confirmed it, and The Register’s GitHub-admin theory has no published evidence behind it.</p>
+        <p class="gap"><b>Gap:</b> how the credential was obtained and whether it is revoked (Q-1, Q-2). A Microsoft statement naming another route would overturn this judgement.</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id">KJ-3</div>
+      <div>
+        <div class="hd"><h4>Every gate checked where a release came from or what it contained, not whether Microsoft built it; consumers could not tell either.</h4><span class="tags">Very likely <span class="chip k-h">High</span></span></div>
+        <p>Confidence is high: the beacons record the IP filter, the automatic approval and the clean malware scan; JFrog’s ZIP forensics show a local repack; and none of the 428 Microsoft files we checked on PyPI carry provenance.</p>
+        <p class="gap"><b>Gap:</b> ESRP controls the beacons do not show, such as whether the rejected attempt raised an alert (Q-4).</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id">KJ-4</div>
+      <div>
+        <div class="hd"><h4>An AI agent in a near-stock Cairn worker ran the operation, from first probe to live release in ten minutes.</h4><span class="tags">Likely <span class="chip k-m">Moderate</span></span></div>
+        <p>Confidence is moderate. The tooling names itself Cairn; the worker label, user ID and clock match Cairn’s shipped defaults, and its paths follow Cairn’s naming; and the run recovered from a block within four minutes. We have not seen the agent’s session log, and a person could imitate the defaults.</p>
+        <p class="gap"><b>Gap:</b> the agent’s task log or operator hints (Q-6).</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id">KJ-5</div>
+      <div>
+        <div class="hd"><h4>More systems ran the stealer than the three victims Wiz saw; any of their data that reached the bin should be treated as public.</h4><span class="tags">Likely <span class="chip k-m">Moderate</span></span></div>
+        <p>Confidence is moderate. Wiz’s view of the webhook ended at 20:49, 27 minutes before the last removal, and it saw nothing of 1.26.2. The webhook could be read by anyone who decoded its URL from the public package. JFrog later found it refusing requests with HTTP 429, so data sent after the cap most likely never arrived.</p>
+        <p class="gap"><b>Gap:</b> how many hosts installed either version, and exactly when the bin began refusing requests (Q-5).</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id">KJ-6</div>
+      <div>
+        <div class="hd"><h4>An opportunistic operator is more likely than a planned state operation; we do not attribute the activity.</h4><span class="tags">Likely <span class="chip k-l">Low</span></span></div>
+        <p>Confidence is low. A rare credential was burned in one noisy hour on free public infrastructure, which fits opportunism. The Cairn-plus-GLM toolchain matches China-linked cluster CL-STA-1238 but is commodity, and no infrastructure overlaps (page 16).</p>
+        <p class="gap"><b>Gap:</b> the Microsoft-side host IPs and AWS account records (Q-3, Q-7).</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id">KJ-7</div>
+      <div>
+        <div class="hd"><h4>A further compromise of a Microsoft-owned package, repository or publishing path is likely to be reported publicly by 17 February 2027.</h4><span class="tags">Likely <span class="chip k-l">Low</span></span></div>
+        <p>Confidence is low. Three different paths were breached in six months, the credential’s route is unknown, and AI agents cut the cost of trying each path. Microsoft’s response could close paths faster than this base rate assumes. We will mark this judgement right or wrong on 17 February 2027.</p>
+        <p class="gap"><b>Gap:</b> Microsoft’s root-cause statement and remediation (Q-1, Q-2).</p>
+      </div>
+    </div>
+  </section>
+  <section>
+    <figure>
+      <svg viewBox="0 0 706 92" role="img" aria-label="ICD 203 likelihood scale: KJ-2, KJ-4, KJ-5, KJ-6 and KJ-7 at likely, KJ-3 at very likely, KJ-1 at almost certain.">
+<rect x="27.0" y="56" width="32.6" height="14" fill="#D8DCD4"/><text x="43.3" y="82" text-anchor="middle" class="m mu" font-size="7">almost no chance</text>
+<rect x="59.6" y="56" width="97.8" height="14" fill="#E6E9E2"/><text x="108.5" y="90" text-anchor="middle" class="m mu" font-size="7">very unlikely</text>
+<rect x="157.4" y="56" width="163.0" height="14" fill="#D8DCD4"/><text x="238.9" y="82" text-anchor="middle" class="m mu" font-size="7">unlikely</text>
+<rect x="320.4" y="56" width="65.2" height="14" fill="#E6E9E2"/><text x="353.0" y="90" text-anchor="middle" class="m mu" font-size="7">even</text>
+<rect x="385.6" y="56" width="163.0" height="14" fill="#D8DCD4"/><text x="467.1" y="82" text-anchor="middle" class="m mu" font-size="7">likely</text>
+<rect x="548.6" y="56" width="97.8" height="14" fill="#E6E9E2"/><text x="597.5" y="90" text-anchor="middle" class="m mu" font-size="7">very likely</text>
+<rect x="646.4" y="56" width="32.6" height="14" fill="#D8DCD4"/><text x="662.7" y="82" text-anchor="middle" class="m mu" font-size="7">almost certain</text>
+<g>
+<line x1="403" y1="54" x2="403" y2="70" stroke="#1C2326" stroke-width="1"/><circle cx="403" cy="43" r="11" fill="#CDBA62"/><text x="403" y="46" text-anchor="middle" class="m b" font-size="6.8">KJ-7</text>
+<line x1="435" y1="54" x2="435" y2="70" stroke="#1C2326" stroke-width="1"/><circle cx="435" cy="43" r="11" fill="#CDBA62"/><text x="435" y="46" text-anchor="middle" class="m b" font-size="6.8">KJ-6</text>
+<line x1="467" y1="54" x2="467" y2="70" stroke="#1C2326" stroke-width="1"/><circle cx="467" cy="43" r="11" fill="#B8530A"/><text x="467" y="46" text-anchor="middle" class="m b wt" font-size="6.8">KJ-4</text>
+<line x1="499" y1="54" x2="499" y2="70" stroke="#1C2326" stroke-width="1"/><circle cx="499" cy="43" r="11" fill="#B8530A"/><text x="499" y="46" text-anchor="middle" class="m b wt" font-size="6.8">KJ-2</text>
+<line x1="531" y1="54" x2="531" y2="70" stroke="#1C2326" stroke-width="1"/><circle cx="531" cy="43" r="11" fill="#B8530A"/><text x="531" y="46" text-anchor="middle" class="m b wt" font-size="6.8">KJ-5</text>
+<line x1="601" y1="54" x2="601" y2="70" stroke="#1C2326" stroke-width="1"/><circle cx="601" cy="43" r="11" fill="#1F7A46"/><text x="601" y="46" text-anchor="middle" class="m b wt" font-size="6.8">KJ-3</text>
+<line x1="660" y1="54" x2="660" y2="70" stroke="#1C2326" stroke-width="1"/><circle cx="660" cy="43" r="11" fill="#1F7A46"/><text x="660" y="46" text-anchor="middle" class="m b wt" font-size="6.8">KJ-1</text>
+</g>
+<text x="0" y="12" class="m b" font-size="8.2">Where the seven sit on the likelihood scale</text>
+<text x="0" y="26" class="mu" font-size="7.8">Marker colour shows confidence: green High, orange Moderate, yellow Low. Markers within a band are not ranked.</text>
+</svg>
+    </figure>
+  </section>
+
+  <section>
+    <div class="three">
+      <div class="box"><h3>Responders</h3><p>Hunt for the versions and files, rotate secrets and review sign-ins: response actions (page 14), ATT&amp;CK and indicators (page 13), hashes and search queries (page 19).</p></div>
+      <div class="box"><h3>Publishers and platform teams</h3><p>Why every release gate let it through (page 4), GitHub Actions controls for each stage (pages 6 to 8, files on page 20), and actions for publishers and registries (page 15).</p></div>
+      <div class="box"><h3>Analysts</h3><p>Timeline (page 5), the AI operator and its Cairn fingerprints (page 11), infrastructure (page 12), ACH and gaps (page 16).</p></div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:gates -->
+<!-- ==================== PAGE: HOW IT GOT THROUGH ==================== -->
+<article class="page" aria-label="Page 4 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 4 of 21</span></header>
+
+  <section>
+    <h2>How Microsoft publishes to PyPI, and why every gate let this release through</h2>
+    <p>ESRP, the Engineering System Release Pipeline, is Microsoft’s central service for signing and publishing packages. Public Microsoft pipelines show how it works: a release task sends the package to <code>api.esrp.microsoft.com</code> with an intent of PackageDistribution, a content type such as PyPI, and named owners and approvers; ESRP checks it and publishes it under Microsoft’s account. The Azure SDK team moved its Python releases from its own PyPI account to the central ESRP team, so those packages now publish under the single Microsoft account. Pipelines authenticate with a client certificate, and one Microsoft project’s release job must run on a specific build pool because that pool holds the certificates needed to publish to PyPI through ESRP.</p>
+    <p>We assess that the attacker held a copy of such a certificate and its key (KJ-2). From then on, each gate asked a question the attacker could answer: did the submission come from a Microsoft network, did an approver accept it, did a scanner recognise anything bad. None asked whether Microsoft’s own pipeline had built the file from Microsoft’s own source.</p>
+    <figure>
+      <svg viewBox="0 0 706 244" role="img" aria-label="Eight controls drawn as slices: five Microsoft-side controls all had holes, PyPI quarantine cut the window to 31 minutes, and two consumer controls, a release-age cooldown and a CI egress allowlist, would have stopped the release or its exfiltration.">
+<defs><marker id="gtr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#A8322D"/></marker></defs>
+<g class="m b" font-size="7.6" text-anchor="middle">
+<text x="52" y="16">Credential</text><text x="52" y="27">bound to pool</text>
+<text x="136" y="16">ESRP</text><text x="136" y="27">IP filter</text>
+<text x="220" y="16">Release</text><text x="220" y="27">approval</text>
+<text x="304" y="16">Malware</text><text x="304" y="27">scan</text>
+<text x="388" y="16">Source</text><text x="388" y="27">binding</text>
+<text x="472" y="16">PyPI</text><text x="472" y="27">quarantine</text>
+<text x="556" y="16">Release-age</text><text x="556" y="27">cooldown</text>
+<text x="640" y="16">CI egress</text><text x="640" y="27">allowlist</text>
+</g>
+<rect x="24" y="38" width="56" height="152" rx="6" fill="#E3E8E8" stroke="#56615F"/>
+<rect x="108" y="38" width="56" height="152" rx="6" fill="#E3E8E8" stroke="#56615F"/>
+<rect x="192" y="38" width="56" height="152" rx="6" fill="#E3E8E8" stroke="#56615F"/>
+<rect x="276" y="38" width="56" height="152" rx="6" fill="#E3E8E8" stroke="#56615F"/>
+<rect x="360" y="38" width="56" height="152" rx="6" fill="#E3E8E8" stroke="#56615F"/>
+<rect x="444" y="38" width="56" height="152" rx="6" fill="#EEF0EA" stroke="#56615F"/>
+<rect x="528" y="38" width="56" height="152" rx="6" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1.4"/>
+<rect x="612" y="38" width="56" height="152" rx="6" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1.4"/>
+<g fill="#F4F5F0" stroke="#56615F" stroke-width="0.8">
+<ellipse cx="52" cy="112" rx="17" ry="12"/><ellipse cx="136" cy="112" rx="17" ry="12"/><ellipse cx="220" cy="112" rx="17" ry="12"/><ellipse cx="304" cy="112" rx="17" ry="12"/><ellipse cx="388" cy="112" rx="17" ry="12"/><ellipse cx="472" cy="112" rx="17" ry="12"/>
+</g>
+<ellipse cx="556" cy="150" rx="17" ry="11" fill="#F4F5F0" stroke="#1F7A46" stroke-width="0.8"/>
+<line x1="2" y1="112" x2="502" y2="112" stroke="#A8322D" stroke-width="3"/>
+<path d="M502,112 L514,94 L524,94" fill="none" stroke="#A8322D" stroke-width="3" marker-end="url(#gtr)"/>
+<path d="M502,112 L514,150 L606,150" fill="none" stroke="#A8322D" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#gtr)"/>
+<circle cx="556" cy="78" r="9" fill="#1F7A46"/><path d="M551,78 L555,82 L562,74" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+<circle cx="640" cy="150" r="9" fill="#1F7A46"/><path d="M635,150 L639,154 L646,146" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+<text x="556" y="173" text-anchor="middle" class="m" font-size="6.8" fill="#1F7A46">if no</text><text x="556" y="182" text-anchor="middle" class="m" font-size="6.8" fill="#1F7A46">cooldown</text>
+<text x="640" y="174" text-anchor="middle" class="m" font-size="6.8" fill="#1F7A46">POST blocked</text>
+<text x="556" y="55" text-anchor="middle" class="m" font-size="6.8" fill="#1F7A46">never</text><text x="556" y="64" text-anchor="middle" class="m" font-size="6.8" fill="#1F7A46">installed</text>
+<g class="m b wt" font-size="6.8" text-anchor="middle">
+<rect x="26" y="198" width="52" height="13" fill="#A8322D"/><text x="52" y="207.5">FAILED</text>
+<rect x="110" y="198" width="52" height="13" fill="#B8530A"/><text x="136" y="207.5">BYPASSED</text>
+<rect x="194" y="198" width="52" height="13" fill="#A8322D"/><text x="220" y="207.5">AUTO</text>
+<rect x="278" y="198" width="52" height="13" fill="#A8322D"/><text x="304" y="207.5">PASSED IT</text>
+<rect x="362" y="198" width="52" height="13" fill="#BFC8C9"/><text x="388" y="207.5" style="fill:#1C2326">ABSENT</text>
+<rect x="446" y="198" width="52" height="13" fill="#1F7A46"/><text x="472" y="207.5">31 MIN</text>
+<rect x="530" y="198" width="52" height="13" fill="#1F7A46"/><text x="556" y="207.5">WOULD HOLD</text>
+<rect x="614" y="198" width="52" height="13" fill="#1F7A46"/><text x="640" y="207.5">WOULD HOLD</text>
+</g>
+<path d="M24,218 L24,224 L416,224 L416,218" fill="none" stroke="#1C2326" stroke-width="1.2"/>
+<path d="M444,218 L444,224 L500,224 L500,218" fill="none" stroke="#1C2326" stroke-width="1.2"/>
+<path d="M528,218 L528,224 L668,224 L668,218" fill="none" stroke="#1F7A46" stroke-width="1.2"/>
+<text x="220" y="238" text-anchor="middle" class="m b" font-size="7.8">Publisher: Microsoft</text>
+<text x="472" y="238" text-anchor="middle" class="m b" font-size="7.8">Registry</text>
+<text x="598" y="238" text-anchor="middle" class="m b" font-size="7.8" fill="#1F7A46">Consumer: you</text>
+</svg>
+      <figcaption>Each slice is a control and the red line is the release; a hole is a control that did not stop it. Microsoft-side outcomes come from the attacker’s beacons (Wiz) and JFrog’s artefact analysis; the consumer controls are our assessment of what a three-day cooldown or an egress allowlist would have done.</figcaption>
+    </figure>
+    <table class="ctl">
+      <colgroup><col class="c-c"><col class="c-k"><col><col class="c-o"></colgroup>
+      <thead><tr><th>Control</th><th>What it checks</th><th>What happened on 17 November</th><th>Outcome</th></tr></thead>
+      <tbody>
+        <tr><td>Release credential</td><td>Possession of the ESRP client certificate and key</td><td>A copy worked away from Microsoft’s build pools (Wiz; assessed)</td><td class="v"><span class="chip o-fail">Failed</span></td></tr>
+        <tr><td>ESRP IP filter</td><td>The submitting network</td><td>Refused AWS at 20:28:56; accepted Microsoft-owned IP space at 20:33:00</td><td class="v"><span class="chip o-byp">Bypassed</span></td></tr>
+        <tr><td>Release approval</td><td>An approver signs off</td><td>Approved automatically, 8 seconds after submission</td><td class="v"><span class="chip o-fail">Failed</span></td></tr>
+        <tr><td>Malware scan</td><td>Known-bad content</td><td>Passed the stealer after 2 min 6 s</td><td class="v"><span class="chip o-fail">Failed</span></td></tr>
+        <tr><td>Source binding</td><td>Release matches a tagged pipeline build</td><td>Not enforced: no matching tag, wheel-only, repacked locally (JFrog)</td><td class="v"><span class="chip o-abs">Absent</span></td></tr>
+        <tr><td>Provenance on PyPI</td><td>A signed attestation of who built the file</td><td>Not used on any Microsoft file we checked: 0 of 428</td><td class="v"><span class="chip o-abs">Absent</span></td></tr>
+        <tr><td>PyPI quarantine</td><td>Malware reports to the registry</td><td>Pulled 1.26.1 after 31 minutes; 1.26.2 gone by 21:16</td><td class="v"><span class="chip o-held">Held</span></td></tr>
+        <tr><td>Release-age cooldown</td><td>Age of a version before it is adopted</td><td>Any cooldown of a day or more keeps both versions out</td><td class="v"><span class="chip o-held">Would hold</span></td></tr>
+        <tr><td>CI egress allowlist</td><td>Destinations a build may reach</td><td>Blocks the POST to webhook[.]site, so nothing leaves</td><td class="v"><span class="chip o-held">Would hold</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <div class="tile">
+      <div class="big">0 of 428<small>agent-framework (134), agent-framework-core (132) and azure-core (162) files on PyPI with a provenance attestation; checked 19 Nov 2026</small></div>
+      <div>
+        <p>PyPI can attach a signed attestation recording which repository and workflow built a file (PEP 740). None of Microsoft’s files in these three projects carries one, including the clean 1.26.0, for which PyPI’s integrity endpoint answers “No provenance available”. A consumer who checked provenance would have seen the malicious wheels look exactly like genuine ones.</p>
+        <p>The IP filter was the only control that stopped an attempt. Microsoft-owned IP space is no boundary if it includes Azure: GitHub’s Windows and Ubuntu runners use Azure datacentre ranges, and GitHub advises against allowlisting them. Whether the attacker rented such an address or held a host inside Microsoft is unknown (Q-3).</p>
+      </div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:timeline -->
+<!-- ==================== PAGE: TIMELINE ==================== -->
+<article class="page" aria-label="Page 5 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 5 of 21</span></header>
+
+  <section>
+    <h2>Timeline: ten minutes to ship, 39 minutes live, no root cause a day later</h2>
+    <figure>
+      <svg viewBox="0 0 706 460" role="img" aria-label="Panel A: minute-by-minute events from 20:24:30 to 20:38 UTC across attacker hosts, ESRP, PyPI and the webhook. Panel B: from 20:20 to 21:50 UTC, when each malicious version was installable, the period Wiz could see the webhook, and the blind period after 20:49.">
+<defs><marker id="tlr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#A8322D"/></marker><marker id="tlk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1C2326"/></marker><pattern id="tlh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#F2DEDB"/><line x1="0" y1="0" x2="0" y2="6" stroke="#A8322D" stroke-width="1.2" opacity=".45"/></pattern></defs>
+<!-- ===== PANEL A ===== -->
+<text x="0" y="11" class="m b" font-size="8.6">A · The ten minutes, 20:24:30–20:38 UTC</text>
+<text x="706" y="11" text-anchor="end" class="mu" font-size="7.6">Times from the attacker’s beacons (Wiz) and ZIP headers (JFrog)</text>
+<rect x="96" y="26" width="604" height="36" fill="#E6E9E2"/>
+<rect x="96" y="106" width="604" height="36" fill="#E6E9E2"/>
+<rect x="96" y="186" width="604" height="36" fill="#E6E9E2"/>
+<g class="m b" font-size="7.6"><text x="0" y="41">Attacker,</text><text x="0" y="51">Microsoft IP</text><text x="0" y="81">Attacker,</text><text x="0" y="91">AWS Singapore</text><text x="0" y="127">Microsoft ESRP</text><text x="0" y="167">PyPI</text><text x="0" y="201">Webhook</text><text x="0" y="211">(Wiz’s view)</text></g>
+<g stroke="#C3C9C3" stroke-width="0.7"><line x1="118.4" y1="22" x2="118.4" y2="226"/><line x1="163.1" y1="22" x2="163.1" y2="226"/><line x1="207.9" y1="22" x2="207.9" y2="226"/><line x1="252.6" y1="22" x2="252.6" y2="226"/><line x1="297.3" y1="22" x2="297.3" y2="226"/><line x1="342.1" y1="22" x2="342.1" y2="226"/><line x1="386.8" y1="22" x2="386.8" y2="226"/><line x1="431.6" y1="22" x2="431.6" y2="226"/><line x1="476.3" y1="22" x2="476.3" y2="226"/><line x1="521.0" y1="22" x2="521.0" y2="226"/><line x1="565.8" y1="22" x2="565.8" y2="226"/><line x1="610.5" y1="22" x2="610.5" y2="226"/><line x1="655.3" y1="22" x2="655.3" y2="226"/><line x1="700" y1="22" x2="700" y2="226"/></g>
+<!-- probe -->
+<path d="M122.8,38 L128.8,44 L122.8,50 L116.8,44 z" fill="#1C2326"/>
+<text x="132" y="41" class="b" font-size="7.8">probe</text>
+<text x="132" y="52" class="m" font-size="6.8">CAIRN_ESRP_PROBE2</text>
+<line x1="122.8" y1="50" x2="122.8" y2="198" stroke="#1C2326" stroke-width="0.8" stroke-dasharray="2 2"/>
+<!-- repack -->
+<rect x="173.3" y="80" width="8" height="8" fill="#F4F5F0" stroke="#1C2326" stroke-width="1.2"/>
+<text x="185" y="79" class="b" font-size="7.8">wheel repacked</text>
+<text x="185" y="98" class="m mu" font-size="6.8">uid 1000 · UTC+8</text>
+<!-- self-test -->
+<path d="M257.8,78 L263.8,84 L257.8,90 L251.8,84 z" fill="#1C2326"/>
+<text x="266" y="79" class="b" font-size="7.8">self-test</text>
+<text x="266" y="98" class="m mu" font-size="6.8">stealer output</text>
+<line x1="257.8" y1="90" x2="257.8" y2="198" stroke="#1C2326" stroke-width="0.8" stroke-dasharray="2 2"/>
+<!-- blocked -->
+<line x1="294.3" y1="103" x2="294.3" y2="118" stroke="#A8322D" stroke-width="1.8" marker-end="url(#tlr)"/>
+<line x1="289.3" y1="119" x2="299.3" y2="129" stroke="#A8322D" stroke-width="2.2"/><line x1="299.3" y1="119" x2="289.3" y2="129" stroke="#A8322D" stroke-width="2.2"/>
+<text x="303" y="122" class="m b" font-size="7.4" fill="#A8322D">HTTP 403</text>
+<text x="303" y="133" class="m" font-size="6.8" fill="#A8322D">IP filter</text>
+<line x1="294.3" y1="130" x2="294.3" y2="198" stroke="#1C2326" stroke-width="0.8" stroke-dasharray="2 2"/>
+<!-- submit -->
+<line x1="476.3" y1="50" x2="476.3" y2="118" stroke="#A8322D" stroke-width="1.8" marker-end="url(#tlr)"/>
+<text x="481" y="59" class="b" font-size="7.8">submitted</text>
+<text x="481" y="69" class="m" font-size="6.8">/tmp/cairn_pkg</text>
+<path d="M476.3,38 L482.3,44 L476.3,50 L470.3,44 z" fill="#1C2326"/>
+<!-- approval + scan -->
+<rect x="483.0" y="118" width="94.0" height="12" fill="#BFC8C9" stroke="#56615F" stroke-width="0.8"/>
+<line x1="482.3" y1="114" x2="482.3" y2="134" stroke="#A8322D" stroke-width="2"/>
+<text x="486" y="112" class="m" font-size="6.8">auto-approved 20:33:08</text>
+<text x="530" y="141" text-anchor="middle" class="m" font-size="6.8">malware scan: passed</text>
+<!-- live -->
+<circle cx="580.7" cy="164" r="5.5" fill="#A8322D"/>
+<text x="573" y="167" text-anchor="end" class="m b" font-size="7.6" fill="#A8322D">1.26.1 live 20:35:20</text>
+<!-- beacon -->
+<path d="M664.2,38 L670.2,44 L664.2,50 L658.2,44 z" fill="#1C2326"/>
+<text x="655" y="41" text-anchor="end" class="b" font-size="7.8">status beacon</text>
+<text x="655" y="52" text-anchor="end" class="m" font-size="6.8">full ESRP release record</text>
+<line x1="664.2" y1="50" x2="664.2" y2="198" stroke="#1C2326" stroke-width="0.8" stroke-dasharray="2 2"/>
+<!-- webhook lane -->
+<g fill="#1C2326"><path d="M122.8,199 L127.3,204 L122.8,209 L118.3,204 z"/><path d="M257.8,199 L262.3,204 L257.8,209 L253.3,204 z"/><path d="M294.3,199 L298.8,204 L294.3,209 L289.8,204 z"/><path d="M664.2,199 L668.7,204 L664.2,209 L659.7,204 z"/></g>
+<circle cx="615" cy="204" r="3.6" fill="#BFC8C9" stroke="#56615F" stroke-width="0.8"/>
+<text x="132" y="218" class="m" font-size="6.8">the attacker’s beacons land on the same public webhook</text>
+<text x="609" y="218" text-anchor="end" class="m" font-size="6.8">first scanners, ~20:36</text>
+<!-- axis A -->
+<g class="m" font-size="7" text-anchor="middle"><text x="118.4" y="238">20:25</text><text x="163.1" y="238">:26</text><text x="207.9" y="238">:27</text><text x="252.6" y="238">:28</text><text x="297.3" y="238">:29</text><text x="342.1" y="238">:30</text><text x="386.8" y="238">:31</text><text x="431.6" y="238">:32</text><text x="476.3" y="238">:33</text><text x="521.0" y="238">:34</text><text x="565.8" y="238">:35</text><text x="610.5" y="238">:36</text><text x="655.3" y="238">:37</text><text x="700" y="238">:38</text></g>
+<g class="m mu" font-size="6.8" text-anchor="middle"><text x="118.4" y="248">04:25 SGT</text><text x="476.3" y="248">04:33</text><text x="700" y="248">04:38</text></g>
+<!-- ===== PANEL B ===== -->
+<text x="0" y="276" class="m b" font-size="8.6">B · Exposure and visibility, 20:20–21:50 UTC</text>
+<g stroke="#C3C9C3" stroke-width="0.7"><line x1="96" y1="286" x2="96" y2="424"/><line x1="163.1" y1="286" x2="163.1" y2="424"/><line x1="230.2" y1="286" x2="230.2" y2="424"/><line x1="297.3" y1="286" x2="297.3" y2="424"/><line x1="364.4" y1="286" x2="364.4" y2="424"/><line x1="431.6" y1="286" x2="431.6" y2="424"/><line x1="498.7" y1="286" x2="498.7" y2="424"/><line x1="565.8" y1="286" x2="565.8" y2="424"/><line x1="632.9" y1="286" x2="632.9" y2="424"/><line x1="700" y1="286" x2="700" y2="424"/></g>
+<g class="m b" font-size="7.6"><text x="0" y="303">1.26.1 live</text><text x="0" y="331">1.26.2 live</text><text x="0" y="355">Wiz’s view of</text><text x="0" y="365">the webhook</text><text x="0" y="387">Victim requests</text><text x="0" y="415">Public reports</text></g>
+<rect x="198.9" y="292" width="205.8" height="16" fill="#A8322D"/><text x="206" y="303.5" class="m b wt" font-size="7.6">31 min</text>
+<text x="410" y="303.5" class="m" font-size="7.2">quarantined 21:06</text>
+<rect x="418.1" y="320" width="53.7" height="16" fill="#A8322D"/><text x="423" y="331.5" class="m b wt" font-size="7.2">≤8 min</text>
+<text x="478" y="331.5" class="m" font-size="7.2">uploaded after the quarantine; gone by 21:16</text>
+<rect x="130.2" y="348" width="160.4" height="16" fill="#1F7A46"/><text x="136" y="359.5" class="m b wt" font-size="7.2">50 requests logged</text>
+<rect x="290.6" y="348" width="181.2" height="16" fill="url(#tlh)" stroke="#A8322D" stroke-width="0.8"/>
+<text x="478" y="359.5" class="m" font-size="7.2" fill="#A8322D">blind: rest of 1.26.1, all of 1.26.2</text>
+<line x1="290.6" y1="342" x2="290.6" y2="370" stroke="#1C2326" stroke-width="1.2"/>
+<text x="286" y="345" text-anchor="end" class="m" font-size="6.8">cap reached ~20:49</text>
+<g fill="#A8322D"><rect x="232.4" y="378" width="2" height="14"/><rect x="247.0" y="378" width="2" height="14"/><rect x="254.5" y="378" width="2" height="14"/><rect x="274.2" y="378" width="2" height="14"/><rect x="276.5" y="378" width="2" height="14"/><rect x="282.2" y="378" width="2" height="14"/><rect x="290.4" y="378" width="3" height="14"/></g>
+<text x="300" y="389" class="m" font-size="7.2">17 requests from 3 victims, 20:40–20:49</text>
+<text x="686" y="413" text-anchor="end" class="m" font-size="7.2">vendor posts on 17 Nov carry no times; OpenSourceMalware 05:43, 18 Nov</text>
+<path d="M690,406 L698,410 L690,414 z" fill="#1C2326"/>
+<g class="m" font-size="7" text-anchor="middle"><text x="96" y="436">20:20</text><text x="163.1" y="436">20:30</text><text x="230.2" y="436">20:40</text><text x="297.3" y="436">20:50</text><text x="364.4" y="436">21:00</text><text x="431.6" y="436">21:10</text><text x="498.7" y="436">21:20</text><text x="565.8" y="436">21:30</text><text x="632.9" y="436">21:40</text><text x="700" y="436">21:50</text></g>
+<g class="m mu" font-size="6.8" text-anchor="middle"><text x="96" y="447">04:20 SGT</text><text x="364.4" y="447">05:00</text><text x="700" y="447">05:50</text></g>
+</svg>
+      <figcaption>Victim request times are read from Wiz’s chart (±10 s). Wiz’s text gives the free-tier cap as 100 requests; its chart says the endpoint likely hit a 50-request cap. Either way, Wiz saw nothing after 20:49.</figcaption>
+    </figure>
+  </section>
+  <section>
+    <table class="dis">
+      <colgroup><col class="c-t"><col><col class="c-s"><col style="width:74px"></colgroup>
+      <thead><tr><th>UTC (SGT)</th><th>Disclosure and response</th><th>Source</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="t">17 Nov 21:06</td><td>PyPI quarantines 1.26.1</td><td>JFrog</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+        <tr><td class="t">17 Nov 21:08</td><td>1.26.2 uploaded after the quarantine, with renamed files and GitHub Actions token theft; removed by 21:16</td><td>Wiz, JFrog, StepSecurity</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td class="t">17 Nov, time n/a</td><td>Wiz reports to Microsoft; OX Security and Socket publish</td><td>Wiz, OX, Socket</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td class="t">18 Nov 05:43 (13:43)</td><td>OpenSourceMalware publishes and reports that PyPI has quarantined Microsoft’s publisher account, as unauthorised publishing access is believed to remain active; quarantine time unpublished</td><td>OpenSourceMalware</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+        <tr><td class="t">18 Nov</td><td>StepSecurity, JFrog, SafeDep, BleepingComputer and SecurityWeek publish; a maintainer confirms on GitHub that both releases were pulled and an investigation is under way</td><td>SecurityWeek and others</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td class="t">18 Nov 14:00 (22:00)</td><td>Wiz adds the ESRP root cause and its analysis of the exfiltrated data</td><td>Wiz</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td class="t">18 Nov 17:23 (01:23)</td><td>The Register reports; at 18:05 it adds Microsoft’s statement that it has made some repositories private while it investigates</td><td>The Register</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+        <tr><td class="t">19 Nov 02:00 (10:00)</td><td>Cut-off for this report: no Microsoft root-cause statement found</td><td>Our searches</td><td class="v"><span class="chip c-rep">Open</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <div class="three">
+      <div>
+        <h2>Scanners beat the victims</h2>
+        <p class="small">Third-party scanners and sandboxes reached the webhook within about a minute of go-live. The first real victim, an Azure App Service, followed at about 20:40, five minutes after the release appeared.</p>
+      </div>
+      <div>
+        <h2>A watchdog beats the quarantine</h2>
+        <p class="small">A check every 15 minutes (<span class="nw">C-3</span>) would most likely have flagged 1.26.1, which had no tag and no sdist, before PyPI quarantined it at 21:06. GitHub can delay scheduled runs, so treat it as a backstop.</p>
+      </div>
+      <div>
+        <h2>A cooldown outlasts the window</h2>
+        <p class="small">The last malicious version was gone 41 minutes after the first appeared. A three-day cooldown (<span class="nw">C-5</span>) would have kept both out with 71 hours to spare.</p>
+      </div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:chain -->
+<!-- ==================== PAGE: KILL CHAIN ==================== -->
+<article class="page" aria-label="Page 6 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 6 of 21</span></header>
+
+  <section>
+    <h2>The kill chain: seven stages, and the first one is still unknown</h2>
+    <figure>
+      <svg viewBox="0 0 706 262" role="img" aria-label="Seven stages: credential, staging, submission, release gates, distribution, execution, theft and exfiltration, with times and status, and below them which party could have stopped each stage.">
+<defs><marker id="kca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1C2326"/></marker></defs>
+<g>
+<rect x="0" y="20" width="92" height="120" fill="#EEF0EA" stroke="#1C2326"/><rect x="0" y="20" width="92" height="20" fill="#1C2326"/><text x="6" y="34" class="m b wt" font-size="8">1 Credential</text>
+<text x="6" y="56" font-size="7.8">ESRP certificate</text><text x="6" y="67" font-size="7.8">and key leave</text><text x="6" y="78" font-size="7.8">Microsoft by a</text><text x="6" y="89" font-size="7.8">route unknown</text>
+<text x="6" y="106" class="m mu" font-size="7">before 20:25</text>
+<rect x="6" y="116" width="40" height="13" fill="#BFC8C9"/><text x="26" y="125.5" text-anchor="middle" class="m b" font-size="7">Open</text>
+</g>
+<g>
+<rect x="102" y="20" width="92" height="120" fill="#EEF0EA" stroke="#1C2326"/><rect x="102" y="20" width="92" height="20" fill="#1C2326"/><text x="108" y="34" class="m b wt" font-size="8">2 Staging</text>
+<text x="108" y="56" font-size="7.8">Cairn agent</text><text x="108" y="67" font-size="7.8">repacks the wheel</text><text x="108" y="78" font-size="7.8">and self-tests</text><text x="108" y="89" font-size="7.8">the stealer</text>
+<text x="108" y="106" class="m mu" font-size="7">20:26–20:28</text>
+<rect x="108" y="116" width="56" height="13" fill="#B8530A"/><text x="136" y="125.5" text-anchor="middle" class="m b wt" font-size="7">Assessed</text>
+</g>
+<g>
+<rect x="204" y="20" width="92" height="120" fill="#EEF0EA" stroke="#1C2326"/><rect x="204" y="20" width="92" height="20" fill="#1C2326"/><text x="210" y="34" class="m b wt" font-size="8">3 Submission</text>
+<text x="210" y="56" font-size="7.8">Refused from</text><text x="210" y="67" font-size="7.8">AWS; accepted</text><text x="210" y="78" font-size="7.8">from Microsoft</text><text x="210" y="89" font-size="7.8">IP space</text>
+<text x="210" y="106" class="m mu" font-size="7">20:28:56, 20:33:00</text>
+<rect x="210" y="116" width="56" height="13" fill="#CDBA62"/><text x="238" y="125.5" text-anchor="middle" class="m b" font-size="7">Reported</text>
+</g>
+<g>
+<rect x="306" y="20" width="92" height="120" fill="#EEF0EA" stroke="#1C2326"/><rect x="306" y="20" width="92" height="20" fill="#1C2326"/><text x="312" y="34" class="m b wt" font-size="8">4 Release gates</text>
+<text x="312" y="56" font-size="7.8">Auto-approved;</text><text x="312" y="67" font-size="7.8">malware scan</text><text x="312" y="78" font-size="7.8">passed; live in</text><text x="312" y="89" font-size="7.8">2 min 20 s</text>
+<text x="312" y="106" class="m mu" font-size="7">20:33:08–20:35:20</text>
+<rect x="312" y="116" width="56" height="13" fill="#CDBA62"/><text x="340" y="125.5" text-anchor="middle" class="m b" font-size="7">Reported</text>
+</g>
+<g>
+<rect x="408" y="20" width="92" height="120" fill="#F2DEDB" stroke="#A8322D"/><rect x="408" y="20" width="92" height="20" fill="#A8322D"/><text x="414" y="34" class="m b wt" font-size="8">5 Distribution</text>
+<text x="414" y="56" font-size="7.8">Live under</text><text x="414" y="67" font-size="7.8">Microsoft’s account;</text><text x="414" y="78" font-size="7.8">1.26.2 follows</text><text x="414" y="89" font-size="7.8">the quarantine</text>
+<text x="414" y="106" class="m mu" font-size="7">20:35–21:16</text>
+<rect x="414" y="116" width="60" height="13" fill="#1F7A46"/><text x="444" y="125.5" text-anchor="middle" class="m b wt" font-size="7">Confirmed</text>
+</g>
+<g>
+<rect x="510" y="20" width="92" height="120" fill="#F2DEDB" stroke="#A8322D"/><rect x="510" y="20" width="92" height="20" fill="#A8322D"/><text x="516" y="34" class="m b wt" font-size="8">6 Execution</text>
+<text x="516" y="56" font-size="7.8">.pth hook runs</text><text x="516" y="67" font-size="7.8">at every Python</text><text x="516" y="78" font-size="7.8">start, pip</text><text x="516" y="89" font-size="7.8">included</text>
+<text x="516" y="106" class="m mu" font-size="7">on any install</text>
+<rect x="516" y="116" width="60" height="13" fill="#1F7A46"/><text x="546" y="125.5" text-anchor="middle" class="m b wt" font-size="7">Confirmed</text>
+</g>
+<g>
+<rect x="612" y="20" width="94" height="120" fill="#F2DEDB" stroke="#A8322D"/><rect x="612" y="20" width="94" height="20" fill="#A8322D"/><text x="618" y="34" class="m b wt" font-size="8">7 Theft, exfil</text>
+<text x="618" y="56" font-size="7.8">Secrets and</text><text x="618" y="67" font-size="7.8">minted tokens</text><text x="618" y="78" font-size="7.8">leave in one POST</text><text x="618" y="89" font-size="7.8">to a public bin</text>
+<text x="618" y="106" class="m mu" font-size="7">from ~20:40</text>
+<rect x="618" y="116" width="60" height="13" fill="#1F7A46"/><text x="648" y="125.5" text-anchor="middle" class="m b wt" font-size="7">Confirmed</text>
+</g>
+<g stroke="#1C2326" stroke-width="1.3"><line x1="92" y1="80" x2="100" y2="80" marker-end="url(#kca)"/><line x1="194" y1="80" x2="202" y2="80" marker-end="url(#kca)"/><line x1="296" y1="80" x2="304" y2="80" marker-end="url(#kca)"/><line x1="398" y1="80" x2="406" y2="80" marker-end="url(#kca)"/><line x1="500" y1="80" x2="508" y2="80" marker-end="url(#kca)"/><line x1="602" y1="80" x2="610" y2="80" marker-end="url(#kca)"/></g>
+<text x="0" y="12" class="mu" font-size="7.6">Stages 1–4 happened inside the attacker’s and Microsoft’s systems; stages 5–7 on PyPI and victims’ hosts.</text>
+<text x="0" y="162" class="m b" font-size="8.2">Who could have stopped each stage</text>
+<rect x="0" y="170" width="398" height="20" fill="#E3E8E8" stroke="#56615F" stroke-width="0.8"/>
+<text x="8" y="183.5" font-size="8">Publisher: non-exportable keys, source-bound releases, alert on refusals</text>
+<rect x="408" y="196" width="92" height="36" fill="#EEF0EA" stroke="#56615F" stroke-width="0.8"/>
+<g font-size="7.2"><text x="414" y="207.5">Registry: quarantine</text><text x="414" y="217.5">(31 min here) and a</text><text x="414" y="227.5">publisher freeze</text></g>
+<rect x="408" y="238" width="298" height="20" fill="#DCEBE0" stroke="#1F7A46" stroke-width="0.8"/>
+<text x="416" y="251.5" font-size="8">Consumer: cooldown, hash pins, egress allowlist, scoped OIDC</text>
+</svg>
+      <figcaption>Status of each stage: Open, not established; Assessed, our judgement; Reported, single source (Wiz, from the attacker’s beacons); Confirmed, several independent sources.</figcaption>
+    </figure>
+  </section>
+  <section>
+    <h2>Walking the chain, stage by stage</h2>
+    <p class="small">Each stage ends with its lesson and a GitHub Actions control, C-1 to C-7, for teams that publish or install Python packages from GitHub. Microsoft released through ESRP, not GitHub Actions, so C-1 to C-4 are the equivalent controls for your own pipeline, not a picture of Microsoft’s. Excerpts are shown here; the full files, setup steps and our test results are in Appendix C (page 20).</p>
+    <div class="stage">
+      <div class="sn">1 Credential<span>Open</span></div>
+      <div><h4>A release credential that worked away from Microsoft’s build pools</h4>
+      <p>Wiz assesses that the attacker held a client certificate and private key for ESRP. Microsoft’s public pipelines show that such certificates normally sit on designated build pools. How a copy left Microsoft is unknown: theft from a build host, a secret exposed in a repository or log, insider misuse, and compromise of the vault that stores it all fit what is public (page 15).</p>
+      <p class="lesson"><b>Lesson</b> Make release keys non-exportable, held in hardware or a managed signing service, or replace certificates with a workload identity only one pipeline can use. A copied file should be worthless.</p>
+      <div class="gha"><div class="gh"><span>GitHub Actions · C-1 · publishers · trusted publishing, no stored token</span><span>excerpt of release.yml · page 20</span></div><div class="one-pre"><pre>publish:                  <span class="cm"># C-1: OIDC identity, no stored secret</span>
+  needs: check
+  runs-on: ubuntu-latest
+  environment:            <span class="cm"># C-4: required reviewers, tags v*</span>
+    name: pypi
+    url: https://pypi.org/p/your-package
+  permissions:
+    id-token: write       <span class="cm"># short-lived token for PyPI</span>
+  steps:
+    - uses: actions/download-artifact@v4
+      with: { name: dist, path: dist }
+    - uses: pypa/gh-action-pypi-publish@release/v1</pre></div></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="sn">2 Staging<span>Assessed</span></div>
+      <div><h4>An AI agent built and tested the payload in its own container</h4>
+      <p>JFrog’s reading of the ZIP headers shows the 1.26.1 wheel was repacked with Info-ZIP at 20:26:19 by user ID 1000 on a host whose clock ran at UTC+8, while its metadata still named the flit build tool. At 20:28:07 the attacker ran the stealer on its own AWS host; the output it sent to the webhook exposed a Pi agent configuration on a GLM-family model. Both details match a stock Cairn worker (page 11).</p>
+      <p class="lesson"><b>Lesson</b> A UTC+8 clock or uid 1000 fingerprints the tool, not the operator. Record such details as tooling indicators and keep them out of attribution. Publishers: build releases only in CI and sign their provenance, so a hand-repacked wheel cannot pass as yours.</p>
+      <div class="gha"><div class="gh"><span>GitHub Actions · C-2 · publishers · build in CI from a tag, sign provenance</span><span>excerpt of release.yml · page 20</span></div><div class="one-pre"><pre>on:
+  push:
+    tags: ["v*"]            <span class="cm"># C-2: releases start from a tag</span>
+…
+- run: &gt;-
+    python -m pip install --require-hashes
+    -r .github/build-requirements.txt
+- run: python -m build
+- uses: actions/attest-build-provenance@v2
+  with: { subject-path: "dist/*" }</pre></div></div>
+      </div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:chain2 -->
+<!-- ==================== PAGE: KILL CHAIN 2 ==================== -->
+<article class="page" aria-label="Page 7 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 7 of 21</span></header>
+
+  <section>
+    <h2>Walking the chain, continued: submission, release gates and distribution</h2>
+    <div class="stage">
+      <div class="sn">3 Submission<span>Reported</span></div>
+      <div><h4>Refused from AWS, accepted from Microsoft IP space four minutes later</h4>
+      <p>At 20:28:56 ESRP refused a publish request from the attacker’s AWS host with HTTP 403. At 20:33:00 the submission arrived from Microsoft-owned IP space and was accepted. The attacker already had a way into that address space: its first probe, at 20:25:06, came from there. Whether the host was a rented Azure machine or a system inside Microsoft is unknown (Q-3).</p>
+      <p class="lesson"><b>Lesson</b> Network location is not identity. A refused submission that carries a valid credential is a high-confidence compromise signal, so alert on it and freeze the credential. Where the registry hides refusals, watch for releases you did not make.</p>
+      <div class="gha"><div class="gh"><span>GitHub Actions · C-3 · publishers · watchdog every 15 minutes</span><span>excerpt of pypi-watchdog.yml · page 20</span></div><div class="one-pre"><pre>meta=$(curl -fsS "https://pypi.org/pypi/$PKG/json")
+ver=$(jq -r .info.version &lt;&lt;&lt;"$meta")
+bad=""
+git rev-parse -q --verify "refs/tags/v$ver" &gt;/dev/null \
+  || bad+="no tag v$ver. "
+jq -e '.urls[] | select(.packagetype == "sdist")' \
+  &lt;&lt;&lt;"$meta" &gt;/dev/null || bad+="no sdist. "
+api="https://pypi.org/integrity/$PKG/$ver"
+for f in $(jq -r '.urls[].filename' &lt;&lt;&lt;"$meta"); do
+  curl -fsS -o /dev/null "$api/$f/provenance" \
+    || bad+="no provenance for $f. "
+done</pre></div></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="sn">4 Release gates<span>Reported</span></div>
+      <div><h4>Approved in eight seconds, scanned in two minutes, live in 2 min 20 s</h4>
+      <p>ESRP approved the submission automatically at 20:33:08; its malware scan ran from 20:33:09 to 20:35:15 and passed; 1.26.1 was live on PyPI at 20:35:20. The wheel had no matching release tag, shipped without a source distribution for the first time, and kept the clean release’s project information and dependencies, so the project page looked normal.</p>
+      <p class="lesson"><b>Lesson</b> Publish only what your pipeline built from a tagged commit, and diff each release against the last. A new .pth file in a wheel is a cheap, high-signal check.</p>
+      <div class="gha"><div class="gh"><span>GitHub Actions · C-4 · publishers · gate before a person approves</span><span>excerpt of release.yml · page 20</span></div><div class="one-pre"><pre>- name: Require an sdist; refuse .pth hooks
+  run: |
+    ls dist/*.tar.gz
+    for w in dist/*.whl; do
+      if unzip -Z1 "$w" | grep -E '\.pth$'; then
+        echo "::error::$w ships a .pth hook"
+        exit 1
+      fi
+    done</pre></div></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="sn">5 Distribution<span>Confirmed</span></div>
+      <div><h4>Live under Microsoft’s account; a second version followed the quarantine</h4>
+      <p>Scanners and sandboxes fetched the release within about a minute. PyPI quarantined 1.26.1 at 21:06, 31 minutes after go-live. Two minutes later the attacker uploaded 1.26.2, with renamed files and theft of GitHub Actions tokens added, which shows that the publishing access outlived the quarantine. Both versions were gone by 21:16. The project gets almost 200,000 downloads a month.</p>
+      <p class="lesson"><b>Lesson</b> Quarantining a file does not revoke the credential that uploaded it. Registries and publishers need a publisher-level freeze, and publishers need a revocation runbook that completes in minutes. Consumers who let new releases age for a few days never install such a release.</p>
+      <div class="gha"><div class="gh"><span>GitHub Actions · C-5 · consumers · three-day cooldown on updates</span><span>dependabot.yml · page 20</span></div><div class="one-pre"><pre>version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3</pre></div></div>
+      </div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:chain3 -->
+<!-- ==================== PAGE: KILL CHAIN 3 ==================== -->
+<article class="page" aria-label="Page 8 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 8 of 21</span></header>
+
+  <section>
+    <h2>Walking the chain, continued: from install to the attacker’s bin</h2>
+    <div class="stage">
+      <div class="sn">6 Execution<span>Confirmed</span></div>
+      <div><h4>A .pth hook runs the stealer at every Python start, pip included</h4>
+      <p>Python reads .pth files in site-packages when the interpreter starts, so the stealer ran whenever any Python process started in the environment, whether or not the code imported agent-framework. It set <code>_AF_TEL=1</code> to run once per process tree and detached into its own session, so it outlived the CI job that started it and left nothing in the job log. The genuine agent-framework-core 1.26.0 stayed installed, so applications kept working.</p>
+      <p class="lesson"><b>Lesson</b> Hunt for .pth files that import code, not only for the package name. Before running pip in a suspect environment, export <code>_AF_TEL=1</code>: plain pip triggers the hook. In CI, check for new hooks before any Python process starts.</p>
+      <div class="gha"><div class="gh"><span>GitHub Actions · C-6 · consumers · hashed install, hook check before Python runs</span><span>excerpt of ci.yml · page 20</span></div><div class="one-pre"><pre>- name: Install from a hash-pinned lockfile  <span class="cm"># C-6</span>
+  run: |
+    python -m venv .venv
+    .venv/bin/pip install --require-hashes --no-deps \
+      -r requirements.lock
+- name: Fail on new .pth hooks before Python runs  <span class="cm"># C-6</span>
+  run: |
+    { find .venv -name '*.pth' -exec \
+        grep -lE '^import[[:space:]]' {} + || true; } \
+      | xargs -r -n1 basename | sort &gt; found.txt
+    sort .github/pth-allowlist.txt | diff - found.txt</pre></div></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="sn">7 Theft, exfil<span>Confirmed</span></div>
+      <div><h4>Secrets and freshly minted tokens leave in one POST</h4>
+      <p>The stealer gathered secret-looking environment variables, up to 300 other processes’ environments and up to 80 credential files, then requested new tokens from Azure managed identity, Azure DevOps OIDC and, in 1.26.2, GitHub Actions OIDC. JFrog found the Azure DevOps request malformed, so real endpoints refuse it, but a pipeline’s <code>SYSTEM_ACCESSTOKEN</code> still leaks when it is mapped into the environment. It compressed everything into one JSON document and posted it once to webhook[.]site with a telemetry-style User-Agent. Wiz saw the first real victim at about 20:40.</p>
+      <p class="lesson"><b>Lesson</b> An egress allowlist on build agents stops the POST. Grant <code>id-token: write</code> only to deployment jobs, so that installing a dependency cannot mint a cloud token.</p>
+      <div class="gha"><div class="gh"><span>GitHub Actions · C-7 · consumers · egress allowlist; tokens only in deploy</span><span>excerpts of ci.yml · page 20</span></div><div class="two-pre"><pre>- uses: step-security/harden-runner@v2   <span class="cm"># C-7</span>
+  with:
+    egress-policy: block  <span class="cm"># run with audit first</span>
+    allowed-endpoints: &gt;
+      github.com:443
+      api.github.com:443
+      objects.githubusercontent.com:443
+      pypi.org:443
+      files.pythonhosted.org:443</pre><pre>deploy:                   <span class="cm"># C-7: only this job mints</span>
+  needs: test
+  if: github.ref == 'refs/heads/main'
+  runs-on: ubuntu-latest
+  environment: production
+  permissions:
+    contents: read
+    id-token: write</pre></div></div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>The seven controls at a glance</h2>
+    <table class="glance">
+      <colgroup><col class="c-s"><col><col class="c-f"><col class="c-w"><col class="c-a"></colgroup>
+      <thead><tr><th>Stage</th><th>Control</th><th>File</th><th>Who</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>1 Credential</td><td><b>C-1</b> Publish through PyPI trusted publishing from a protected environment; delete stored tokens</td><td>release.yml</td><td>Publisher</td><td>A-15</td></tr>
+        <tr><td>2 Staging</td><td><b>C-2</b> Build only in CI from a tag and sign build provenance</td><td>release.yml</td><td>Publisher</td><td>A-16</td></tr>
+        <tr><td>3 Submission</td><td><b>C-3</b> Every 15 minutes, flag a release with no tag, sdist or provenance</td><td>pypi-watchdog.yml</td><td>Publisher</td><td>A-13, A-14</td></tr>
+        <tr><td>4 Release gates</td><td><b>C-4</b> Require an sdist, refuse .pth files, flag new files, then a person approves</td><td>release.yml</td><td>Publisher</td><td>A-17</td></tr>
+        <tr><td>5 Distribution</td><td><b>C-5</b> Hold dependency updates for three days</td><td>dependabot.yml</td><td>Consumer</td><td>A-7</td></tr>
+        <tr><td>6 Execution</td><td><b>C-6</b> Install from hashes; fail on new .pth hooks before Python runs</td><td>ci.yml</td><td>Consumer</td><td>A-10, A-11</td></tr>
+        <tr><td>7 Theft, exfil</td><td><b>C-7</b> Block egress except named endpoints; grant id-token only to deploy</td><td>ci.yml</td><td>Consumer</td><td>A-8, A-9</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</article>
+
+<!-- id:payload -->
+<!-- ==================== PAGE: PAYLOAD ==================== -->
+<article class="page" aria-label="Page 9 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 9 of 21</span></header>
+
+  <section>
+    <h2>The payload: one Python start gives away the environment and mints fresh cloud tokens</h2>
+    <p>Both versions carry the same stealer under different file names. It has no second stage and no persistence beyond the .pth file, which re-runs it until the package is removed, and it makes one network call. Its value to the attacker lay in where it ran: CI runners and cloud workloads that can request identity tokens on demand. The analyses by Wiz, StepSecurity, OX Security and OpenSourceMalware agree on the behaviour below.</p>
+    <figure>
+      <svg viewBox="0 0 706 300" role="img" aria-label="Payload flow: a .pth file runs at any Python start, a run-once guard and a detached process follow; the stealer reads environment variables, other processes' environments, credential files and host details, mints Azure DevOps, managed-identity and GitHub Actions tokens, and sends everything in one compressed HTTPS POST to webhook.site.">
+<defs><marker id="pyk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1C2326"/></marker><marker id="pyr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#A8322D"/></marker></defs>
+<text x="0" y="11" class="m b" font-size="8.4">Trigger</text>
+<text x="176" y="11" class="m b" font-size="8.4">Collect</text>
+<text x="548" y="11" class="m b" font-size="8.4">Send</text>
+<!-- trigger column -->
+<rect x="0" y="20" width="150" height="46" fill="#EEF0EA" stroke="#1C2326"/>
+<text x="8" y="34" class="b" font-size="8.2">.pth file in site-packages</text>
+<text x="8" y="47" class="m" font-size="6.9">agent_framework_meta.pth</text>
+<text x="8" y="58" class="m" font-size="6.9">af_runtime_diag.pth</text>
+<line x1="75" y1="66" x2="75" y2="76" stroke="#1C2326" stroke-width="1.2" marker-end="url(#pyk)"/>
+<rect x="0" y="78" width="150" height="36" fill="#EEF0EA" stroke="#1C2326"/>
+<text x="8" y="93" class="b" font-size="8.2">Any Python start</text>
+<text x="8" y="106" class="m" font-size="6.9">python, pip, pytest, python -c</text>
+<line x1="75" y1="114" x2="75" y2="124" stroke="#1C2326" stroke-width="1.2" marker-end="url(#pyk)"/>
+<rect x="0" y="126" width="150" height="36" fill="#EEF0EA" stroke="#1C2326"/>
+<text x="8" y="141" class="b" font-size="8.2">Run-once guard</text>
+<text x="8" y="154" class="m" font-size="6.9">_AF_TEL=1 per process tree</text>
+<line x1="75" y1="162" x2="75" y2="172" stroke="#1C2326" stroke-width="1.2" marker-end="url(#pyk)"/>
+<rect x="0" y="174" width="150" height="36" fill="#EEF0EA" stroke="#1C2326"/>
+<text x="8" y="189" class="b" font-size="8.2">Detach</text>
+<text x="8" y="202" class="m" font-size="6.9">fork + setsid, or a thread</text>
+<text x="0" y="226" class="mu" font-size="7.6">Outlives the CI job that</text>
+<text x="0" y="237" class="mu" font-size="7.6">started it; nothing in the</text>
+<text x="0" y="248" class="mu" font-size="7.6">job log. Genuine core 1.26.0</text>
+<text x="0" y="259" class="mu" font-size="7.6">stays installed, so the app</text>
+<text x="0" y="270" class="mu" font-size="7.6">keeps working.</text>
+<line x1="150" y1="192" x2="172" y2="160" stroke="#1C2326" stroke-width="1.2" marker-end="url(#pyk)"/>
+<!-- read group -->
+<rect x="176" y="20" width="346" height="132" fill="#F6E5D6" stroke="#B8530A"/>
+<text x="184" y="34" class="m b" font-size="8.2" fill="#B8530A">Read what is already there</text>
+<text x="184" y="50" class="b" font-size="7.8">Environment variables</text>
+<text x="300" y="50" font-size="7.6">31 keywords, 35 in 1.26.2: TOKEN, SECRET, AZURE, AWS,</text>
+<text x="300" y="61" font-size="7.6">GITHUB, OPENAI; 1.26.2 adds ACTIONS, OIDC, RUNNER, ARM_</text>
+<text x="184" y="79" class="b" font-size="7.8">Other processes</text>
+<text x="300" y="79" font-size="7.6">secret-looking values in /proc/*/environ, first 300</text>
+<text x="184" y="97" class="b" font-size="7.8">Credential files</text>
+<text x="300" y="97" font-size="7.6">60 (1.26.1) or 80 (1.26.2) files under 256 KiB: Azure CLI,</text>
+<text x="300" y="108" font-size="7.6">.npmrc, pip.conf, .netrc, git, Docker, Hugging Face,</text>
+<text x="300" y="119" font-size="7.6">Azure DevOps agent files, .env and JSON in /app, /workspace</text>
+<text x="184" y="137" class="b" font-size="7.8">Host details</text>
+<text x="300" y="137" font-size="7.6">hostname, user, working directory, first 20 arguments</text>
+<!-- mint group -->
+<rect x="176" y="162" width="346" height="112" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.6"/>
+<text x="184" y="176" class="m b" font-size="8.2" fill="#A8322D">Mint what is not: fresh tokens on request</text>
+<text x="184" y="192" class="b" font-size="7.8">Azure DevOps OIDC</text>
+<text x="300" y="192" font-size="7.6">requested in pipelines, but malformed: HTTP 400 (JFrog)</text>
+<text x="184" y="210" class="b" font-size="7.8">Managed identity</text>
+<text x="300" y="210" font-size="7.6">IMDS or App Service endpoint, 12 token audiences incl.</text>
+<text x="300" y="221" font-size="7.6">Resource Manager, Key Vault, Graph, Container Registry</text>
+<text x="184" y="239" class="b" font-size="7.8">GitHub Actions OIDC</text>
+<text x="300" y="239" font-size="7.6">1.26.2 only, jobs with id-token: write; audiences</text>
+<text x="300" y="250" font-size="7.6">AzureADTokenExchange and management.azure.com</text>
+<text x="184" y="266" class="b" font-size="7.8">Instance metadata</text>
+<text x="300" y="266" font-size="7.6">subscription, resource group, VM and identity details</text>
+<!-- send column -->
+<line x1="522" y1="146" x2="544" y2="146" stroke="#A8322D" stroke-width="1.6" marker-end="url(#pyr)"/>
+<rect x="548" y="20" width="158" height="44" fill="#EEF0EA" stroke="#1C2326"/>
+<text x="556" y="35" class="b" font-size="8.2">One JSON document</text>
+<text x="556" y="48" class="m" font-size="7">zlib level 9, then base64</text>
+<text x="556" y="58" class="m mu" font-size="6.6">no encryption</text>
+<line x1="627" y1="64" x2="627" y2="76" stroke="#1C2326" stroke-width="1.2" marker-end="url(#pyk)"/>
+<rect x="548" y="78" width="158" height="58" fill="#EEF0EA" stroke="#1C2326"/>
+<text x="556" y="93" class="b" font-size="8.2">One HTTPS POST</text>
+<text x="556" y="106" class="m" font-size="6.6">application/octet-stream</text>
+<text x="556" y="117" class="m" font-size="6.6">UA af-runtime-diagnostics/1</text>
+<text x="556" y="128" class="m" font-size="6.6">or runtime-diagnostics/1</text>
+<line x1="627" y1="136" x2="627" y2="148" stroke="#A8322D" stroke-width="1.6" marker-end="url(#pyr)"/>
+<rect x="548" y="150" width="158" height="58" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.6"/>
+<text x="556" y="165" class="b" font-size="8.2">webhook[.]site</text>
+<text x="556" y="178" class="m" font-size="6.6">/d381fd80-…?t=telemetry</text>
+<text x="556" y="189" class="m" font-size="6.6">URL base64-encoded in code</text>
+<text x="556" y="200" class="m" font-size="6.6">no retry, no fallback</text>
+<text x="548" y="226" class="mu" font-size="7.6">Minted tokens stay valid</text>
+<text x="548" y="237" class="mu" font-size="7.6">for up to 24 hours (Wiz).</text>
+<text x="548" y="255" class="mu" font-size="7.6">Failures are ignored, so a</text>
+<text x="548" y="266" class="mu" font-size="7.6">blocked POST loses the data.</text>
+</svg>
+      <figcaption>Compiled from Wiz, StepSecurity, OX Security and OpenSourceMalware. Version differences are in the table below.</figcaption>
+    </figure>
+  </section>
+  <section>
+    <h2>What changed between 1.26.1 and 1.26.2, 33 minutes apart</h2>
+    <table class="diff">
+      <colgroup><col class="c-a"><col class="c-x"><col></colgroup>
+      <thead><tr><th>Aspect</th><th>1.26.1 (20:35:20)</th><th>1.26.2 (21:08)</th></tr></thead>
+      <tbody>
+        <tr><td>Startup hook</td><td><code>agent_framework_meta.pth</code> imports <code>agent_framework_meta</code></td><td><code>af_runtime_diag.pth</code> imports <code>af_runtime_diag</code>; clean <code>__init__.py</code> restored</td></tr>
+        <tr><td>Stealer file</td><td><code>agent_framework_meta/_telemetry.py</code></td><td><code>af_runtime_diag.py</code></td></tr>
+        <tr><td>GitHub Actions</td><td>Not targeted</td><td>OIDC tokens where <code>id-token: write</code>; runner temp files and Azure CLI JSON under <code>/home/runner</code></td></tr>
+        <tr><td>Environment</td><td>Base keyword set</td><td>Adds ACTIONS, OIDC, RUNNER and ARM_</td></tr>
+        <tr><td>Files taken</td><td>Up to 60</td><td>Up to 80</td></tr>
+        <tr><td>User-Agent</td><td><code>af-runtime-diagnostics/1</code></td><td><code>runtime-diagnostics/1</code></td></tr>
+        <tr><td>Destination</td><td colspan="2">The same webhook URL for both versions, with <code>?t=telemetry</code></td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:6px">The rename defeats hunts that search only for 1.26.1’s file names, which Wiz warns about. The added GitHub Actions theft shows the operator adapting to where the package actually runs: open-source CI.</p>
+  </section>
+  <section>
+    <div class="callout">
+      <h3>Why a .pth file is worse than a poisoned import</h3>
+      <p>Malicious code in <code>__init__.py</code> runs only when something imports the package. A .pth line runs in every interpreter that loads site-packages: the application, its tests, pip itself and a one-line <code>python -c</code>. Removing the package removes the file, but every Python start before that ran the stealer again, limited only by the run-once variable. MITRE ATT&amp;CK tracks the technique as T1546.018, Python Startup Hooks, and lists earlier PyPI stealers that used it.</p>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:exfil -->
+<!-- ==================== PAGE: EXFILTRATION ==================== -->
+<article class="page" aria-label="Page 10 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 10 of 21</span></header>
+
+  <section>
+    <h2>What the attacker’s webhook saw: 50 requests in 24 minutes, three real victims</h2>
+    <p>The attacker sent stolen data and its own progress reports to the same free webhook.site URL. Anyone holding a free-tier URL can read what it receives, and Wiz Research did: it logged 50 requests between 20:25 and 20:49 UTC before the endpoint stopped recording. The chart rebuilds Wiz’s published data in our own form, one lane per source.</p>
+    <figure>
+      <svg viewBox="0 0 706 268" role="img" aria-label="Lane chart of 50 webhook requests from 20:25 to 20:50 UTC: four attacker beacons; ten requests from an Azure DevOps build pool, nine in the final seconds; four from a GitHub Actions run; three from an Azure App Service starting about five minutes after go-live; and 29 from sandboxes and scanners starting about a minute after go-live.">
+<rect x="150" y="18" width="550" height="26" fill="#E6E9E2"/>
+<rect x="150" y="84" width="550" height="26" fill="#E6E9E2"/>
+<rect x="150" y="150" width="550" height="62" fill="#E6E9E2"/>
+<g stroke="#C3C9C3" stroke-width="0.7"><line x1="150" y1="14" x2="150" y2="216"/><line x1="260" y1="14" x2="260" y2="216"/><line x1="370" y1="14" x2="370" y2="216"/><line x1="480" y1="14" x2="480" y2="216"/><line x1="590" y1="14" x2="590" y2="216"/><line x1="700" y1="14" x2="700" y2="216"/></g>
+<!-- event lines -->
+<g stroke="#1C2326" stroke-width="1.1"><line x1="377.3" y1="8" x2="377.3" y2="216"/><line x1="684.2" y1="8" x2="684.2" y2="216"/></g>
+<line x1="236.5" y1="8" x2="236.5" y2="216" stroke="#A8322D" stroke-width="1.1" stroke-dasharray="3 2"/>
+<text x="381" y="9" class="m b" font-size="7.2">1.26.1 live</text>
+<text x="680" y="9" text-anchor="end" class="m b" font-size="7.2">last request logged</text>
+<text x="240" y="9" class="m" font-size="7.2" fill="#A8322D">ESRP refused</text>
+<!-- lane labels -->
+<g font-size="7.8"><text x="0" y="29" class="m b">Attacker · 4</text><text x="0" y="39" class="mu" font-size="7">probe, self-test, ESRP status</text>
+<text x="0" y="62" class="m b">V1 · 10</text><text x="0" y="72" class="mu" font-size="7">Azure DevOps build pool</text>
+<text x="0" y="95" class="m b">V2 · 4</text><text x="0" y="105" class="mu" font-size="7">GitHub Actions, open-source repo</text>
+<text x="0" y="128" class="m b">V3 · 3</text><text x="0" y="138" class="mu" font-size="7">Azure App Service</text>
+<text x="0" y="176" class="m b">Sandboxes and</text><text x="0" y="186" class="m b">scanners · 29</text><text x="0" y="197" class="mu" font-size="7">vendor sandboxes, Slackbot,</text><text x="0" y="206" class="mu" font-size="7">VirusTotal, package scanners</text></g>
+<!-- attacker -->
+<g fill="#1C2326"><path d="M152.2,25 L157.2,31 L152.2,37 L147.2,31 z"/><path d="M218.6,25 L223.6,31 L218.6,37 L213.6,31 z"/><path d="M236.5,25 L241.5,31 L236.5,37 L231.5,31 z"/><path d="M418.4,25 L423.4,31 L418.4,37 L413.4,31 z"/></g>
+<!-- V1 -->
+<g fill="#A8322D" stroke="#F4F5F0" stroke-width="0.8"><circle cx="653.8" cy="64" r="3.4"/>
+<circle cx="682.4" cy="49" r="2.9"/><circle cx="682.4" cy="53" r="2.9"/><circle cx="682.4" cy="57" r="2.9"/><circle cx="682.4" cy="61" r="2.9"/><circle cx="682.4" cy="65" r="2.9"/><circle cx="682.4" cy="69" r="2.9"/><circle cx="682.4" cy="73" r="2.9"/><circle cx="682.4" cy="77" r="2.9"/><circle cx="682.4" cy="81" r="2.9"/></g>
+<text x="646" y="61" text-anchor="end" class="m" font-size="6.8" fill="#A8322D">9 in the final 7 s →</text>
+<!-- V2 -->
+<g fill="#A8322D" stroke="#F4F5F0" stroke-width="0.8"><circle cx="538.3" cy="94" r="3.4"/><circle cx="538.3" cy="101" r="3.4"/><circle cx="627.4" cy="94" r="3.4"/><circle cx="627.4" cy="101" r="3.4"/></g>
+<!-- V3 -->
+<g fill="#A8322D" stroke="#F4F5F0" stroke-width="0.8"><circle cx="490.3" cy="130" r="3.4"/><circle cx="562.9" cy="130" r="3.4"/><circle cx="635.1" cy="130" r="3.4"/></g>
+<text x="486" y="143" class="m" font-size="6.8" fill="#A8322D">first victim ~20:40</text>
+<!-- sandboxes: stacked around lane centre 181 -->
+<g fill="#BFC8C9" stroke="#56615F" stroke-width="0.7">
+<circle cx="394.2" cy="181" r="2.8"/>
+<circle cx="410.0" cy="177.5" r="2.8"/><circle cx="410.0" cy="184.5" r="2.8"/>
+<circle cx="431.2" cy="181" r="2.8"/>
+<circle cx="438.9" cy="181" r="2.8"/>
+<circle cx="491.7" cy="177.5" r="2.8"/><circle cx="491.7" cy="184.5" r="2.8"/>
+<circle cx="510.8" cy="163.5" r="2.8"/><circle cx="510.8" cy="170.5" r="2.8"/><circle cx="510.8" cy="177.5" r="2.8"/><circle cx="510.8" cy="184.5" r="2.8"/><circle cx="510.8" cy="191.5" r="2.8"/><circle cx="510.8" cy="198.5" r="2.8"/>
+<circle cx="520.3" cy="174" r="2.8"/><circle cx="520.3" cy="181" r="2.8"/><circle cx="520.3" cy="188" r="2.8"/>
+<circle cx="547.1" cy="181" r="2.8"/>
+<circle cx="562.1" cy="177.5" r="2.8"/><circle cx="562.1" cy="184.5" r="2.8"/>
+<circle cx="573.9" cy="181" r="2.8"/>
+<circle cx="596.2" cy="174" r="2.8"/><circle cx="596.2" cy="181" r="2.8"/><circle cx="596.2" cy="188" r="2.8"/>
+<circle cx="660.4" cy="170.5" r="2.8"/><circle cx="660.4" cy="177.5" r="2.8"/><circle cx="660.4" cy="184.5" r="2.8"/><circle cx="660.4" cy="191.5" r="2.8"/>
+<circle cx="678.7" cy="177.5" r="2.8"/><circle cx="678.7" cy="184.5" r="2.8"/>
+</g>
+<text x="382" y="162" class="m" font-size="6.8">scanners within 1 min</text>
+<text x="516" y="209" class="m" font-size="6.8">6 probes in 2 s</text>
+<!-- axis -->
+<g class="m" font-size="7.2" text-anchor="middle"><text x="150" y="229">20:25</text><text x="260" y="229">20:30</text><text x="370" y="229">20:35</text><text x="480" y="229">20:40</text><text x="590" y="229">20:45</text><text x="700" y="229">20:50 UTC</text></g>
+<g class="m mu" font-size="6.8" text-anchor="middle"><text x="150" y="240">04:25 SGT</text><text x="370" y="240">04:35</text><text x="590" y="240">04:45</text></g>
+<!-- legend -->
+<path d="M154,253 L158,258 L154,263 L150,258 z" fill="#1C2326"/><text x="163" y="261" font-size="7.6">attacker</text>
+<circle cx="214" cy="258" r="3.4" fill="#A8322D"/><text x="221" y="261" font-size="7.6">victim request</text>
+<circle cx="302" cy="258" r="2.8" fill="#BFC8C9" stroke="#56615F" stroke-width="0.7"/><text x="309" y="261" font-size="7.6">sandbox or scanner</text>
+<text x="700" y="261" text-anchor="end" class="mu" font-size="7.2">Stacked marks: requests within seconds of each other</text>
+</svg>
+      <figcaption>Data: Wiz Research, who withheld victims’ identities. Request times are read from Wiz’s chart and are approximate to about ten seconds; event times are exact.</figcaption>
+    </figure>
+  </section>
+  <section>
+    <div class="two">
+      <figure style="margin:0">
+        <svg viewBox="0 0 330 178" role="img" aria-label="Fifty squares: 17 red for victim requests from three environments, 4 dark for attacker beacons, 29 grey for sandboxes and scanners.">
+<text x="0" y="11" class="m b" font-size="8.4">The 50 requests, by source</text>
+<g stroke="#F4F5F0" stroke-width="1.5">
+<!-- row 1: 10 victims (V1) -->
+<rect x="0" y="20" width="22" height="22" fill="#A8322D"/><rect x="24" y="20" width="22" height="22" fill="#A8322D"/><rect x="48" y="20" width="22" height="22" fill="#A8322D"/><rect x="72" y="20" width="22" height="22" fill="#A8322D"/><rect x="96" y="20" width="22" height="22" fill="#A8322D"/><rect x="120" y="20" width="22" height="22" fill="#A8322D"/><rect x="144" y="20" width="22" height="22" fill="#A8322D"/><rect x="168" y="20" width="22" height="22" fill="#A8322D"/><rect x="192" y="20" width="22" height="22" fill="#A8322D"/><rect x="216" y="20" width="22" height="22" fill="#A8322D"/>
+<!-- row 2: V2 4, V3 3, attacker 3 -->
+<rect x="0" y="44" width="22" height="22" fill="#C24E48"/><rect x="24" y="44" width="22" height="22" fill="#C24E48"/><rect x="48" y="44" width="22" height="22" fill="#C24E48"/><rect x="72" y="44" width="22" height="22" fill="#C24E48"/><rect x="96" y="44" width="22" height="22" fill="#7E2420"/><rect x="120" y="44" width="22" height="22" fill="#7E2420"/><rect x="144" y="44" width="22" height="22" fill="#7E2420"/><rect x="168" y="44" width="22" height="22" fill="#1C2326"/><rect x="192" y="44" width="22" height="22" fill="#1C2326"/><rect x="216" y="44" width="22" height="22" fill="#1C2326"/>
+<!-- row 3: attacker 1, grey 9 -->
+<rect x="0" y="68" width="22" height="22" fill="#1C2326"/><rect x="24" y="68" width="22" height="22" fill="#BFC8C9"/><rect x="48" y="68" width="22" height="22" fill="#BFC8C9"/><rect x="72" y="68" width="22" height="22" fill="#BFC8C9"/><rect x="96" y="68" width="22" height="22" fill="#BFC8C9"/><rect x="120" y="68" width="22" height="22" fill="#BFC8C9"/><rect x="144" y="68" width="22" height="22" fill="#BFC8C9"/><rect x="168" y="68" width="22" height="22" fill="#BFC8C9"/><rect x="192" y="68" width="22" height="22" fill="#BFC8C9"/><rect x="216" y="68" width="22" height="22" fill="#BFC8C9"/>
+<!-- rows 4-5: grey 20 -->
+<rect x="0" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="24" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="48" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="72" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="96" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="120" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="144" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="168" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="192" y="92" width="22" height="22" fill="#BFC8C9"/><rect x="216" y="92" width="22" height="22" fill="#BFC8C9"/>
+<rect x="0" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="24" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="48" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="72" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="96" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="120" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="144" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="168" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="192" y="116" width="22" height="22" fill="#BFC8C9"/><rect x="216" y="116" width="22" height="22" fill="#BFC8C9"/>
+</g>
+<g font-size="7.6"><text x="248" y="35" class="m b" fill="#A8322D">V1 · 10</text><text x="248" y="52" class="m b" fill="#A8322D">V2 · 4</text><text x="248" y="62" class="m b" fill="#7E2420">V3 · 3</text><text x="248" y="79" class="m b">Attacker · 4</text><text x="248" y="110" class="m b" fill="#56615F">Sandbox,</text><text x="248" y="120" class="m b" fill="#56615F">scanner · 29</text></g>
+<text x="0" y="156" class="mu" font-size="7.6">17 of 50 requests carried victims’ data, from three</text>
+<text x="0" y="167" class="mu" font-size="7.6">environments. Shades of red separate the three victims.</text>
+</svg>
+      </figure>
+      <div>
+        <h3 class="kicker2" style="margin:0 0 4px">Reading the 50</h3>
+        <p class="small">Only 17 requests, from three environments, carried victims’ data. The Azure DevOps build pool sent ten, nine of them within seven seconds, which fits a build starting many Python processes at once. More than half the traffic came from security vendors detonating the package.</p>
+        <p class="small">Everything after 20:49 is out of view. Wiz’s text gives the free tier’s cap as 100 requests, while its chart says the endpoint likely hit a 50-request cap; when JFrog checked the URL, it answered HTTP 429, “Request limit exceeded”. Later victims still ran the stealer and minted tokens, but their data most likely never arrived (KJ-5). Check proxy logs: a 200 response means the bin accepted the data; a 429 means it refused it.</p>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="callout red">
+      <h3>Anyone could read the stolen data, not only the attacker</h3>
+      <p>The bin’s URL sits base64-encoded in the stealer, so anyone who analysed the public package could decode it and read what arrived, until free-tier URLs expire after seven days. Treat secrets that reached the bin as published, not merely stolen, and rotate them even if you see no misuse.</p>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:operator -->
+<!-- ==================== PAGE: OPERATOR ==================== -->
+<article class="page" aria-label="Page 11 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 11 of 21</span></header>
+
+  <section>
+    <h2>The operator: an AI agent in a near-stock Cairn worker (KJ-4)</h2>
+    <p>Cairn is an open-source, AGPL-licensed framework that coordinates AI coding agents towards a goal. It was built for autonomous penetration testing, placed third in a Tencent Cloud hackathon according to its README, and runs Claude Code, Codex or Pi as its workers. Pi is a minimal open-source terminal coding agent with read, write, edit and bash tools. GLM-5.3, released by Z.ai on 14 August 2026, was post-trained for coding, long agent tasks and vulnerability finding. The attacker’s tooling named itself Cairn, so we read Cairn’s source code (oritera/Cairn, commit 8e7e0ea of 7 September 2026) to test whether the other traces fit a stock deployment. Two match exactly, three are consistent and one is our inference.</p>
+    <figure>
+      <svg viewBox="0 0 706 300" role="img" aria-label="Six traces from the incident matched against Cairn's shipped defaults: worker naming and the container's user and timezone match exactly; the leaked agent configuration, the staging paths and the recovery after a refusal are consistent; the use of a public webhook is an inference from the blank listener setting.">
+<text x="0" y="12" class="m b" font-size="8.4">What the incident left behind</text>
+<text x="353" y="12" text-anchor="middle" class="m b" font-size="8.4">Fit</text>
+<text x="412" y="12" class="m b" font-size="8.4">What stock Cairn ships (our source review)</text>
+<g>
+<rect x="0" y="22" width="294" height="40" fill="#F2DEDB" stroke="#A8322D"/><text x="8" y="37" class="b" font-size="7.8">Agent label pi_glm53 (Wiz)</text><text x="8" y="50" font-size="7.6">a Pi agent on a GLM-family model, via a local proxy</text>
+<line x1="294" y1="42" x2="316" y2="42" stroke="#1C2326"/><rect x="316" y="35" width="74" height="14" fill="#1F7A46"/><text x="353" y="45" text-anchor="middle" class="m b wt" font-size="7.2">MATCH</text><line x1="390" y1="42" x2="412" y2="42" stroke="#1C2326"/>
+<rect x="412" y="22" width="294" height="40" fill="#EEF0EA" stroke="#1C2326"/><text x="420" y="37" font-size="7.6">Workers are named harness_model, e.g. pi_qwen3.6-plus;</text><text x="420" y="50" font-size="7.6">NorForge saw claudecode_deepseek-v4.1-flash in the wild</text>
+</g>
+<g>
+<rect x="0" y="68" width="294" height="40" fill="#F2DEDB" stroke="#A8322D"/><text x="8" y="83" class="b" font-size="7.8">Wheel repacked by uid 1000, clock UTC+8 (JFrog)</text><text x="8" y="96" font-size="7.6">Info-ZIP zip 3.0 at 20:26:19 UTC</text>
+<line x1="294" y1="88" x2="316" y2="88" stroke="#1C2326"/><rect x="316" y="81" width="74" height="14" fill="#1F7A46"/><text x="353" y="91" text-anchor="middle" class="m b wt" font-size="7.2">MATCH</text><line x1="390" y1="88" x2="412" y2="88" stroke="#1C2326"/>
+<rect x="412" y="68" width="294" height="40" fill="#EEF0EA" stroke="#1C2326"/><text x="420" y="83" font-size="7.6">Worker image runs as user kali, its first user, and</text><text x="420" y="96" font-size="7.6">its Dockerfile sets TZ=Asia/Shanghai, which is UTC+8</text>
+</g>
+<g>
+<rect x="0" y="114" width="294" height="40" fill="#F2DEDB" stroke="#A8322D"/><text x="8" y="129" class="b" font-size="7.8">Self-test leaked the agent’s own configuration</text><text x="8" y="142" font-size="7.6">stealer output posted at 20:28:07 (Wiz)</text>
+<line x1="294" y1="134" x2="316" y2="134" stroke="#1C2326"/><rect x="316" y="127" width="74" height="14" fill="#B8530A"/><text x="353" y="137" text-anchor="middle" class="m b wt" font-size="7.2">CONSISTENT</text><line x1="390" y1="134" x2="412" y2="134" stroke="#1C2326"/>
+<rect x="412" y="114" width="294" height="40" fill="#EEF0EA" stroke="#1C2326"/><text x="420" y="129" font-size="7.6">Pi starts with PI_CODING_AGENT_DIR=/tmp/cairn-pi/&lt;worker&gt;</text><text x="420" y="142" font-size="7.6">and a models.json holding the model endpoint and key</text>
+</g>
+<g>
+<rect x="0" y="160" width="294" height="40" fill="#F2DEDB" stroke="#A8322D"/><text x="8" y="175" class="b" font-size="7.8">Staging path /tmp/cairn_pkg; CAIRN_ESRP_PROBE2</text><text x="8" y="188" font-size="7.6">the tooling labels its own work</text>
+<line x1="294" y1="180" x2="316" y2="180" stroke="#1C2326"/><rect x="316" y="173" width="74" height="14" fill="#B8530A"/><text x="353" y="183" text-anchor="middle" class="m b wt" font-size="7.2">CONSISTENT</text><line x1="390" y1="180" x2="412" y2="180" stroke="#1C2326"/>
+<rect x="412" y="160" width="294" height="40" fill="#EEF0EA" stroke="#1C2326"/><text x="420" y="175" font-size="7.6">Cairn works under /tmp/cairn-prompts and /tmp/cairn-pi;</text><text x="420" y="188" font-size="7.6">these exact names are not in its code</text>
+</g>
+<g>
+<rect x="0" y="206" width="294" height="40" fill="#F2DEDB" stroke="#A8322D"/><text x="8" y="221" class="b" font-size="7.8">Loot and beacons sent to a free public webhook</text><text x="8" y="234" font-size="7.6">anyone with the URL could read the output</text>
+<line x1="294" y1="226" x2="316" y2="226" stroke="#1C2326"/><rect x="316" y="219" width="74" height="14" fill="#BFC8C9"/><text x="353" y="229" text-anchor="middle" class="m b" font-size="7.2">INFERENCE</text><line x1="390" y1="226" x2="412" y2="226" stroke="#1C2326"/>
+<rect x="412" y="206" width="294" height="40" fill="#EEF0EA" stroke="#1C2326"/><text x="420" y="221" font-size="7.6">Container tells agents to use an operator-supplied IP for</text><text x="420" y="234" font-size="7.6">reverse shells and exfiltration; it is blank by default</text>
+</g>
+<g>
+<rect x="0" y="252" width="294" height="40" fill="#F2DEDB" stroke="#A8322D"/><text x="8" y="267" class="b" font-size="7.8">Recovered from a refusal within four minutes</text><text x="8" y="280" font-size="7.6">AWS refused 20:28:56; Microsoft IP accepted 20:33:00</text>
+<line x1="294" y1="272" x2="316" y2="272" stroke="#1C2326"/><rect x="316" y="265" width="74" height="14" fill="#B8530A"/><text x="353" y="275" text-anchor="middle" class="m b wt" font-size="7.2">CONSISTENT</text><line x1="390" y1="272" x2="412" y2="272" stroke="#1C2326"/>
+<rect x="412" y="252" width="294" height="40" fill="#EEF0EA" stroke="#1C2326"/><text x="420" y="267" font-size="7.6">Reason and explore tasks re-plan after a failed intent;</text><text x="420" y="280" font-size="7.6">the default prompt says “under no circumstances … reject”</text>
+</g>
+</svg>
+      <figcaption>Left: Wiz and JFrog. Right: our reading of oritera/Cairn at commit 8e7e0ea (dispatch.example.yaml, container/Dockerfile, container/AGENTS.md, the Pi adapter, default prompts) and NorForge. Reading pi_glm53 as GLM-5.3 is our inference from the naming pattern.</figcaption>
+    </figure>
+  </section>
+  <section>
+    <h2>Cairn in the wild: four reports in a month, no shared infrastructure with this operator</h2>
+    <table class="cw">
+      <colgroup><col class="c-w"><col><col class="c-m"><col class="c-h"><col></colgroup>
+      <thead><tr><th>Reported by</th><th>Operator</th><th>Models</th><th>Hosting</th><th>Targets and outcome</th></tr></thead>
+      <tbody>
+        <tr><td>NorForge, 19 Oct</td><td>AIA0001: Chinese-language, 14 exposed panels. AIA0002: English-language, 10 panels</td><td>One worker label across all tasks seen, read by NorForge as Claude Code on DeepSeek V4.1 Flash</td><td>AS56594; AS20473</td><td>AIA0001: 1,100+ attack projects, mainly against US, Japanese and Australian organisations. AIA0002: card and crypto theft</td></tr>
+        <tr><td>GTIG and Mandiant, 30 Oct</td><td>Several actors</td><td>Not stated</td><td>Not stated</td><td>ARTEX, PentAGI and CAIRN seen in intrusions since late August; matching GTIG’s CAIRN to oritera/Cairn is Stingrai’s reading</td></tr>
+        <tr><td>Unit 42, 12 Nov</td><td>CL-STA-1238, China-linked; customised fork</td><td>GLM 5.2; DeepSeek V4 Flash and Pro</td><td>Hong Kong AS979; US AS142036</td><td>25 operations against at least 19 organisations, 10 breached: semiconductors, defence, civil society</td></tr>
+        <tr><td>This incident, 17 Nov</td><td>Unattributed; near-stock worker</td><td>GLM-family via Pi (pi_glm53)</td><td>AWS <span class="nw">ap-southeast-1</span>; Microsoft IP space</td><td>Microsoft’s release pipeline, then everyone who installed the package</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <div class="callout orange">
+      <h3>Tool defaults are not attribution</h3>
+      <p>The UTC+8 clock comes from <code>TZ=Asia/Shanghai</code> in Cairn’s Dockerfile and uid 1000 from its kali user, so anyone running the stock container inherits both, wherever they sit. Cairn’s default prompt already tells the model never to refuse, and Unit 42’s operator added a Chinese preamble declaring every task authorised. The safeguard that mattered on 17 November was the operator’s choice of model and prompt, not any model vendor’s policy.</p>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:infra -->
+<!-- ==================== PAGE: INFRASTRUCTURE ==================== -->
+<article class="page" aria-label="Page 12 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 12 of 21</span></header>
+
+  <section>
+    <h2>Infrastructure: a rented AWS host in Singapore, an unidentified Microsoft-side host and a public request bin</h2>
+    <figure>
+      <svg viewBox="0 0 706 250" role="img" aria-label="Infrastructure graph: the AWS Singapore host was refused by ESRP and sent its self-test and status to the webhook; a host in Microsoft-owned IP space sent the probe, the accepted submission and the release-record beacon; ESRP published to PyPI under Microsoft's account; victims installed the package and sent stolen data to the webhook, which Wiz read.">
+<defs><marker id="ifr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#A8322D"/></marker><marker id="ifk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1C2326"/></marker></defs>
+<!-- N5 webhook -->
+<rect x="470" y="8" width="236" height="56" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.6"/>
+<text x="478" y="23" class="b" font-size="8.4">webhook[.]site, free and public</text>
+<text x="478" y="36" class="m" font-size="7">/d381fd80-ec62-42ad-…?t=telemetry</text>
+<text x="478" y="48" class="mu" font-size="7.4">read by Wiz Research; free URLs</text>
+<text x="478" y="58" class="mu" font-size="7.4">expire after seven days</text>
+<!-- N1 AWS -->
+<rect x="0" y="18" width="176" height="76" fill="#EEF0EA" stroke="#1C2326" stroke-width="1.4"/>
+<text x="8" y="33" class="b" font-size="8.4">AWS <tspan class="m">ap-southeast-1</tspan></text>
+<text x="8" y="46" class="m b" font-size="7.8">13.215.157[.]103</text>
+<text x="8" y="58" class="m mu" font-size="7">AS16509 · 13.214.0.0/15</text>
+<text x="8" y="71" font-size="7.6">Cairn worker host (assessed)</text>
+<text x="8" y="84" class="m" font-size="6.8">self-test 20:28:07 · refused 20:28:56</text>
+<!-- N2 Microsoft IP -->
+<rect x="0" y="146" width="176" height="76" fill="#F6E5D6" stroke="#B8530A" stroke-width="1.4"/>
+<text x="8" y="161" class="b" font-size="8.4">Microsoft-owned IP space</text>
+<text x="8" y="174" font-size="7.6">host and address unpublished</text>
+<text x="8" y="188" class="m" font-size="6.8">probe 20:25:06</text>
+<text x="8" y="200" class="m" font-size="6.8">submission 20:33:00</text>
+<text x="8" y="212" class="m" font-size="6.8">release-record beacon 20:37:12</text>
+<!-- N3 ESRP -->
+<rect x="244" y="96" width="160" height="56" fill="#E3E8E8" stroke="#56615F" stroke-width="1.4"/>
+<text x="252" y="111" class="b" font-size="8.4">ESRP release service</text>
+<text x="252" y="124" class="m" font-size="7">api.esrp.microsoft.com</text>
+<text x="252" y="137" class="mu" font-size="7.4">Microsoft’s, abused; do not block</text>
+<!-- N4 PyPI -->
+<rect x="470" y="104" width="150" height="42" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.4"/>
+<text x="478" y="119" class="b" font-size="8.4">PyPI, Microsoft account</text>
+<text x="478" y="133" class="m" font-size="7">agent-framework 1.26.1, 1.26.2</text>
+<!-- N6 victims -->
+<rect x="470" y="188" width="236" height="56" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.4"/>
+<text x="478" y="203" class="b" font-size="8.4">Victims: 3 seen, more unseen</text>
+<text x="478" y="217" font-size="7.6">Azure DevOps build pool, GitHub Actions</text>
+<text x="478" y="229" font-size="7.6">runner, Azure App Service</text>
+<!-- edges -->
+<line x1="176" y1="70" x2="241" y2="110" stroke="#A8322D" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ifr)"/>
+<line x1="203" y1="81" x2="213" y2="93" stroke="#A8322D" stroke-width="2.2"/><line x1="213" y1="81" x2="203" y2="93" stroke="#A8322D" stroke-width="2.2"/>
+<text x="218" y="80" class="m b" font-size="7" fill="#A8322D">403</text>
+<line x1="176" y1="176" x2="241" y2="140" stroke="#A8322D" stroke-width="2" marker-end="url(#ifr)"/>
+<text x="196" y="171" class="m" font-size="7" fill="#A8322D">accepted</text>
+<line x1="404" y1="124" x2="467" y2="124" stroke="#A8322D" stroke-width="2" marker-end="url(#ifr)"/>
+<text x="408" y="118" class="m" font-size="7" fill="#A8322D">publishes</text>
+<line x1="545" y1="146" x2="545" y2="185" stroke="#A8322D" stroke-width="2" marker-end="url(#ifr)"/>
+<text x="551" y="170" class="m" font-size="7" fill="#A8322D">installs</text>
+<line x1="690" y1="188" x2="690" y2="67" stroke="#A8322D" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ifr)"/>
+<text x="684" y="126" text-anchor="end" class="m" font-size="7" fill="#A8322D">stolen</text>
+<text x="684" y="136" text-anchor="end" class="m" font-size="7" fill="#A8322D">data</text>
+<line x1="176" y1="30" x2="467" y2="30" stroke="#1C2326" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ifk)"/>
+<text x="190" y="25" class="m" font-size="7">self-test output, status beacon</text>
+<path d="M176,214 L455,214 L455,50 L467,50" fill="none" stroke="#1C2326" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ifk)"/>
+<text x="190" y="230" class="m" font-size="7">probe and release-record beacon to the same bin</text>
+</svg>
+      <figcaption>Edges and times from Wiz’s published charts. The AWS host’s role as the Cairn worker is our assessment (page 11).</figcaption>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 706 92" role="img" aria-label="History of 13.215.157.103: decoy-sensor certificates valid from 30 May 2025 to 30 May 2026, decoy services seen by FOFA on 19 May 2026, and the attacker's self-test on 17 November 2026.">
+<text x="0" y="10" class="m b" font-size="8.2">13.215.157[.]103 has a past</text>
+<line x1="40" y1="46" x2="690" y2="46" stroke="#1C2326" stroke-width="1.2"/>
+<g class="m mu" font-size="7" text-anchor="middle"><text x="40" y="62">May 2025</text><text x="142.6" y="62">Aug</text><text x="245.3" y="62">Nov</text><text x="347.9" y="62">Feb 2026</text><text x="450.5" y="62">May</text><text x="553.2" y="62">Aug</text><text x="655.8" y="62">Nov</text></g>
+<rect x="72.2" y="39" width="410.5" height="14" fill="#D8DCD4" stroke="#56615F" stroke-width="0.6"/>
+<text x="80" y="49.5" class="m" font-size="6.8">decoy-sensor certificates valid, 30 May 2025 to 30 May 2026</text>
+<path d="M470.4,30 L475.4,36 L470.4,42 L465.4,36 z" fill="#56615F"/>
+<text x="463" y="26" text-anchor="end" class="m" font-size="7">19 May 2026: FOFA sees decoy services on 4 ports</text>
+<circle cx="674.0" cy="46" r="6" fill="#A8322D"/>
+<text x="690" y="26" text-anchor="end" class="m b" font-size="7" fill="#A8322D">17 Nov 2026: attacker self-test</text>
+<line x1="674" y1="29" x2="674" y2="40" stroke="#A8322D"/>
+<text x="0" y="84" class="mu" font-size="7.6">AWS reassigns public addresses. The decoy sensors and the attacker are most likely different tenants six months apart, not one compromised host.</text>
+</svg>
+    </figure>
+  </section>
+  <section>
+    <table class="inf">
+      <colgroup><col class="c-o"><col class="c-r"><col><col class="c-s"></colgroup>
+      <thead><tr><th>Observable</th><th>Role</th><th>Notes</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><code>13.215.157[.]103</code></td><td>Attacker’s AWS host, assessed as the Cairn worker</td><td>Seen 20:28 UTC, 17 Nov, in Wiz’s chart only. AS16509, Singapore. No public reputation history found; use only with its date.</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+        <tr><td>Microsoft-side host</td><td>Probe, accepted submission, release-record beacon</td><td>Address unpublished. Azure VM or internal system unknown (Q-3).</td><td class="v"><span class="chip c-rep">Open</span></td></tr>
+        <tr><td><code class="brk">webhook[.]site/d381fd80-ec62-42ad-8f5c-d1b15103c9bb</code></td><td>Exfiltration and beacon sink</td><td>Free tier, publicly readable, seven-day life. The domain is legitimate: hunt on the UUID path.</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Uploader <code>RestSharp/106.13.0.0</code></td><td>Client that uploaded both versions to PyPI</td><td>A .NET HTTP client, which fits a Microsoft-side service doing the upload (our reading).</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+        <tr><td>Maintainer <code>vibiret</code></td><td>Added to the PyPI project on 17 Nov</td><td>Created and added the same day; role in the uploads unconfirmed (Q-8). The five satellite packages had no uploads after 12 Nov (StepSecurity).</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <div class="two">
+      <div class="callout">
+        <h3>A near-miss match: Mezmo</h3>
+        <p>Mezmo’s published allowlist (updated 6 April 2026) lists 3.215.157.103 for its legacy syslog endpoints, a different address in a different AWS block. Because “13.215.157.103” contains “3.215.157.103”, loose searches return the Mezmo page. Our check of the raw page found no exact match.</p>
+      </div>
+      <div class="callout">
+        <h3>What the May 2026 scan showed</h3>
+        <p>FOFA saw a PaperCut login behind a ZyXEL RomPager header, a FortiManager page claiming to be a Windows 7 media server, an ASUS router login on Tengine and a Hadoop port, all sharing one build date and fake bank certificates. That is an exploit-catching sensor, most likely run by a researcher.</p>
+      </div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:attack -->
+<!-- ==================== PAGE: ATT&CK AND INDICATORS ==================== -->
+<article class="page" aria-label="Page 13 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 13 of 21</span></header>
+
+  <section>
+    <h2>ATT&amp;CK mapping: sixteen techniques, from obtaining the agent to the webhook</h2>
+    <table class="atk2">
+      <colgroup><col class="c-tac"><col class="c-id"><col class="c-nm"><col><col class="c-st"></colgroup>
+      <thead><tr><th>Tactic</th><th>ID</th><th>Technique</th><th>Evidence in this incident</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Resource development</td><td class="t">T1588.002</td><td>Obtain Capabilities: Tool</td><td>Open-source Cairn framework drove the operation</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+        <tr><td>Resource development</td><td class="t">T1588.007</td><td>Obtain Capabilities: Artificial Intelligence</td><td>Pi agent on a GLM-family model through a local proxy</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+        <tr><td>Resource development</td><td class="t">T1583.003</td><td>Acquire Infrastructure: Virtual Private Server</td><td>AWS <span class="nw">ap-southeast-1</span> host 13.215.157[.]103</td><td class="v"><span class="chip k-l">Reported</span></td></tr>
+        <tr><td>Resource development</td><td class="t">T1583.006</td><td>Acquire Infrastructure: Web Services</td><td>Free webhook.site bin for stolen data and beacons</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Initial access</td><td class="t">T1195.002</td><td>Supply Chain Compromise: Compromise Software Supply Chain</td><td>Trojanised agent-framework wheels published through Microsoft’s release service</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Initial access</td><td class="t">T1078</td><td>Valid Accounts</td><td>Stolen ESRP client certificate and key used to submit the release</td><td class="v"><span class="chip k-m">Assessed</span></td></tr>
+        <tr><td>Execution</td><td class="t">T1059.006</td><td>Command and Scripting Interpreter: Python</td><td>Stealer written in Python and run by the victim’s interpreter</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Persistence</td><td class="t">T1546.018</td><td>Event Triggered Execution: Python Startup Hooks</td><td><code>agent_framework_meta.pth</code>, <code>af_runtime_diag.pth</code></td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Defense evasion</td><td class="t">T1036</td><td>Masquerading</td><td>“Telemetry” and “runtime diagnostics” names, paths and User-Agents</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Discovery</td><td class="t">T1082</td><td>System Information Discovery</td><td>Hostname, user, working directory, arguments</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Credential access</td><td class="t">T1552.001</td><td>Unsecured Credentials: Credentials In Files</td><td>Up to 80 credential files; 300 <code>/proc/*/environ</code> files</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Credential access</td><td class="t">T1552.005</td><td>Unsecured Credentials: Cloud Instance Metadata API</td><td>Managed-identity tokens and metadata from IMDS</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Credential access</td><td class="t">T1528</td><td>Steal Application Access Token</td><td>Minted managed-identity and, in 1.26.2, GitHub Actions OIDC tokens; the Azure DevOps request fails</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Collection</td><td class="t">T1560.002</td><td>Archive Collected Data: Archive via Library</td><td>zlib compression of the JSON bundle</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Command and control</td><td class="t">T1132.001</td><td>Data Encoding: Standard Encoding</td><td>base64 of the compressed bundle and of the bin URL</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td>Exfiltration</td><td class="t">T1567.004</td><td>Exfiltration Over Web Service: Exfiltration Over Webhook</td><td>One HTTPS POST to webhook[.]site</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>Indicators: behaviour first, because names and hashes change in minutes</h2>
+    <p class="small">The attacker renamed every file between versions 33 minutes apart. The behaviours below survive a rename; the hashes and network indicators in Appendix A (page 19) do not.</p>
+    <table class="ioc">
+      <colgroup><col class="c-i"><col><col class="c-w"></colgroup>
+      <thead><tr><th>Indicator</th><th>What it means</th><th>Where to watch</th></tr></thead>
+      <tbody>
+        <tr><td>A new .pth file in site-packages whose line imports a module, such as <code>import af_runtime_diag</code></td><td>A Python startup hook. A few legitimate ones exist (setuptools, editable installs), so baseline them first</td><td>EDR file events; image and virtualenv scans</td></tr>
+        <tr><td><code>_AF_TEL=1</code> in a Python process environment</td><td>This stealer’s run-once guard</td><td>EDR process telemetry</td></tr>
+        <tr><td>A Python process that calls <code>setsid</code> and then makes one HTTPS POST of <code>application/octet-stream</code></td><td>Detached exfiltration that outlives the CI job</td><td>EDR or eBPF process and network events</td></tr>
+        <tr><td>POST to webhook[.]site with <code>?t=telemetry</code> and User-Agent <code>af-runtime-diagnostics/1</code> or <code>runtime-diagnostics/1</code></td><td>Exfiltration from 1.26.1 or 1.26.2; the response code shows whether it was accepted</td><td>Proxy, TLS inspection, DNS</td></tr>
+        <tr><td>Token requests to IMDS (169.254.169.254) or to <code>ACTIONS_ID_TOKEN_REQUEST_URL</code> from a dependency-install or test step</td><td>Token minting by code with no reason to deploy anything</td><td>CI audit logs; Entra ID sign-in logs</td></tr>
+        <tr><td><code>agent-framework==1.26.1</code> or <code>==1.26.2</code> in a lockfile, SBOM, image or mirror</td><td>Exposure; check whether the environment ran Python afterwards</td><td>SBOM, artifact mirrors, image registries</td></tr>
+        <tr><td>A release that drops its source distribution, or whose WHEEL generator does not match the archive</td><td>An out-of-band build, worth holding for review</td><td>Package mirror or quarantine checks</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</article>
+
+<!-- id:response -->
+<!-- ==================== PAGE: DETECTION LESSON AND RESPONSE ==================== -->
+<article class="page" aria-label="Page 14 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 14 of 21</span></header>
+
+  <section>
+    <h2>The detection lesson: the warning came six minutes early, and nobody shipped the proof</h2>
+    <div class="two">
+      <div class="callout red">
+        <h3>The refusal was the alarm</h3>
+        <p>The strongest signal of the whole operation was a refusal. At 20:28:56 ESRP rejected a submission that carried a valid credential from an unexpected network. A credential that suddenly appears somewhere new and fails a policy check is far more likely stolen than misconfigured. Wired to an automatic freeze, the refusal would have stopped the release six minutes before it went live. Nothing public shows that it raised an alarm (Q-4).</p>
+      </div>
+      <div class="callout">
+        <h3>The proof was never shipped</h3>
+        <p>PyPI supports signed provenance, but Microsoft’s releases carry none, so consumers had nothing to verify. What they could see was cheap and static: a wheel-only release after a history of source distributions, a WHEEL generator that does not match the archive, and a new .pth file. Any one of these justifies holding a release for review before it reaches a build.</p>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>Response for organisations that build with Python packages</h2>
+    <table class="act resp">
+      <colgroup><col class="c-id"><col><col class="c-ow"><col class="c-hz"><col class="c-ck"></colgroup>
+      <thead><tr><th>ID</th><th>Action</th><th>Owner</th><th>Horizon</th><th>Check</th></tr></thead>
+      <tbody>
+        <tr class="tier"><td colspan="5">If you installed 1.26.1 or 1.26.2</td></tr>
+        <tr><td>A-1</td><td>Search lockfiles, SBOMs, container images, runner caches and artifact mirrors for agent-framework 1.26.1 and 1.26.2; evict cached wheels by hash (Appendix A).</td><td>DevOps</td><td>24 hours</td><td>No hits in mirror or SBOM</td></tr>
+        <tr><td>A-2</td><td>In a suspect environment, export <code>_AF_TEL=1</code> before running Python or pip, remove the hook and stealer files or rebuild from a clean image, then install <code>agent-framework==1.26.0</code> from a hash-pinned lockfile.</td><td>Developers; DevOps</td><td>24 hours</td><td>No hook files found</td></tr>
+        <tr><td>A-3</td><td>Search proxy, DNS and TLS-inspection logs for the webhook UUID and both User-Agents; record each response code (200 accepted; 429 refused after the cap).</td><td>SOC</td><td>24 hours</td><td>Every hit triaged</td></tr>
+        <tr><td>A-4</td><td>Rotate every secret reachable from affected hosts and runners: cloud keys, Azure CLI sessions, Azure DevOps PATs and service connections, npm, PyPI, NuGet, Docker and Hugging Face tokens, git credentials.</td><td>Cloud IAM; app owners</td><td>24 hours</td><td>Old credentials fail</td></tr>
+        <tr><td>A-5</td><td>For workflows that installed 1.26.2 with <code>id-token: write</code>, treat OIDC tokens as exposed: review federated trust for those repositories, rotate repository and organisation secrets, re-register self-hosted runners.</td><td>DevOps</td><td>72 hours</td><td>Checklist complete</td></tr>
+        <tr><td>A-6</td><td>Review Entra ID sign-ins and activity for managed identities and federated credentials reachable from affected compute, from 20:35 UTC on 17 Nov; remove unexpected federated credentials.</td><td>Cloud IAM; SOC</td><td>7 days</td><td>Review signed off</td></tr>
+        <tr class="tier"><td colspan="5">Harden how you consume packages</td></tr>
+        <tr><td>A-7</td><td>Set a release-age cooldown of at least three days for new versions, with an exemption path for security fixes (C-5, page 7).</td><td>DevOps</td><td>30 days</td><td>Setting in every repo</td></tr>
+        <tr><td>A-8</td><td>Allowlist egress from build agents to package mirrors and the cloud endpoints they need; deny request bins (C-7).</td><td>Platform; network</td><td>30 days</td><td>Test POST to a bin fails</td></tr>
+        <tr><td>A-9</td><td>Grant <code>id-token: write</code> only to deployment jobs, and scope federated credential subjects to branch and environment (C-7).</td><td>DevOps; Cloud IAM</td><td>30 days</td><td>Workflow lint passes</td></tr>
+        <tr><td>A-10</td><td>Pin dependencies with hashes and fail CI on unpinned installs (C-6).</td><td>Developers</td><td>30 days</td><td>CI rejects unpinned</td></tr>
+        <tr><td>A-11</td><td>Deploy a detection for new .pth files that import modules, baselined against known-good ones (C-6; page 13).</td><td>Detection engineering</td><td>30 days</td><td>Fires on a test .pth</td></tr>
+        <tr class="tier"><td colspan="5">National CERT</td></tr>
+        <tr><td>A-12</td><td>Notify constituents that build with agent-framework; track Microsoft’s root cause and credential revocation; reissue this report when either is published.</td><td>CERT</td><td>7 days</td><td>Advisory sent; v1.1 trigger set</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:6px">Ordered by risk reduced. A-1 to A-6 matter only to organisations that installed a malicious version; A-7 to A-11 would have prevented the incident for everyone else and protect against the next one. Search commands and queries for A-1 to A-3 are in Appendix B (page 19). Actions for publishers and registries follow on page 15.</p>
+  </section>
+
+</article>
+
+<!-- id:publishers -->
+<!-- ==================== PAGE: PUBLISHERS ==================== -->
+<article class="page" aria-label="Page 15 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 15 of 21</span></header>
+
+  <section>
+    <h2>How a company Microsoft’s size gets breached: one portable secret behind coarse checks</h2>
+    <p>Large companies rarely fall to a single exotic flaw. They fall through the one path where a portable secret, an automatic approval and a coarse network rule line up, and at Microsoft’s scale there are thousands of pipelines in which that can happen. The pattern is familiar. In 2023 the China-based group Storm-0558 used a stolen Microsoft signing key to reach US government mailboxes; the US Cyber Safety Review Board later found that Microsoft had not detected the compromise of its cryptographic “crown jewels” itself and had relied on a customer to notice. On 17 November the first public warnings again came from outside Microsoft, from vendors such as Wiz and OX Security.</p>
+    <p>Microsoft’s Secure Future Initiative names the protection of engineering systems as one of its pillars, and its first progress report, in 2024, said more than 85% of production build pipelines for its commercial cloud used centrally governed templates. A central release service such as ESRP removes scattered registry tokens, the kind of secret that opened durabletask in May, but it concentrates the prize: here, one credential whose copy worked outside any governed pipeline. This year attackers reached Microsoft’s open-source supply chain three times, each by a different path (page 2).</p>
+    <p>We assess that the lesson is not specific to Microsoft. Any organisation that publishes through a central release service holds the same kind of credential. On 17 November the operator, most likely an AI agent (KJ-4), found a network path that accepted it four minutes after the first refusal.</p>
+  </section>
+  <section>
+    <h2>Four routes to a stolen release credential, and what would tell them apart (Q-1)</h2>
+    <table class="rt">
+      <colgroup><col class="c-r"><col class="c-f"><col></colgroup>
+      <thead><tr><th>Route</th><th>Fits what is public because</th><th>Would be confirmed by</th></tr></thead>
+      <tbody>
+        <tr><td>Theft from a build host that holds the certificate</td><td>ESRP certificates live on designated build pools, and the attacker already operated from Microsoft-owned IP space before its AWS attempt</td><td>Malware or an unexpected session on a release pool; key-export events</td></tr>
+        <tr><td>Exposure in a repository, log, artefact or image, then harvested</td><td>Microsoft reported on 5 November that attackers have used the ARTEX agent to search public GitHub for exposed secrets since August, and the credential was used fast and noisily</td><td>The certificate found in public code, a build log or a published package</td></tr>
+        <tr><td>Insider or contractor misuse</td><td>Fits any route that needed access to Microsoft’s network</td><td>Access logs that tie the certificate to a person</td></tr>
+        <tr><td>Compromise of the vault or identity that stores it</td><td>Would yield the full certificate and key the beacons show; nothing public points to it</td><td>Unusual reads of the stored certificate; other certificates abused</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>Response for publishers and registries</h2>
+    <table class="act resp">
+      <colgroup><col class="c-id"><col><col class="c-ow"><col class="c-hz"><col class="c-ck"></colgroup>
+      <thead><tr><th>ID</th><th>Action</th><th>Owner</th><th>Horizon</th><th>Check</th></tr></thead>
+      <tbody>
+        <tr><td>A-13</td><td>Alert on refused or first-seen release submissions that carry a valid credential, and freeze that credential automatically. On PyPI, watch for releases you did not make (C-3).</td><td>Release security</td><td>30 days</td><td>A test refusal freezes a test credential</td></tr>
+        <tr><td>A-14</td><td>Keep a revocation runbook that freezes publishing for a project or account within minutes, and rehearse it.</td><td>Release security</td><td>30 days</td><td>Drill under 15 minutes</td></tr>
+        <tr><td>A-15</td><td>Make release keys non-exportable (hardware-backed or a managed signing service), or replace certificates with a workload identity bound to one pipeline and branch (C-1).</td><td>Release owners</td><td>90 days</td><td>An exported key fails to authenticate</td></tr>
+        <tr><td>A-16</td><td>Release only artefacts your pipeline built from a tagged commit, and publish PEP 740 attestations through trusted publishing (C-1, C-2).</td><td>Release owners</td><td>90 days</td><td>Attestation on every new file</td></tr>
+        <tr><td>A-17</td><td>Diff every release against the previous one before approval (new .pth files, a missing sdist, a generator mismatch, new network calls), and require a human approver above a download threshold (C-4).</td><td>Release owners</td><td>90 days</td><td>Diff in the approval record</td></tr>
+        <tr><td>A-18</td><td>Registries: freeze a publisher, not only a file, when a malicious release is confirmed, and notify owners when a maintainer is added.</td><td>Registry operators</td><td>90 days</td><td>Policy published</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:6px">A-13 and A-14 come first because they are cheap and fit this incident: A-13 would have frozen the credential six minutes before go-live, and A-14, run within two minutes of the first quarantine, would have stopped 1.26.2.</p>
+  </section>
+
+</article>
+
+<!-- id:ach -->
+<!-- ==================== PAGE: ATTRIBUTION, ACH AND GAPS ==================== -->
+<article class="page" aria-label="Page 16 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 16 of 21</span></header>
+
+  <section>
+    <h2>Attribution: unattributed, and an opportunistic operator is likely (KJ-6)</h2>
+    <p class="small"><b>H-A</b> A China-linked espionage cluster using Cairn, like Unit 42’s CL-STA-1238. <b>H-B</b> A financially motivated Cairn operator, like NorForge’s AIA clusters. <b>H-C</b> An unaffiliated opportunist who came by the credential. <b>H-D</b> An authorised test or research agent that exceeded its scope. C consistent, I inconsistent, N neutral.</p>
+    <table class="ach"><colgroup><col><col><col><col><col></colgroup>
+      <thead><tr><th>Evidence</th><th>H-A State-linked</th><th>H-B Criminal cluster</th><th>H-C Opportunist</th><th>H-D Test gone wrong</th></tr></thead>
+      <tbody>
+        <tr><td>E1 Cairn framework driving a GLM-family model</td><td class="c">C</td><td class="c">C</td><td class="c">C</td><td class="c">C</td></tr>
+        <tr><td>E2 UTC+8 clock and uid 1000, both Cairn image defaults</td><td class="n">N</td><td class="n">N</td><td class="n">N</td><td class="n">N</td></tr>
+        <tr><td>E3 AWS Singapore host; no overlap with any published Cairn infrastructure</td><td class="n">N</td><td class="n">N</td><td class="c">C</td><td class="c">C</td></tr>
+        <tr><td>E4 A rare release credential burned in one noisy hour</td><td class="i">I</td><td class="c">C</td><td class="c">C</td><td class="c">C</td></tr>
+        <tr><td>E5 Stolen data and beacons on a free, publicly readable bin; stealer tested on own host</td><td class="i">I</td><td class="n">N</td><td class="c">C</td><td class="c">C</td></tr>
+        <tr><td>E6 1.26.2 pushed after the quarantine, with more capability</td><td class="c">C</td><td class="c">C</td><td class="c">C</td><td class="i">I</td></tr>
+        <tr><td>E7 Payload aimed at cloud and CI identity tokens</td><td class="c">C</td><td class="c">C</td><td class="c">C</td><td class="n">N</td></tr>
+        <tr><td>E8 No claim, extortion or sale of the data seen by 19 Nov</td><td class="n">N</td><td class="n">N</td><td class="n">N</td><td class="n">N</td></tr>
+        <tr class="score"><td>Inconsistencies</td><td>2</td><td>0</td><td>0</td><td>1</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:7px">H-B and H-C carry no inconsistencies, H-D one and H-A two. We cannot separate H-B from H-C on public evidence, and both describe an opportunistic operator, which is the basis for KJ-6. A state actor holding a credential this rare would more likely use it quietly and keep its loot private. Three findings would change the judgement: infrastructure or code overlap with a tracked cluster, sale or use of the stolen tokens, or Microsoft establishing that the credential was taken in a targeted intrusion.</p>
+  </section>
+  <section>
+    <h2>Intelligence gaps: eight questions that would change our judgements</h2>
+    <table class="pir gaps">
+      <colgroup><col class="c-id"><col><col class="c-w"><col class="c-kj"></colgroup>
+      <thead><tr><th>ID</th><th>Question</th><th>Why it matters</th><th>Tests</th></tr></thead>
+      <tbody>
+        <tr><td>Q-1</td><td>How did the ESRP certificate and key leave Microsoft?</td><td>A targeted intrusion would raise H-A and the outlook in KJ-7</td><td>KJ-2, 6, 7</td></tr>
+        <tr><td>Q-2</td><td>Has the credential been revoked, and could it publish other Microsoft packages?</td><td>Continued validity or wider scope puts every package that ESRP publishes at risk</td><td>KJ-2, 7</td></tr>
+        <tr><td>Q-3</td><td>Was the Microsoft-side host a rented Azure machine or a system inside Microsoft?</td><td>An internal host means a deeper compromise</td><td>KJ-2, 6</td></tr>
+        <tr><td>Q-4</td><td>Did ESRP raise an alert on the 20:28:56 refusal, and who saw it?</td><td>Separates a detection gap from a response gap</td><td>KJ-3</td></tr>
+        <tr><td>Q-5</td><td>How many hosts installed either version, and when exactly did the bin start refusing requests?</td><td>Bounds the true impact</td><td>KJ-5</td></tr>
+        <tr><td>Q-6</td><td>What did the agent’s task log and any operator hints contain?</td><td>Confirms or refutes AI-led execution</td><td>KJ-4</td></tr>
+        <tr><td>Q-7</td><td>Which AWS account held 13.215.157[.]103 at 20:28 UTC on 17 Nov?</td><td>Account overlap with known activity would support attribution</td><td>KJ-6</td></tr>
+        <tr><td>Q-8</td><td>What is the vibiret account’s role, and are the ONNX Runtime repository takedowns related?</td><td>A second account or project in play widens the scope</td><td>KJ-1, 7</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Signposts: five events that would move our judgements in the next 90 days</h2>
+    <p class="small">Each can be watched from outside Microsoft. We will reissue this report when one occurs.</p>
+    <table class="sig">
+      <colgroup><col><col class="c-t"><col class="c-wt"></colgroup>
+      <thead><tr><th>Signpost</th><th>What it would tell us</th><th>Where to watch</th></tr></thead>
+      <tbody>
+        <tr><td>Microsoft says how the credential left and confirms it is revoked</td><td>Answers Q-1 and Q-2; a closed route lowers <span class="nw">KJ-7</span></td><td>MSRC blog; the agent-framework GitHub issue</td></tr>
+        <tr><td>A Microsoft PyPI release with no matching GitHub tag, no sdist, or a new .pth file</td><td>The same credential or route in use again (KJ-7)</td><td>A daily check of PyPI’s JSON API against GitHub tags</td></tr>
+        <tr><td>The webhook UUID, the <code>?t=telemetry</code> parameter, the <code>_AF_TEL</code> guard or either User-Agent in another package</td><td>The same operator, or a copy of its stealer</td><td>Vendor feeds; OSV; OpenSourceMalware</td></tr>
+        <tr><td>Cairn worker labels such as <code>pi_glm53</code>, or <code>/tmp/cairn_*</code> paths, in other incidents</td><td>More Cairn-run intrusions; tests KJ-4 and KJ-6</td><td>Vendor reporting; our own incident cases</td></tr>
+        <tr><td>Use or sale of secrets taken from the three victims</td><td>What the operator wanted: targeted use favours H-A, sale favours H-B or H-C (KJ-6)</td><td>Victims’ cloud audit logs; dark-web monitoring</td></tr>
+      </tbody>
+    </table>
+  </section>
+</article>
+
+<!-- id:register -->
+<!-- ==================== PAGE: REGISTER AND GLOSSARY ==================== -->
+<article class="page" aria-label="Page 17 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 17 of 21</span></header>
+
+  <section>
+    <h2>What is confirmed, what is reported, and what is still our judgement</h2>
+    <p class="small">Confirmed: two or more independent sources, or a primary artefact we checked ourselves. Reported: one source. Assessed: our judgement (page 3). Open: not established.</p>
+    <table class="audit reg">
+      <colgroup><col class="c-n"><col class="c-cl"><col class="c-v"><col></colgroup>
+      <thead><tr><th>#</th><th>Fact or judgement</th><th>Status</th><th>Basis</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1</td><td>1.26.1 published 20:35 UTC and 1.26.2 at 21:08; both removed by 21:16</td><td class="v"><span class="chip c-ok">Confirmed</span></td><td>Wiz; StepSecurity; JFrog for removal by 21:16 (Wiz: by 21:30)</td></tr>
+        <tr><td class="n">2</td><td>Both versions run a credential stealer from a .pth hook at every Python start</td><td class="v"><span class="chip c-ok">Confirmed</span></td><td>Wiz; StepSecurity; OX; OpenSourceMalware; JFrog</td></tr>
+        <tr><td class="n">3</td><td>Exfiltration to one webhook.site URL with the two User-Agents listed</td><td class="v"><span class="chip c-ok">Confirmed</span></td><td>Wiz; StepSecurity; OpenSourceMalware; OX</td></tr>
+        <tr><td class="n">4</td><td>1.26.2 adds theft of GitHub Actions OIDC tokens</td><td class="v"><span class="chip c-ok">Confirmed</span></td><td>Wiz; OpenSourceMalware; StepSecurity</td></tr>
+        <tr><td class="n">5</td><td>A Microsoft maintainer confirmed both releases were pulled and an investigation is under way</td><td class="v"><span class="chip c-ok">Confirmed</span></td><td>GitHub issue, via SecurityWeek and others</td></tr>
+        <tr><td class="n">6</td><td>An ESRP client certificate and private key were used to publish</td><td class="v"><span class="chip k-l">Reported</span></td><td>Wiz, from the attacker’s beacons</td></tr>
+        <tr><td class="n">7</td><td>Attempt from AWS refused (403); submission from Microsoft IP space accepted, auto-approved and scanned clean</td><td class="v"><span class="chip k-l">Reported</span></td><td>Wiz’s published diagram</td></tr>
+        <tr><td class="n">8</td><td>Wheel repacked at 20:26:19 with Info-ZIP, uid 1000, UTC+8 clock</td><td class="v"><span class="chip k-l">Reported</span></td><td>JFrog</td></tr>
+        <tr><td class="n">9</td><td>No matching release tag or malicious code in the GitHub repository</td><td class="v"><span class="chip k-l">Reported</span></td><td>Wiz, via SecurityWeek</td></tr>
+        <tr><td class="n">10</td><td>Uploaded by RestSharp/106.13.0.0, wheel-only; maintainer vibiret created and added on 17 Nov</td><td class="v"><span class="chip k-l">Reported</span></td><td>StepSecurity</td></tr>
+        <tr><td class="n">11</td><td>50 requests captured: 4 attacker, 29 sandbox or scanner, 17 from three victims</td><td class="v"><span class="chip k-l">Reported</span></td><td>Wiz</td></tr>
+        <tr><td class="n">12</td><td>The Azure DevOps OIDC request is malformed, so real endpoints refuse it with HTTP 400; a mapped <code>SYSTEM_ACCESSTOKEN</code> still leaks</td><td class="v"><span class="chip k-l">Reported</span></td><td>JFrog</td></tr>
+        <tr><td class="n">13</td><td>The bin answered HTTP 429 “Request limit exceeded” when checked after the incident</td><td class="v"><span class="chip k-l">Reported</span></td><td>JFrog</td></tr>
+        <tr><td class="n">14</td><td>PyPI quarantined Microsoft’s publisher account; time unpublished</td><td class="v"><span class="chip k-l">Reported</span></td><td>OpenSourceMalware</td></tr>
+        <tr><td class="n">15</td><td>No provenance on any of 428 Microsoft files in three PyPI projects, including 1.26.0</td><td class="v"><span class="chip c-ok">Confirmed</span></td><td>Our check of PyPI, 19 Nov</td></tr>
+        <tr><td class="n">16</td><td>Cairn defaults: worker naming, TZ=Asia/Shanghai, kali user, /tmp/cairn-* paths, blank listener IP</td><td class="v"><span class="chip c-ok">Confirmed</span></td><td>Our review of the Cairn source, commit 8e7e0ea</td></tr>
+        <tr><td class="n">17</td><td>13.215.157[.]103 sits in AWS AS16509, Singapore; not on Mezmo’s list</td><td class="v"><span class="chip c-ok">Confirmed</span></td><td>Routing data; Mezmo page; our checks</td></tr>
+        <tr><td class="n">18</td><td>An AI agent in a near-stock Cairn worker ran the operation</td><td class="v"><span class="chip k-m">Assessed</span></td><td>KJ-4</td></tr>
+        <tr><td class="n">19</td><td>How the credential left Microsoft; who the operator is</td><td class="v"><span class="chip c-rep">Open</span></td><td>Q-1, KJ-6</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>Glossary</h2>
+    <div class="gl">
+      <div><b>ESRP</b>Engineering System Release Pipeline: Microsoft’s internal service that signs packages and publishes them to registries such as PyPI.</div>
+      <div><b>.pth file</b>A path file in site-packages that Python reads at start-up; a line that begins with “import” runs code.</div>
+      <div><b>Wheel and sdist</b>Built (.whl) and source (.tar.gz) distributions of a Python package. Earlier agent-framework releases shipped both.</div>
+      <div><b>PEP 740 attestation</b>A signed statement on PyPI of which repository and workflow built a file, created through trusted publishing.</div>
+      <div><b>Trusted publishing</b>Publishing to PyPI with a short-lived token from a CI run instead of a stored API token.</div>
+      <div><b>OIDC token exchange</b>A CI job proves its identity with a signed token and swaps it for cloud access. <code>api://AzureADTokenExchange</code> is Azure’s audience for this.</div>
+      <div><b>IMDS and managed identity</b>Azure’s metadata service at 169.254.169.254 hands tokens for a resource’s own identity to any code running on it.</div>
+      <div><b>Cairn</b>Open-source AGPL framework that coordinates AI coding agents towards a goal, built for autonomous penetration testing.</div>
+      <div><b>Pi</b>Minimal open-source terminal coding agent with read, write, edit and bash tools; one of Cairn’s worker types.</div>
+      <div><b>GLM-5.3</b>Z.ai (Zhipu) model released 14 August 2026, post-trained for coding, long agent tasks and vulnerability finding.</div>
+      <div><b>webhook.site</b>Free service that gives anyone a URL that records the requests sent to it. Free URLs are public and expire after seven days.</div>
+      <div><b>Release-age cooldown</b>A rule that refuses package versions younger than a set age, so registries and scanners can catch a bad release first.</div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:refs -->
+<!-- ==================== PAGE: REFERENCES ==================== -->
+<article class="page" aria-label="Page 18 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 18 of 21</span></header>
+
+  <section class="refs">
+    <h2>References and source grades</h2>
+    <p class="small">Admiralty grades. Vendor incident analyses (Wiz, JFrog, StepSecurity, OX Security, OpenSourceMalware and Socket; Endor Labs and SafeDep as reported by SecurityWeek): B2, consistent with each other. Wiz’s release-path reconstruction: B2, single-source. Microsoft statements relayed by the press: B2. Press reports: C2. The Register’s GitHub-admin framing: C3. Podcast remarks: C3. Unit 42, NorForge and GTIG reporting on Cairn: B2. CSA’s automated feed: C3. Our own checks of source code, PyPI metadata, routing data and FOFA passive-scan records are primary collection.</p>
+    <div class="two">
+      <div>
+        <h3>The incident</h3><ol>
+<li>Wiz Research, Microsoft agent-framework compromised: credential stealer targets Azure and CI pipelines, 17 Nov, updated 18 Nov 2026<br><span class="u">https://www.wiz.io/blog/malicious-version-of-microsofts-agent-framework-published-to-pypi</span></li>
+<li>JFrog Security Research, agent-framework hijacked on PyPI via silent .pth startup hook<br><span class="u">https://research.jfrog.com/post/agent-framework-hijack/</span></li>
+<li>StepSecurity, Microsoft agent-framework PyPI package compromised<br><span class="u">https://www.stepsecurity.io/blog/microsoft-agent-framework-pypi-package-compromised</span></li>
+<li>OX Security, hijacked releases of Microsoft’s official agent-framework<br><span class="u">https://www.ox.security/blog/breaking-hijacked-releases-of-microsofts-official-agent-framework-steals-azure-and-ci-credentials/</span></li>
+<li>OpenSourceMalware, official Microsoft agent-framework PyPI package compromised, 18 Nov 2026 05:43 UTC<br><span class="u">https://opensourcemalware.com/blog/agent-framework-pypi-compromised</span></li>
+<li>Socket, Microsoft’s agent-framework PyPI package compromised<br><span class="u">https://socket.dev/blog/agent-framework-pypi-package-compromised-with-credential-stealer</span></li>
+<li>SecurityWeek, Microsoft Agent Framework releases poisoned with credential stealer, 18 Nov 2026<br><span class="u">https://www.securityweek.com/microsoft-agent-framework-releases-poisoned-with-credential-stealer/</span></li>
+<li>BleepingComputer, Microsoft’s Agent Framework PyPI package compromised to steal credentials<br><span class="u">https://www.bleepingcomputer.com/news/security/microsofts-agent-framework-pypi-package-compromised-to-steal-credentials/</span></li>
+<li>The Register, Microsoft’s official Python agent framework hijacked, 18 Nov 2026<br><span class="u">https://www.theregister.com/security/2026/11/18/microsofts-official-python-agent-framework-hijacked-to-distribute-malware/5310858</span></li>
+<li>The OpenSourceMalware Show #30 (transcript)<br><span class="u">https://opensourcemalware.com/blog/the-opensourcemalwareshow-episode30</span></li>
+<li>CSA Labs, Frontier Ready Daily, 18 Nov 2026<br><span class="u">https://labs.cloudsecurityalliance.org/research/frontier-ready-daily-20261118/</span></li>
+</ol>
+        <h3>Microsoft context</h3><ol start="12">
+<li>Azure SDK for Python, ESRP release notes<br><span class="u">https://sources.debian.org/src/python-azure/20260203%2Bgit-1/doc/esrp_release.md</span></li>
+<li>lsprotocol, PyPI release pipeline using ESRP<br><span class="u">https://sources.debian.org/src/lsprotocol/2025.0.0-3/azure-pipelines/release-pypi.yml</span></li>
+<li>microsoft/asconnect, EsrpRelease task inputs (mirror)<br><span class="u">https://source-hub.etos-pro.ru/microsoft/asconnect/commit/dda4b6396cc47b205bcc58d575c5c65ff57e3752</span></li>
+<li>GitHub Docs, GitHub-hosted runners and their IP addresses<br><span class="u">https://docs.github.com/en/actions/reference/runners/github-hosted-runners</span></li>
+<li>Computer Weekly, Microsoft shares progress on Secure Future Initiative<br><span class="u">https://www.computerweekly.com/news/366611595/Microsoft-shares-progress-on-Secure-Future-Initiative</span></li>
+<li>TechTarget, Cyber Safety Review Board slams Microsoft security failures<br><span class="u">https://www.techtarget.com/cybersecurity/news/366577765/Cyber-Safety-Review-Board-slams-Microsoft-security-failures</span></li>
+</ol>
+      </div>
+      <div>
+        <h3>Earlier 2026 incidents</h3><ol start="18">
+<li>Wiz, durabletask: TeamPCP’s latest PyPI compromise<br><span class="u">https://wiz.io/blog/durabletask-teampcp-supply-chain-attack</span></li>
+<li>SafeDep, malicious durabletask on PyPI<br><span class="u">https://safedep.io/malicious-durabletask-pypi-supply-chain-attack/</span></li>
+<li>Phoenix Security, Miasma worm reaches Microsoft Azure and PyPI<br><span class="u">https://phoenix.security/miasma-azure-hades-pypi-supply-chain-worm-2026/</span></li>
+<li>Microsoft Threat Intelligence on ARTEX secret hunting, 5 Nov 2026 (summary)<br><span class="u">https://letsdatascience.com/news/microsoft-reports-threat-actors-using-artex-agentic-tooling-15b88fc8</span></li>
+</ol>
+        <h3>The tooling</h3><ol start="22">
+<li>oritera/Cairn source code, commit 8e7e0ea, 7 Sep 2026<br><span class="u">https://github.com/oritera/Cairn</span></li>
+<li>Unit 42, attackers use autonomous AI to target semiconductor, defence and civil society sectors, 12 Nov 2026<br><span class="u">https://unit42.paloaltonetworks.com/cairn-framework-ai-autonomous-attacks/</span></li>
+<li>NorForge, Inside Cairn, 19 Oct 2026<br><span class="u">https://norforge.com/blog/inside_cairn</span></li>
+<li>CSA Labs, Agentic intrusion goes retail<br><span class="u">https://labs.cloudsecurityalliance.org/research/csa-research-note-agentic-intrusion-campaigns-hunting-202610/</span></li>
+<li>Stingrai, open-source AI pentest agents compared (cites GTIG and Mandiant, 30 Oct 2026)<br><span class="u">https://www.stingrai.io/blog/open-source-ai-pentest-agents-compared-2026</span></li>
+<li>Pi coding agent overview<br><span class="u">https://agentic-ai.readthedocs.io/en/latest/AgentHarness/pi-dev/</span></li>
+<li>TechNode, Z.ai launches GLM-5.3<br><span class="u">https://technode.com/2026/08/17/z-ai-launches-glm-5-3-with-claimed-50-gain-on-coding-benchmark/</span></li>
+</ol>
+        <h3>Registry, infrastructure and defences</h3><ol start="29">
+<li>PyPI Simple API and integrity endpoint, checked 19 Nov 2026<br><span class="u">https://pypi.org/simple/agent-framework/</span></li>
+<li>Mezmo service endpoints, updated 6 Apr 2026<br><span class="u">https://docs.mezmo.com/docs/mezmo-service-endpoints</span></li>
+<li>NERD (CESNET), 13.214.0.0/15 routing record<br><span class="u">https://nerd.cesnet.cz/nerd/ip/13.215.155.222</span></li>
+<li>MITRE ATT&amp;CK, T1546.018 Python Startup Hooks<br><span class="u">https://attack.mitre.org/techniques/T1546/018</span></li>
+<li>Andrew Nesbitt, package managers need to cool down<br><span class="u">https://nesbitt.io/2026/03/04/package-managers-need-to-cool-down</span></li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:appx -->
+<!-- ==================== PAGE: APPENDICES ==================== -->
+<article class="page" aria-label="Page 19 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 19 of 21</span></header>
+
+  <section>
+    <h2>Appendix A: file hashes and network indicators</h2>
+    <p class="small">These match only the two published builds. A renamed or rebuilt copy will not match, so hunt on the behaviours on page 13 first.</p>
+    <table class="hash">
+      <colgroup><col class="c-f"><col><col class="c-s"></colgroup>
+      <thead><tr><th>File</th><th>SHA-256</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td class="f">agent_framework-1.26.1-py3-none-any.whl</td><td>d27fa34414e6201d5e03e559ef634f020057554d7b3f4898dd5d7cd3e989e110</td><td class="f">Wiz, StepSecurity, OX</td></tr>
+        <tr><td class="f">agent_framework-1.26.2-py3-none-any.whl</td><td>3d20a8bc91351a9a16b6db243b848ceca0206b7a8623b02d2af553a9c9f7e0a9</td><td class="f">Wiz, StepSecurity</td></tr>
+        <tr><td class="f">agent_framework_meta.pth (1.26.1)</td><td>21f28e8517a10ffe431f8d68f5875c85eca4001ae6d118322b0a41873998eb5e</td><td class="f">StepSecurity; matches OX</td></tr>
+        <tr><td class="f">agent_framework_meta/_telemetry.py (1.26.1)</td><td>39fa329f2a93f734b0bb8f5adb203ea3331d1ae479832a5015a54cb17aabd663</td><td class="f">StepSecurity; matches OX</td></tr>
+        <tr><td class="f">Same <code>_telemetry.py</code>, Wiz’s SHA-1</td><td>0a013e4724c4437cf9b177def1d988113e167539</td><td class="f">Wiz</td></tr>
+        <tr><td class="f">af_runtime_diag.pth (1.26.2)</td><td>325e7e9f0ec94e41ad1a1b7a3f18a6b8b5bffece2e2b97b8d3369eb967452f93</td><td class="f">Wiz, StepSecurity, OSM</td></tr>
+        <tr><td class="f">af_runtime_diag.py (1.26.2)</td><td>54d885b7d7161c9ed96489c66364c4bfbf635929166843bba10d97d46b5a2e1f</td><td class="f">Wiz, StepSecurity, OSM</td></tr>
+        <tr><td class="f">agent_framework-1.26.2.dist-info/METADATA</td><td>056b52a6cec4e911cb6e7debae8fd49dad3255ef109357d0f7a386b0a2bc7461</td><td class="f">OSM</td></tr>
+        <tr><td class="f">Exfiltration URL</td><td>hxxps://webhook[.]site/d381fd80-ec62-42ad-8f5c-d1b15103c9bb?t=telemetry</td><td class="f">All vendors; expired after 7 days</td></tr>
+        <tr><td class="f">User-Agents</td><td>af-runtime-diagnostics/1 (1.26.1) · runtime-diagnostics/1 (1.26.2)</td><td class="f">Wiz, OX, OSM</td></tr>
+        <tr><td class="f">Attacker AWS host</td><td>13.215.157[.]103 — valid only for 17 Nov 2026, about 20:25–20:50 UTC</td><td class="f">Wiz chart; AWS reuses addresses</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:5px">We cross-checked the 1.26.1 file hashes: OX’s base64url RECORD values decode to StepSecurity’s SHA-256 values. Wiz’s <code>_telemetry.py</code> value is SHA-1; keep it out of SHA-256 fields.</p>
+  </section>
+  <section class="snip">
+    <h2>Appendix B: search commands and queries for A-1 to A-3</h2>
+    <p class="small">Test before use. Search for files without starting Python, or export <code>_AF_TEL=1</code> first: on an infected host every Python start, pip included, runs the stealer again. Network indicators are live strings here because the queries need them.</p>
+    <div class="two">
+      <div>
+        <h3>B-1 · Hook and stealer files (Linux, macOS)</h3>
+        <div class="rule-box">find / \( -name 'agent_framework_meta.pth' \
+  -o -name 'af_runtime_diag.pth' \
+  -o -name 'af_runtime_diag.py' \
+  -o -name 'agent_framework-1.26.[12].dist-info' \) \
+  2&gt;/dev/null</div>
+        <h3>B-2 · Every .pth file that runs code</h3>
+        <div class="rule-box">find / -path '*-packages/*' -name '*.pth' \
+  -exec grep -lE '^import[[:space:]]' {} + 2&gt;/dev/null</div>
+        <p class="small">Python executes any .pth line that starts with “import”. Compare the list with a known-good image: setuptools, virtualenv and editable installs add a few legitimate ones.</p>
+        <h3>B-3 · The same search on Windows (PowerShell)</h3>
+        <div class="rule-box">Get-ChildItem C:\ -Recurse -Filter *.pth -EA 0 |
+  Select-String '^import\s' -CaseSensitive -List |
+  Select-Object Path</div>
+      </div>
+      <div>
+        <h3>B-4 · Proxy logs</h3>
+        <div class="rule-box">grep -F -e d381fd80-ec62-42ad-8f5c-d1b15103c9bb \
+        -e runtime-diagnostics/1 access.log</div>
+        <p class="small">Without TLS inspection the proxy logs only the host name, so review every connection to webhook.site from build agents and servers since 20:35 UTC on 17 November.</p>
+        <h3>B-5 · Microsoft Defender for Endpoint</h3>
+        <div class="rule-box">DeviceNetworkEvents
+| where Timestamp &gt; datetime(2026-11-17 20:35:00)
+| where RemoteUrl has "webhook.site"
+| where InitiatingProcessFileName startswith "python"
+| project Timestamp, DeviceName, RemoteUrl,
+    InitiatingProcessCommandLine</div>
+        <div class="rule-box" style="margin-top:6px">DeviceFileEvents
+| where Timestamp &gt; datetime(2026-11-17 20:35:00)
+| where FileName in~ ("agent_framework_meta.pth",
+    "af_runtime_diag.pth", "af_runtime_diag.py")
+| project Timestamp, DeviceName, FolderPath, SHA256</div>
+      </div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:appxc -->
+<!-- ==================== PAGE: APPENDIX C ==================== -->
+<article class="page" aria-label="Page 20 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 20 of 21</span></header>
+
+  <section>
+    <h2>Appendix C: GitHub Actions controls C-1 to C-7, in full</h2>
+    <p class="small">Four files for teams that publish or install Python packages from GitHub. The stage excerpts on pages 6 to 8 come from these files. Replace <code>your-package</code>, pin every action to a full commit SHA, and test in your own repository first. Setup steps and our test results follow on page 21.</p>
+    <div class="gfile"><div class="gh"><span>.github/workflows/release.yml</span><span>C-1 · C-2 · C-4 · publishers</span></div><div class="gcols"><pre><span class="cm"># C-1, C-2, C-4: publish only what CI built, through an</span>
+<span class="cm"># identity PyPI trusts, after a diff and a human approval.</span>
+name: release
+on:
+  push:
+    tags: ["v*"]            <span class="cm"># C-2: releases start from a tag</span>
+
+permissions: {}             <span class="cm"># jobs get only what they declare</span>
+
+jobs:
+  build:                    <span class="cm"># C-2: CI builds sdist and wheel</span>
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write       <span class="cm"># signs the build provenance</span>
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: &gt;-
+          python -m pip install --require-hashes
+          -r .github/build-requirements.txt
+      - run: python -m build
+      - uses: actions/attest-build-provenance@v2
+        with: { subject-path: "dist/*" }
+      - uses: actions/upload-artifact@v4
+        with: { name: dist, path: dist/ }
+</pre><pre>  check:                    <span class="cm"># C-4: diff before anyone approves</span>
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: {}
+    env: { PKG: your-package }
+    steps:
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist }
+      - name: Require an sdist; refuse .pth hooks
+        run: |
+          ls dist/*.tar.gz
+          for w in dist/*.whl; do
+            if unzip -Z1 "$w" | grep -E '\.pth$'; then
+              echo "::error::$w ships a .pth hook"
+              exit 1
+            fi
+          done
+      - name: Flag new top-level files for the reviewer
+        run: |
+          url="https://pypi.org/pypi/$PKG/json"
+          prev=$(curl -fsS "$url" | jq -r .info.version) \
+            || exit 0                 <span class="cm"># first release</span>
+          python -m pip download "$PKG==$prev" --no-deps \
+            --only-binary=:all: -d prev
+          top() { unzip -Z1 "$1" | grep -v '\.dist-info/' \
+                    | cut -d/ -f1 | sort -u; }
+          diff &lt;(top prev/*.whl) &lt;(top dist/*.whl) \
+            || echo "::warning::new top-level files since $prev"
+
+  publish:                  <span class="cm"># C-1: OIDC identity, no stored secret</span>
+    needs: check
+    runs-on: ubuntu-latest
+    environment:            <span class="cm"># C-4: required reviewers, tags v*</span>
+      name: pypi
+      url: https://pypi.org/p/your-package
+    permissions:
+      id-token: write       <span class="cm"># short-lived token for PyPI</span>
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist }
+      - uses: pypa/gh-action-pypi-publish@release/v1</pre></div></div>
+    <div class="gfile"><div class="gh"><span>.github/workflows/pypi-watchdog.yml</span><span>C-3 · publishers</span></div><div class="gcols"><pre><span class="cm"># C-3: know within minutes when a release appears that</span>
+<span class="cm"># your pipeline did not make.</span>
+name: pypi-watchdog
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    env:
+      PKG: your-package
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0, persist-credentials: false }</pre><pre>      - name: Latest release needs a tag, sdist, provenance
+        run: |
+          meta=$(curl -fsS "https://pypi.org/pypi/$PKG/json")
+          ver=$(jq -r .info.version &lt;&lt;&lt;"$meta")
+          bad=""
+          git rev-parse -q --verify "refs/tags/v$ver" &gt;/dev/null \
+            || bad+="no tag v$ver. "
+          jq -e '.urls[] | select(.packagetype == "sdist")' \
+            &lt;&lt;&lt;"$meta" &gt;/dev/null || bad+="no sdist. "
+          api="https://pypi.org/integrity/$PKG/$ver"
+          for f in $(jq -r '.urls[].filename' &lt;&lt;&lt;"$meta"); do
+            curl -fsS -o /dev/null "$api/$f/provenance" \
+              || bad+="no provenance for $f. "
+          done
+          [ -z "$bad" ] &amp;&amp; exit 0
+          echo "::error::$PKG $ver: $bad"
+          n=$(gh issue list --state open --json number \
+                --jq length --search "$PKG $ver in:title")
+          [ "$n" -gt 0 ] || gh issue create \
+            --title "Out-of-band release? $PKG $ver" \
+            --body "$bad Freeze publishing; run the runbook."
+          exit 1</pre></div></div>
+  </section>
+  <section>
+    <h2>The same controls without GitHub Actions</h2>
+    <div class="three">
+      <div class="box">
+        <h3>Cooldown in other tools</h3>
+        <div class="rule-box"># uv 0.9.17+, pyproject.toml
+[tool.uv]
+exclude-newer = "3 days"
+
+# pip 26.1+, pip.conf
+[install]
+uploaded-prior-to = P3D
+
+# renovate.json
+"minimumReleaseAge": "3 days"</div>
+      </div>
+      <div class="box">
+        <h3>Token scoping in Azure Pipelines</h3>
+        <p>Limit each service connection to the pipelines and stages that deploy, behind approvals and checks. Never map <code>SYSTEM_ACCESSTOKEN</code> into a step that installs packages.</p>
+      </div>
+      <div class="box">
+        <h3>Egress from self-hosted agents</h3>
+        <div class="rule-box"># allow through the proxy
+pypi.org  files.pythonhosted.org
+your-mirror.internal
+login.microsoftonline.com
+
+# deny everything else,
+# request bins included:
+webhook[.]site  *.webhook[.]site</div>
+      </div>
+    </div>
+  </section>
+
+</article>
+
+<!-- id:appxc2 -->
+<!-- ==================== PAGE: APPENDIX C, CONTINUED ==================== -->
+<article class="page" aria-label="Page 21 of 21">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: Microsoft agent-framework PyPI compromise, 17 Nov 2026</span><span>Page 21 of 21</span></header>
+
+  <section>
+    <h2>Appendix C, continued: consumer controls, setup and tests</h2>
+    <div class="gfile"><div class="gh"><span>.github/workflows/ci.yml</span><span>C-6 · C-7 · consumers</span></div><div class="gcols"><pre><span class="cm"># C-6, C-7: install from hashes, catch startup hooks before</span>
+<span class="cm"># Python runs, block exfiltration, mint tokens only in deploy.</span>
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+
+permissions:
+  contents: read            <span class="cm"># C-7: no id-token in this workflow</span>
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@v2   <span class="cm"># C-7</span>
+        with:
+          egress-policy: block  <span class="cm"># run with audit first</span>
+          allowed-endpoints: &gt;
+            github.com:443
+            api.github.com:443
+            objects.githubusercontent.com:443
+            pypi.org:443
+            files.pythonhosted.org:443
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }</pre><pre>      - name: Install from a hash-pinned lockfile  <span class="cm"># C-6</span>
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --require-hashes --no-deps \
+            -r requirements.lock
+      - name: Fail on new .pth hooks before Python runs  <span class="cm"># C-6</span>
+        run: |
+          { find .venv -name '*.pth' -exec \
+              grep -lE '^import[[:space:]]' {} + || true; } \
+            | xargs -r -n1 basename | sort &gt; found.txt
+          sort .github/pth-allowlist.txt | diff - found.txt
+      - run: .venv/bin/python -m pytest
+
+  deploy:                   <span class="cm"># C-7: only this job mints</span>
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - run: echo "Deploy the artefact the test job built"</pre></div></div>
+    <div class="gfile"><div class="gh"><span>.github/dependabot.yml</span><span>C-5 · consumers</span></div><div class="gcols one"><pre><span class="cm"># C-5: let a new release age three days before it can</span>
+<span class="cm"># reach your lockfile. Both bad versions were gone in 41 min.</span>
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3</pre></div></div>
+  </section>
+  <section>
+    <h2>Before you rely on them</h2>
+    <ol class="setup">
+      <li><b>C-1</b> On PyPI, add a trusted publisher for the project naming the repository, <code>release.yml</code> and the environment <code>pypi</code>; then delete every API token for the project.</li>
+      <li><b>C-4</b> In GitHub, create the <code>pypi</code> environment with required reviewers and a rule that admits only tags matching <code>v*</code>.</li>
+      <li><b>C-2, C-6</b> Generate <code>.github/build-requirements.txt</code> and <code>requirements.lock</code> with hashes, for example with <code>uv pip compile --generate-hashes</code>.</li>
+      <li><b>C-6</b> Create <code>.github/pth-allowlist.txt</code> from the hook list of a known-good run; an empty file is valid.</li>
+      <li><b>C-7</b> Run harden-runner with <code>egress-policy: audit</code> first, copy the endpoints it reports into the allowlist, then switch to <code>block</code>.</li>
+      <li><b>C-3</b> The watchdog checks only the latest release and flags any release without provenance, so it will raise an alarm on every release until C-1 and C-2 are in place. It did exactly that for agent-framework 1.26.0 in our test.</li>
+    </ol>
+  </section>
+  <section>
+    <h2>How we tested them, 19 November 2026</h2>
+    <table class="tested">
+      <colgroup><col class="c-c"><col><col class="c-r"></colgroup>
+      <thead><tr><th>Control</th><th>Test</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>All workflows</td><td>actionlint 1.7.12 with shellcheck 0.11.0</td><td>No findings</td></tr>
+        <tr><td>C-3</td><td>Run against live PyPI: sampleproject 4.0.0 with its tag present, then absent; agent-framework 1.26.0</td><td>Passed; flagged the missing tag; flagged missing provenance</td></tr>
+        <tr><td>C-4 gate</td><td>A clean wheel, a wheel carrying a .pth file, and a release with no sdist</td><td>Passed; failed; failed</td></tr>
+        <tr><td>C-4 diff</td><td>A planted top-level package, compared with sampleproject 4.0.0 downloaded from PyPI</td><td>Warning raised for the reviewer</td></tr>
+        <tr><td>C-6</td><td>A clean venv; a path-only .pth; <code>af_runtime_diag.pth</code>; <code>agent_framework_meta.pth</code> beside an allowlisted hook</td><td>Passed; passed; failed; failed</td></tr>
+        <tr><td>B-1, B-2</td><td>Planted 1.26.1 and 1.26.2 files and a path-only .pth in a test tree</td><td>All planted files found; path-only .pth ignored</td></tr>
+        <tr><td>Not run here</td><td>harden-runner blocking, <code>azure/login</code>, Dependabot cooldown, B-3 PowerShell, B-5 KQL</td><td>Test in your environment</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</article>
+
+</main>
+<script>
+(function(){
+  function fit(){
+    var w = window.innerWidth || document.documentElement.clientWidth;
+    var s = Math.min(1, (w - 24) / 794);
+    document.documentElement.style.setProperty('--fit', s > 0.3 ? s.toFixed(3) : '0.3');
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  window.addEventListener('beforeprint', function(){ document.documentElement.style.setProperty('--fit','1'); });
+  window.addEventListener('afterprint', fit);
+})();
+</script>
+</body>
+</html>
