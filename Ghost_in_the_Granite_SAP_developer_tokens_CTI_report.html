@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en-SG">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ghost in the Granite: SAP developer tokens CTI report, v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light dark;
+  --viewer:#D9DCD5; --viewer-ink:#3A4244;
+  --paper:#F4F5F0; --ink:#1C2326; --muted:#56615F; --rule:#C3C9C3; --shade:#E6E9E2; --box:#EEF0EA;
+  --red:#A8322D; --orange:#B8530A; --yellow:#CDBA62; --grey:#BFC8C9; --green:#1F7A46;
+  --red-soft:#F2DEDB; --orange-soft:#F6E5D6; --green-soft:#DCEBE0; --grey-soft:#E3E8E8; --yellow-soft:#F3EED6;
+  --on-dark:#FFFFFF; --tlp-bg:#000000;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--viewer:#1D2123;--viewer-ink:#C9D0CE;color-scheme:dark;}}
+:root[data-theme="dark"]{--viewer:#1D2123;--viewer-ink:#C9D0CE;color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;background:var(--viewer);color:var(--viewer-ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+.viewer{padding:24px 12px 40px;display:flex;flex-direction:column;align-items:center;gap:24px;overflow-x:auto;}
+.page{width:794px;height:1123px;flex:0 0 auto;position:relative;overflow:hidden;background:var(--paper);color:var(--ink);color-scheme:light;
+  padding:30px 44px 34px;box-shadow:0 1px 3px rgba(0,0,0,.18);zoom:var(--fit,1);font-size:10.8px;line-height:1.44;}
+.run{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:8.6px;color:var(--muted);
+  border-bottom:1px solid var(--rule);padding-bottom:6px;margin-bottom:12px;}
+.tlp{font-family:var(--mono);font-weight:700;background:var(--tlp-bg);color:var(--on-dark);padding:2px 6px;}
+.run .mid{flex:1;text-align:center;}
+.kicker{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--red);margin:0 0 2px;}
+h1{font-family:var(--mono);font-weight:800;font-size:31px;line-height:1.05;letter-spacing:-.02em;margin:0 0 6px;}
+.standfirst{font-size:11.6px;line-height:1.4;margin:0 0 8px;max-width:680px;}
+.standfirst b{font-weight:700;}
+.meta{display:grid;grid-template-columns:repeat(5,auto);gap:4px 20px;justify-content:start;margin:0 0 10px;font-size:9.2px;}
+.meta dt{font-family:var(--mono);font-size:8.2px;color:var(--muted);}
+.meta dd{margin:0;font-weight:500;}
+.meta div{display:flex;flex-direction:column;}
+h2{font-family:var(--mono);font-size:12px;font-weight:700;line-height:1.3;margin:0 0 6px;padding-top:6px;border-top:2px solid var(--ink);}
+section{margin-bottom:10px;}
+p{margin:0 0 6px;}
+.lead{font-size:11.4px;line-height:1.48;}
+.small{font-size:10px;line-height:1.46;}
+.chip{display:inline-block;font-family:var(--mono);font-size:8.2px;font-weight:700;line-height:1;padding:3px 5px;border-radius:2px;white-space:nowrap;vertical-align:1px;}
+.c-ok,.k-h{background:var(--green);color:var(--on-dark);}
+.k-m{background:var(--orange);color:var(--on-dark);}
+.k-l,.c-rep{background:var(--yellow);color:var(--ink);}
+.c-un{background:var(--grey);color:var(--ink);}
+.c-obs{background:var(--green-soft);color:var(--green);box-shadow:inset 0 0 0 1px var(--green);}
+.nw{white-space:nowrap;}
+/* verdict banner + stats */
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:center;background:var(--ink);color:var(--paper);padding:11px 16px 11px 14px;border-left:8px solid var(--orange);margin:0 0 8px;}
+.verdict .vq{font-family:var(--mono);font-size:10.4px;color:#B9C3C0;max-width:170px;line-height:1.3;}
+.verdict .va{font-family:var(--mono);font-weight:800;font-size:22px;line-height:1.05;grid-row:2;}
+.verdict .vt{grid-row:1 / span 2;grid-column:2;font-size:10.4px;line-height:1.45;color:#E7EBE6;}
+.verdict .vt b{color:#FFFFFF;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--rule);margin:0 0 10px;}
+.stats div{padding:6px 9px;border-right:1px solid var(--rule);}
+.stats div:last-child{border-right:0;}
+.stats div:nth-child(even){background:var(--shade);}
+.stats .n{font-family:var(--mono);font-weight:800;font-size:18px;line-height:1.1;display:block;}
+.stats .l{font-size:8.8px;line-height:1.3;color:var(--muted);display:block;}
+/* front boxes */
+.front{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;margin:10px 0 0;}
+.box{border:1px solid var(--rule);background:var(--box);padding:7px 9px;font-size:9px;line-height:1.38;}
+.box h3{font-family:var(--mono);font-size:9px;font-weight:700;margin:0 0 3px;}
+.box p{margin:0 0 3px;}
+.box ul{margin:0;padding-left:12px;}
+.box li{margin:0 0 2px;}
+.keyrow{display:flex;flex-wrap:wrap;align-items:center;gap:3px 4px;margin:0 0 4px;}
+.keyrow .lab{font-family:var(--mono);font-size:8px;color:var(--muted);width:100%;}
+.keynote{font-size:8.4px;color:var(--muted);line-height:1.35;}
+/* five Ws */
+.ws{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);border-left:1px solid var(--rule);}
+.ws div{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:6px 8px;font-size:9.8px;line-height:1.4;}
+.ws div:nth-child(even){background:var(--shade);}
+.ws b{display:block;font-family:var(--mono);font-size:8.6px;margin-bottom:1px;}
+/* key judgements */
+.kj{display:grid;grid-template-columns:42px 1fr;gap:0 8px;padding:7px 0;border-bottom:1px solid var(--rule);}
+.kj:last-of-type{border-bottom:0;}
+.kj .id{font-family:var(--mono);font-weight:800;font-size:11px;padding-top:1px;}
+.kj .hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 3px;}
+.kj h4{font-family:var(--sans);font-size:11.6px;font-weight:700;margin:0;line-height:1.3;}
+.kj .tags{font-size:8.8px;color:var(--muted);white-space:nowrap;}
+.kj p{margin:0 0 3px;font-size:10.3px;line-height:1.45;}
+.kj .gap{color:var(--muted);}
+.kj .gap b{color:var(--ink);font-weight:600;}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:9.6px;line-height:1.36;}
+th{font-family:var(--mono);font-size:8.2px;font-weight:700;text-align:left;padding:4px 5px;border-bottom:1.5px solid var(--ink);vertical-align:bottom;}
+td{padding:4px 5px;vertical-align:top;border-bottom:1px solid var(--rule);}
+tbody tr:nth-child(even) td{background:var(--shade);}
+td.n,td.t,.act td:first-child{font-family:var(--mono);font-size:8.2px;}
+td.n,.act td:first-child{white-space:nowrap;font-weight:700;}
+td.v{white-space:nowrap;}
+.reg col.c-n{width:20px;}.reg col.c-cl{width:39%;}.reg col.c-src{width:24%;}.reg col.c-v{width:82px;}
+.tl col.c-t{width:112px;}.tl col.c-s{width:112px;}.tl col.c-v{width:76px;}
+.nav{display:flex;font-family:var(--mono);font-size:8.2px;margin:-4px 0 10px;border:1px solid var(--rule);}
+.nav span{flex:1;padding:3px 7px;border-right:1px solid var(--rule);color:var(--muted);white-space:nowrap;}
+.nav span:last-child{border-right:0;}
+.nav .on{background:var(--ink);color:var(--paper);font-weight:700;}
+.bridge{font-size:11px;line-height:1.46;margin:0 0 10px;padding:6px 10px;border-left:4px solid var(--ink);background:var(--box);}
+.bridge.next{border-left-color:var(--muted);color:var(--muted);margin:8px 0 0;font-size:10.4px;}
+.story{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--ink);margin:0;}
+.story div{padding:7px 9px 6px;border-right:1px solid var(--rule);font-size:9.5px;line-height:1.38;}
+.story div:last-child{border-right:0;}
+.story div:nth-child(even){background:var(--shade);}
+.story b{display:block;font-family:var(--mono);font-size:8.8px;margin-bottom:2px;}
+.story .pg{display:block;font-family:var(--mono);font-size:7.8px;color:var(--muted);margin-top:3px;}
+.storyh{font-family:var(--mono);font-size:9.6px;font-weight:700;background:var(--ink);color:var(--paper);padding:5px 10px;margin:0;}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.tile{border:1px solid var(--ink);border-top:4px solid var(--red);background:var(--box);padding:6px 9px;font-size:9.6px;line-height:1.38;}
+.tile b{font-family:var(--mono);font-size:8.6px;display:block;color:var(--red);margin-bottom:1px;}
+.tiles.four{grid-template-columns:repeat(4,1fr);margin-top:2px;}
+.tile.grey{border-top-color:var(--muted);font-size:9.2px;}
+.tile.grey b{color:var(--ink);}
+.verdict .e{color:#B9C3C0;}
+.muted{color:var(--muted);}
+.e{font-family:var(--mono);font-size:.84em;color:var(--muted);white-space:nowrap;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.two .callout,.three .callout{margin-top:0;}
+.callout.red{border-color:var(--red);border-left-color:var(--red);background:var(--red-soft);}
+.callout.orange{border-color:var(--orange);border-left-color:var(--orange);background:var(--orange-soft);}
+.analogy{border-left:6px solid var(--orange);background:var(--orange-soft);padding:8px 12px;margin:8px 0 0;}
+.analogy h3{font-family:var(--mono);font-size:10.4px;margin:0 0 4px;}
+.analogy p{font-size:10.2px;line-height:1.48;margin:0;}
+.stage{display:grid;grid-template-columns:112px 1fr;gap:0 14px;padding:8px 0 9px;border-bottom:1px solid var(--rule);}
+.stage:last-child{border-bottom:0;}
+.stage .sn{font-family:var(--mono);font-weight:800;font-size:11.4px;}
+.stage .sn span{display:block;font-size:8.4px;font-weight:400;color:var(--muted);margin-top:3px;}
+.stage h4{font-size:11.4px;margin:0 0 4px;}
+.stage p{font-size:10.2px;line-height:1.47;margin:0 0 4px;}
+.stage .lesson{background:var(--box);border-left:3px solid var(--green);padding:5px 8px;font-size:10px;}
+.stage .lesson b{font-family:var(--mono);font-size:8.6px;color:var(--green);}
+.gha{margin:6px 0 2px;border:1px solid #C9CEC6;background:#EEF0EA;}
+.gha .gh,.gfile .gh{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:7.8px;font-weight:700;padding:3px 8px;background:var(--ink);color:var(--paper);}
+.gha .gh span:last-child,.gfile .gh span:last-child{font-weight:400;opacity:.8;white-space:nowrap;}
+.gha pre,.gfile pre{margin:0;padding:5px 9px;font-family:var(--mono);font-size:7.9px;line-height:1.42;white-space:pre;overflow:hidden;color:var(--ink);font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0;}
+.gha .two-pre,.gfile .gcols{display:grid;grid-template-columns:1fr 1fr;}
+.gha .two-pre pre+pre,.gfile .gcols pre+pre{border-left:1px solid #C9CEC6;}
+.gfile .gcols.one{grid-template-columns:1fr;}
+pre .cm{color:#56625D;}
+.gfile{border:1px solid #C9CEC6;background:#EEF0EA;margin:6px 0 9px;}
+.gfile .gcols pre{font-size:7.4px;line-height:1.36;}
+.rule-box{border:1px solid var(--rule);background:var(--box);padding:6px 9px;font-family:var(--mono);font-size:7.9px;line-height:1.48;white-space:pre-wrap;word-break:break-all;font-variant-ligatures:none;}
+.snip h3{font-family:var(--mono);font-size:9.4px;font-weight:700;margin:9px 0 4px;}
+.snip .two>div>h3:first-child{margin-top:2px;}
+.snip .rule-box+p{margin-top:4px;}
+.bigtile{display:grid;grid-template-columns:150px 1fr;gap:0 14px;align-items:center;border:1px solid var(--ink);border-left:6px solid var(--ink);background:var(--box);padding:9px 12px;}
+.bigtile .big{font-family:var(--mono);font-weight:800;font-size:30px;line-height:1;}
+.bigtile .big small{display:block;font-size:8.4px;font-weight:600;color:var(--muted);margin-top:5px;line-height:1.3;}
+.bigtile p{margin:0 0 4px;font-size:10.2px;line-height:1.46;}
+.bigtile p:last-child{margin:0;}
+.tier td{background:var(--ink)!important;color:var(--paper);padding:4px 6px;font-family:var(--mono);font-size:9.2px;font-weight:700;}
+.resp col.c-id{width:34px;}.resp col.c-ow{width:92px;}.resp col.c-hz{width:78px;}.resp col.c-ck{width:112px;}
+.ach{font-size:9px;}
+.ach th{font-size:7.8px;}
+.ach td.c,.ach td.i,.ach td.n{text-align:center;font-family:var(--mono);font-weight:700;font-size:8.4px;width:84px;}
+.ach td.c{background:var(--green-soft)!important;color:var(--green);}
+.ach td.i{background:var(--red-soft)!important;color:var(--red);}
+.ach td.n{background:var(--grey-soft)!important;color:var(--muted);}
+.ach tr.score td{font-family:var(--mono);font-weight:800;border-top:1.5px solid var(--ink);}
+.gaps col.c-id{width:30px;}.gaps col.c-kj{width:70px;}.gaps col.c-w{width:38%;}
+.gaps td:first-child,.sig td:first-child,.glance td:first-child,.cred td:first-child{font-family:var(--mono);font-size:8.2px;font-weight:700;white-space:nowrap;}
+.sig col.c-id{width:30px;}.sig col.c-t{width:30%;}.sig col.c-wt{width:25%;}
+.glance col.c-s{width:98px;}.glance col.c-f{width:116px;}.glance col.c-w{width:92px;}.glance col.c-a{width:60px;}
+.glance td b{font-family:var(--mono);font-size:8.4px;}
+.cred col.c-k{width:118px;}.cred col.c-l{width:92px;}.cred col.c-r{width:25%;}
+.rt col.c-r{width:140px;}.rt col.c-f{width:40%;}
+.rd col.c-r{width:118px;}.rd col.c-p{width:27%;}.rd col.c-s{width:26%;}
+.ind col.c-i{width:39%;}.ind col.c-w{width:22%;}
+.tested col.c-c{width:104px;}.tested col.c-r{width:36%;}
+.gl{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;font-size:9.3px;line-height:1.4;}
+.gl div b{font-family:var(--mono);font-size:8.6px;display:block;margin-bottom:1px;}
+ol.setup{margin:4px 0 0;padding-left:18px;font-size:9.8px;line-height:1.45;}
+ol.setup li{margin-bottom:3px;}
+ol.setup b{font-family:var(--mono);font-size:8.4px;}
+.chain td{font-size:9.6px;line-height:1.42;vertical-align:top;}
+.chain td:first-child{font-family:var(--mono);font-weight:700;font-size:8.6px;white-space:nowrap;}
+.chain td:first-child span{display:block;font-weight:400;color:var(--muted);font-size:7.8px;margin-top:2px;}
+.chain col.c-s{width:92px;}.chain col.c-l{width:27%;}.chain col.c-c{width:118px;}.chain col.c-a{width:46px;}
+.chain td b{font-family:var(--mono);font-size:8.4px;}
+.two .gha{margin:0;}
+.c,.e,.rule-box,pre,td .nw{font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0;}
+table.reg2{table-layout:fixed;}
+table.reg2 col.c-id{width:32px;}table.reg2 col.c-a{width:337px;}
+table.reg2 td{overflow-wrap:anywhere;}
+.kicker2{font-family:var(--mono);font-size:8.6px;color:var(--muted);}
+.kj{padding:6px 0;}
+.kj .rests{font-size:9.2px;color:var(--muted);margin:0 0 2px;}
+.kj .rests b{font-family:var(--mono);font-size:8.2px;color:var(--ink);font-weight:700;}
+.ev col.c-id{width:34px;}.ev col.c-r{width:25%;}.ev col.c-w{width:58px;}
+.ev td:first-child,.reg2 td:first-child{font-family:var(--mono);font-size:8.2px;font-weight:700;white-space:nowrap;}
+.reg2{font-size:8.8px;line-height:1.36;}
+.reg2 col.c-id{width:32px;}.reg2 col.c-a{width:37%;}
+.reg2 .c{font-size:7.6px;}
+.lim col.c-l{width:36%;}
+.figrow{display:grid;grid-template-columns:420px 1fr;gap:16px;align-items:start;margin:0 0 8px;}
+.figrow p{font-size:9.8px;line-height:1.42;margin:0;}
+.act col.c-id{width:30px;}.act col.c-ow{width:84px;}.act col.c-hz{width:84px;}.act col.c-ck{width:128px;}
+/* figures */
+figure{margin:0 0 8px;}
+svg{display:block;width:100%;height:auto;overflow:visible;}
+svg text{font-family:var(--sans);fill:var(--ink);}
+svg .m{font-family:var(--mono);}
+svg .b{font-weight:700;}
+svg .mu{fill:var(--muted);}
+svg .wt{fill:#FFFFFF;}
+.callout{border:1px solid var(--ink);border-left:6px solid var(--ink);background:var(--box);padding:8px 12px;margin-top:6px;}
+.callout h3{font-family:var(--mono);font-size:10.4px;font-weight:700;margin:0 0 4px;}
+.callout p{font-size:10.2px;line-height:1.46;margin:0;}
+.faq{border:1px solid var(--ink);}
+.faq .fh{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:9.6px;font-weight:700;padding:5px 10px;}
+.faq .row{display:grid;grid-template-columns:200px 1fr;border-top:1px solid var(--rule);}
+.faq .row:nth-child(even){background:var(--shade);}
+.faq .qq{font-family:var(--mono);font-size:9.2px;font-weight:700;padding:6px 10px;}
+.faq .aa{font-size:9.8px;line-height:1.42;padding:6px 10px;}
+.refs{font-size:8.8px;line-height:1.42;}
+.refs h3{font-family:var(--mono);font-size:9.4px;margin:8px 0 3px;}
+.refs ol{margin:0;padding-left:18px;}
+.refs li{margin:0 0 3px;}
+.refs .u{font-family:var(--mono);font-size:7.6px;color:var(--muted);word-break:break-all;}
+.refcols{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+code,.c{font-family:var(--mono);font-size:.9em;overflow-wrap:anywhere;}
+
+@page{size:A4;margin:0;}
+@media print{
+  :root{padding:0;}
+  body{background:#FFFFFF;}
+  .viewer{display:block;padding:0;gap:0;overflow:visible;}
+  .page{zoom:.92;margin:49px auto 0;box-shadow:none;break-after:page;page-break-after:always;}
+  .page:last-child{break-after:auto;page-break-after:auto;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+</style>
+</head>
+<body>
+<main class="viewer">
+<!-- ==================== PAGE 1: COVER ==================== -->
+
+<main class="viewer">
+<!-- ==================== PAGE 1: COVER ==================== -->
+<article class="page" aria-label="Page 1 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 1 of 15</span></header>
+
+  <p class="kicker">CTI Report</p>
+  <h1>Ghost in the Granite</h1>
+  <p class="standfirst"><b>SAP developer tokens reportedly stolen and used to copy and alter source code on GitHub.</b> SAP confirms only “suspicious activities”. The trail in its public repositories starts eight days before the first report, and nothing yet shows altered code reaching customers.</p>
+  <dl class="meta">
+    <div><dt>Author</dt><dd>Douglas Mun with AI assistance</dd></div>
+    <div><dt>Issued</dt><dd>27 Nov 2026</dd></div>
+    <div><dt>Version</dt><dd>1.0</dd></div>
+    <div><dt>Information cut-off</dt><dd>08:10 UTC (16:10 SGT), 27 Nov 2026</dd></div>
+    <div><dt>Marking</dt><dd>TLP:CLEAR</dd></div>
+  </dl>
+
+  <figure>
+<svg viewBox="0 0 706 312" role="img" aria-label="Timeline, 16 to 27 November 2026. Observed in public: 18 November 14:58 UTC, last commit synced from SAP’s internal Gerrit to UI5/openui5; 19 November, commits in SAP’s public organisations fall by more than half in a day; 21 November, a UI5 release workflow drops its OpenUI5 Bot token; 26 November 12:03 UTC, a public workflow is paused until internal repositories unblock access. Reported: 26 November evening, Der Spiegel reports and SAP confirms suspicious activities. Eight days separate the last synced commit from the first report.">
+<defs><marker id="dot" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="6" markerHeight="6"><circle cx="4" cy="4" r="3.2" fill="#1C2326"/></marker></defs>
+<text x="0.0" y="12.0" class="m b" fill="#1F7A46" font-size="8.6">Observed by us in SAP’s public repositories</text>
+<line x1="70.0" y1="166" x2="70.0" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="74.0" y="183.0" class="m" font-size="7.4">16 Mo</text>
+<line x1="122.5" y1="166" x2="122.5" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="126.5" y="183.0" class="m" font-size="7.4">17 Tu</text>
+<line x1="175.0" y1="166" x2="175.0" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="179.0" y="183.0" class="m" font-size="7.4">18 We</text>
+<line x1="227.5" y1="166" x2="227.5" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="231.5" y="183.0" class="m" font-size="7.4">19 Th</text>
+<line x1="280.0" y1="166" x2="280.0" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="284.0" y="183.0" class="m" font-size="7.4">20 Fr</text>
+<rect x="332.5" y="162" width="52.5" height="30" fill="#E6E9E2"/>
+<line x1="332.5" y1="166" x2="332.5" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="336.5" y="183.0" class="m" font-size="7.4">21 Sa</text>
+<rect x="385.0" y="162" width="52.5" height="30" fill="#E6E9E2"/>
+<line x1="385.0" y1="166" x2="385.0" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="389.0" y="183.0" class="m" font-size="7.4">22 Su</text>
+<line x1="437.5" y1="166" x2="437.5" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="441.5" y="183.0" class="m" font-size="7.4">23 Mo</text>
+<line x1="490.0" y1="166" x2="490.0" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="494.0" y="183.0" class="m" font-size="7.4">24 Tu</text>
+<line x1="542.5" y1="166" x2="542.5" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="546.5" y="183.0" class="m" font-size="7.4">25 We</text>
+<line x1="595.0" y1="166" x2="595.0" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="599.0" y="183.0" class="m" font-size="7.4">26 Th</text>
+<line x1="647.5" y1="166" x2="647.5" y2="174" stroke="#1C2326" stroke-width="1"/>
+<text x="651.5" y="183.0" class="m" font-size="7.4">27 Fr</text>
+<line x1="700.0" y1="166" x2="700.0" y2="174" stroke="#1C2326" stroke-width="1"/>
+<line x1="56" y1="170" x2="700.0" y2="170" stroke="#1C2326" stroke-width="1.6"/>
+<text x="0.0" y="168.0" class="m mu" font-size="7.4">November</text>
+<text x="0.0" y="178.0" class="m mu" font-size="7.4">2026, UTC</text>
+<line x1="207.7" y1="170" x2="662.2" y2="170" stroke="#A8322D" stroke-width="4"/>
+<rect x="92" y="22" width="152" height="46" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1.4"/>
+<text x="99.0" y="34.0" class="m b" font-size="7.8">18 Nov, 14:58 UTC</text>
+<text x="237.0" y="34.0" class="m" text-anchor="end" fill="#1F7A46" font-size="7.2">E-01</text>
+<text x="99.0" y="46.0" font-size="8">Last commit synced from SAP’s</text>
+<text x="99.0" y="56.4" font-size="8">internal Gerrit to UI5/openui5</text>
+<path d="M207.7,68 L207.7,170" fill="none" stroke="#1C2326" stroke-width="1.2" marker-end="url(#dot)"/>
+<rect x="264" y="80" width="152" height="46" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1.4"/>
+<text x="271.0" y="92.0" class="m b" font-size="7.8">19 Nov</text>
+<text x="409.0" y="92.0" class="m" text-anchor="end" fill="#1F7A46" font-size="7.2">E-06</text>
+<text x="271.0" y="104.0" font-size="8">Commits in SAP’s public organisations</text>
+<text x="271.0" y="114.4" font-size="8">fall by more than half in a day</text>
+<path d="M264,103 L253.8,103 L253.8,170" fill="none" stroke="#1C2326" stroke-width="1.2" marker-end="url(#dot)"/>
+<rect x="424" y="22" width="152" height="46" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1.4"/>
+<text x="431.0" y="34.0" class="m b" font-size="7.8">21 Nov, 09:10 UTC</text>
+<text x="569.0" y="34.0" class="m" text-anchor="end" fill="#1F7A46" font-size="7.2">E-04</text>
+<text x="431.0" y="46.0" font-size="8">A UI5 release workflow drops</text>
+<text x="431.0" y="56.4" font-size="8">its OpenUI5 Bot token</text>
+<path d="M500,68 L500,74 L436,74 L436,138 L352.6,138 L352.6,170" fill="none" stroke="#1C2326" stroke-width="1.2" marker-end="url(#dot)"/>
+<rect x="548" y="80" width="158" height="46" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1.4"/>
+<text x="555.0" y="92.0" class="m b" font-size="7.8">26 Nov, 12:03 UTC</text>
+<text x="699.0" y="92.0" class="m" text-anchor="end" fill="#1F7A46" font-size="7.2">E-03</text>
+<text x="555.0" y="104.0" font-size="8">A public workflow is paused until</text>
+<text x="555.0" y="114.4" font-size="8">internal repos “unblock access”</text>
+<path d="M621.4,126 L621.4,170" fill="none" stroke="#1C2326" stroke-width="1.2" marker-end="url(#dot)"/>
+<rect x="207.7" y="194" width="425.0" height="30" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.4"/>
+<line x1="207.7" y1="170" x2="207.7" y2="194" stroke="#A8322D" stroke-width="1.4"/>
+<line x1="632.7" y1="170" x2="632.7" y2="236" stroke="#A8322D" stroke-width="1.4"/>
+<circle cx="632.7" cy="170" r="3.4" fill="#A8322D"/>
+<text x="414.2" y="215.0" class="m b" text-anchor="end" fill="#A8322D" font-size="19">8 days</text>
+<text x="424.2" y="207.0" font-size="8.2">between the last synced commit</text>
+<text x="424.2" y="217.5" font-size="8.2">and the first public report</text>
+<text x="0.0" y="232.0" class="m b" fill="#6E6126" font-size="8.6">Reported</text>
+<rect x="410" y="236" width="296" height="46" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1.4"/>
+<text x="417.0" y="248.0" class="m b" font-size="7.8">26 Nov, evening (CET)</text>
+<text x="417.0" y="260.0" font-size="8">Der Spiegel reports a “hacker attack”. SAP confirms “suspicious</text>
+<text x="417.0" y="270.4" font-size="8">activities”. Handelsblatt follows at 23:21 UTC with containment steps.</text>
+<rect x="0" y="244" width="392" height="48" fill="#E3E8E8" stroke="#56615F" stroke-width="1.4"/>
+<text x="7.0" y="256.0" class="m b" font-size="7.8">Earlier in 2026, off this scale</text>
+<text x="7.0" y="268.0" font-size="8">29 Apr: Mini Shai-Hulud poisons four SAP npm packages. 10 Nov: the wfx campaign</text>
+<text x="7.0" y="278.4" font-size="8">reuses stolen GitHub accounts. Nothing public links either to this incident.</text>
+<text x="0.0" y="308.0" class="mu" font-size="7.8">The red line marks the stretch with no commit synced from SAP’s internal Gerrit, to the cut-off. Der Spiegel’s exact publication time is not known to us.</text>
+</svg>
+  </figure>
+
+  <div class="verdict">
+    <div class="vq">Has altered code reached SAP customers?</div>
+    <div class="va">Not known.</div>
+    <div class="vt">We found no attacker commit in the surviving public history of 186 SAP repositories (<span class="e">E-10, E-11, E-17</span>) and no report of a tampered SAP product, package or cloud service (to 08:10 UTC, 27 Nov). SAP’s statement covers <b>customer business data</b> and is silent on code integrity. An advisory is not yet warranted; page 10 lists the six signposts that would change that.</div>
+  </div>
+  <div class="stats">
+    <div><span class="n">8 days</span><span class="l">from the last commit synced out of SAP’s internal Gerrit (18 Nov, 14:58 UTC) to the first report (26 Nov)</span></div>
+    <div><span class="n">6% → 34%</span><span class="l">of direct pushes signed, 1–18 Nov against 19–27 Nov: the reported signing rule, visible in public</span></div>
+    <div><span class="n">186</span><span class="l">public SAP repositories examined; no attacker commit, worm indicator or leaked copy found</span></div>
+    <div><span class="n">0</span><span class="l">indicators, repository names or customer advisories from SAP that we could find</span></div>
+  </div>
+  <div class="faq">
+    <div class="fh">Six questions, short answers</div>
+    <div class="row"><div class="qq">Am I affected?</div><div class="aa">Not on current evidence. No SAP product, package or cloud service is reported tampered, and SAP has named no repository. If you build on SAP’s open-source packages, pin versions until SAP states the scope (page 10).</div></div>
+    <div class="row"><div class="qq">What happened?</div><div class="aa">SAP confirms “suspicious activities”. Der Spiegel reports that attackers stole employee tokens and used them to copy and alter SAP source code on GitHub (page 4).</div></div>
+    <div class="row"><div class="qq">When did it start?</div><div class="aa">Not known. SAP’s response shows in public from 18 or 19 November, about a week before the first report (<span class="nw">KJ-3</span>, page 5).</div></div>
+    <div class="row"><div class="qq">How were the tokens taken?</div><div class="aa">Not reported. A Shai-Hulud-family worm fits the reporting most closely, but its indicators are absent from SAP’s public repositories (page 9).</div></div>
+    <div class="row"><div class="qq">Was AI involved?</div><div class="aa">Unverified. Der Spiegel’s sources say “possibly by means of agentic AI” and give no mechanism (page 9).</div></div>
+    <div class="row"><div class="qq">What should we do now?</div><div class="aa">Hold the advisory, pin SAP dependencies, review GitHub token use within 7 days and watch six signposts (page 10). Commands and tested GitHub controls are in Appendices B and C.</div></div>
+  </div>
+</article>
+
+<!-- ==================== PAGE 2: FRONT MATTER ==================== -->
+<article class="page" aria-label="Page 2 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 2 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span class="on">1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span>6 Reference</span></nav>
+
+  <div class="front" style="margin:0 0 10px">
+    <div class="box">
+      <h3>Disclaimer</h3>
+      <p>This report rests on public reporting and on our own read-only examination of SAP’s public GitHub repositories and npm records, both on 27 November 2026. We hold no telemetry, sample or indicator, and we did not read Der Spiegel’s article at source. Quotations from German sources are translations, in part by machine. Drafted with AI assistance and audited by its author, with no independent second review; verify before operational use. Times are UTC, with Singapore time (SGT) in brackets.</p>
+    </div>
+    <div class="box">
+      <h3>Scope, method and sourcing</h3>
+      <p><b>Scope:</b> the SAP incident first reported on 26 November 2026, the public trace of SAP’s response, and what both mean for organisations that run SAP or build on its open-source packages.</p>
+      <p><b>Method:</b> grading three primary sources; reading 13,897 commits in 186 public SAP repositories, the refs of 295, npm records for 24 packages and GitHub’s search index; and testing the commands and controls we publish. Our observations carry IDs E-01 to E-17 (Appendix A, page 13).</p>
+    </div>
+    <div class="box">
+      <h3>Keys</h3>
+      <div class="keyrow"><span class="lab">Confidence in a judgement</span><span class="chip k-h">High</span><span class="chip k-m">Moderate</span><span class="chip k-l">Low</span></div>
+      <div class="keyrow"><span class="lab">Status of a claim</span><span class="chip c-ok">Confirmed</span><span class="chip c-obs">Observed</span><span class="chip c-rep">Reported</span><span class="chip c-un">Unconfirmed</span></div>
+      <p class="keynote">Confirmed: stated by SAP on record. Observed: seen by us in public data. Reported: a named outlet citing inside sources. Unconfirmed: one hedged source, or no primary. Likelihood follows ICD 203 (likely 55–80%, very likely 80–95%) and is stated apart from confidence.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2>The public trail starts eight days before the first report; customer impact is unproven</h2>
+    <p class="lead">SAP said on 26 November 2026 that it had identified suspicious activities, acted at once and found no evidence so far of unauthorised access to customer business data. Der Spiegel, citing an insider, reports that attackers stole SAP employees’ authentication tokens and used them to copy and alter SAP source code on GitHub, which SAP has not confirmed. SAP’s public repositories show a response from 18 November, eight days before the first report, when the sync from its internal Gerrit to OpenUI5 stopped. From 20 November signed commits rose from 6% to 34% of direct pushes, matching a rule that Handelsblatt reports. We found no attacker commit, no public copy of non-public code and no report that altered code reached customers, so a constituency advisory is not yet warranted. Teams that build on SAP’s open-source packages should pin dependency versions now, and GitHub organisation owners should review token use within 7 days (page 10).</p>
+  </section>
+
+  <section>
+    <div class="ws">
+      <div><b>Who</b>SAP SE, Walldorf, Germany. Handelsblatt’s sources say numerous development teams are affected. The actor is unidentified.</div>
+      <div><b>What</b>An “active IT security incident”, handled inside SAP as “Project Granite” (Der Spiegel, citing a staff notice). Reported: stolen employee tokens, and source code copied and altered.</div>
+      <div><b>When</b>Public since the evening of 26 Nov 2026 (CET). SAP’s response very likely began on 18 or 19 Nov (<span class="nw">KJ-3</span>). SAP has given no detection date.</div>
+      <div><b>Where</b>SAP’s presence on GitHub, by Der Spiegel’s account. No repository is named. What we observed points to SAP’s internal GitHub Enterprise (<span class="nw">KJ-4</span>).</div>
+      <div><b>Why</b>Not known. The reporting we read carries no demand, leak or claim of responsibility.</div>
+      <div><b>How</b>Stolen authentication tokens, on one insider’s account. How they were stolen is not reported. Der Spiegel’s sources add “possibly by means of agentic AI”.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Three incidents earlier in 2026 took or used developer or release credentials</h2>
+    <figure>
+<svg viewBox="0 0 706 168" role="img" aria-label="2026 timeline of developer-credential incidents: 29 April Mini Shai-Hulud poisons four SAP npm packages; 10 November the wfx campaign reuses stolen GitHub accounts; 17 November a stolen release credential ships a stealer as Microsoft agent-framework; 18 to 26 November SAP Project Granite.">
+<line x1="40" y1="40" x2="690" y2="40" stroke="#1C2326" stroke-width="1.4"/>
+<text x="0.0" y="14.0" class="m b" font-size="8.2">2026</text>
+<text x="40.0" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">Apr</text>
+<line x1="40.0" y1="36" x2="40.0" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<text x="121.2" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">May</text>
+<line x1="121.2" y1="36" x2="121.2" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<text x="202.4" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">Jun</text>
+<line x1="202.4" y1="36" x2="202.4" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<text x="283.6" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">Jul</text>
+<line x1="283.6" y1="36" x2="283.6" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<text x="364.8" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">Aug</text>
+<line x1="364.8" y1="36" x2="364.8" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<text x="446.0" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">Sep</text>
+<line x1="446.0" y1="36" x2="446.0" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<text x="527.2" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">Oct</text>
+<line x1="527.2" y1="36" x2="527.2" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<text x="608.4" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">Nov</text>
+<line x1="608.4" y1="36" x2="608.4" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<text x="689.6" y="30.0" class="m mu" text-anchor="middle" font-size="7.6">Dec</text>
+<line x1="689.6" y1="36" x2="689.6" y2="44" stroke="#56615F" stroke-width="0.8"/>
+<circle cx="114.5" cy="40" r="6.5" fill="#1C2326"/>
+<circle cx="632.4" cy="40" r="6.5" fill="#1C2326"/>
+<circle cx="651.0" cy="40" r="6.5" fill="#1C2326"/>
+<circle cx="664.3" cy="40" r="7.5" fill="#A8322D"/>
+<path d="M114.5,48 L114.5,54 L86.0,54 L86.0,60" fill="none" stroke="#56615F"/>
+<rect x="0" y="60" width="172" height="78" fill="#EEF0EA" stroke="#C3C9C3" stroke-width="1"/>
+<text x="7.0" y="74.0" class="m b" font-size="7.8">29 Apr · Mini Shai-Hulud</text>
+<text x="7.0" y="87.0" font-size="8">Four SAP npm packages poisoned;</text>
+<text x="7.0" y="98.0" font-size="8">the stealer takes GitHub and</text>
+<text x="7.0" y="109.0" font-size="8">npm tokens</text>
+<rect x="7" y="120" width="73" height="13" fill="#BFC8C9"/>
+<text x="43.5" y="129.5" class="m b" text-anchor="middle" font-size="7">TeamPCP (Wiz)</text>
+<path d="M632.4,48 L632.4,54 L264.0,54 L264.0,60" fill="none" stroke="#56615F"/>
+<rect x="178" y="60" width="172" height="78" fill="#EEF0EA" stroke="#C3C9C3" stroke-width="1"/>
+<text x="185.0" y="74.0" class="m b" font-size="7.8">10 Nov · wfx campaign</text>
+<text x="185.0" y="87.0" font-size="8">4,837 hijacked GitHub accounts</text>
+<text x="185.0" y="98.0" font-size="8">probe 61,764 repositories for</text>
+<text x="185.0" y="109.0" font-size="8">CI secrets</text>
+<rect x="185" y="120" width="68" height="13" fill="#BFC8C9"/>
+<text x="219.2" y="129.5" class="m b" text-anchor="middle" font-size="7">Unattributed</text>
+<path d="M651.0,48 L651.0,54 L442.0,54 L442.0,60" fill="none" stroke="#56615F"/>
+<rect x="356" y="60" width="172" height="78" fill="#EEF0EA" stroke="#C3C9C3" stroke-width="1"/>
+<text x="363.0" y="74.0" class="m b" font-size="7.8">17 Nov · Microsoft agent-framework</text>
+<text x="363.0" y="87.0" font-size="8">A stolen release credential ships</text>
+<text x="363.0" y="98.0" font-size="8">a stealer on PyPI; an AI agent</text>
+<text x="363.0" y="109.0" font-size="8">likely ran it</text>
+<rect x="363" y="120" width="97" height="13" fill="#BFC8C9"/>
+<text x="411.3" y="129.5" class="m b" text-anchor="middle" font-size="7">Our report, 19 Nov</text>
+<path d="M664.3,48 L664.3,54 L620.0,54 L620.0,60" fill="none" stroke="#A8322D"/>
+<rect x="534" y="60" width="172" height="78" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.4"/>
+<text x="541.0" y="74.0" class="m b" font-size="7.8">18–26 Nov · SAP “Project Granite”</text>
+<text x="541.0" y="87.0" font-size="8">Employee tokens reportedly</text>
+<text x="541.0" y="98.0" font-size="8">stolen; source code copied</text>
+<text x="541.0" y="109.0" font-size="8">and altered</text>
+<rect x="541" y="120" width="68" height="13" fill="#A8322D"/>
+<text x="575.2" y="129.5" class="m b wt" text-anchor="middle" font-size="7">Unattributed</text>
+<text x="0.0" y="158.0" class="mu" font-size="7.8">Each incident took or used developer or release credentials. We found nothing public that links them.</text>
+</svg>
+    </figure>
+    <p class="small" style="margin-top:6px">The April incident is the closest precedent. A group that researchers identify as TeamPCP published <span class="c">mbt@1.2.48</span> and three <span class="c">@cap-js</span> packages with a preinstall stealer that took GitHub and npm tokens, SSH keys and cloud credentials and sent them to GitHub repositories. The versions were live for two to four hours, and SAP documented the incident in Security Note 3747787 (reference 17). Germany’s BSI now rates the IT security situation “tense to critical” (reference 2).</p>
+  </section>
+</article>
+
+<!-- ==================== PAGE 3: KEY JUDGEMENTS AND THE REPORTED CHAIN ==================== -->
+<article class="page" aria-label="Page 3 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 3 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span class="on">1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span>6 Reference</span></nav>
+
+  <section>
+    <h2>Five judgements: two rest on reporting, two on the public record, one stays open</h2>
+    <div class="kj">
+      <div class="id"><span class="nw">KJ-1</span></div>
+      <div>
+        <div class="hd"><h4>Attackers used stolen employee credentials to reach SAP’s development on GitHub.</h4><span class="tags">Likely <span class="chip k-m">Moderate</span></span></div>
+        <p>Der Spiegel’s insider reports stolen tokens and altered code, and Handelsblatt’s company sources place the incident in software development. SAP confirms only “suspicious activities”. Our observations show a response in SAP’s development systems, not its cause. Confidence is Moderate: the token detail has one unnamed source.</p>
+        <p class="gap"><b>Rests on:</b> claims 3, 5 and 6 (page 4); <span class="e">E-01, E-03</span>. <b>Gap:</b> SAP has not said how the tokens were taken or what they could write to. A statement from SAP on the access path would settle this either way.</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id"><span class="nw">KJ-2</span></div>
+      <div>
+        <div class="hd"><h4>SAP treated its build and release path as exposed, not only its source code.</h4><span class="tags">Likely <span class="chip k-m">Moderate</span></span></div>
+        <p>Handelsblatt reports four measures: restricted GitHub access, stopped automated development processes, replaced signing keys and a rule that every code change be signed. Three of the four show in public: the OpenUI5 sync stopped, access to internal repositories was blocked, and signed commits rose from 6% to 34% of direct pushes. Signing keys are replaced when a release path is in doubt, not after read-only access to code. Confidence is Moderate: the key replacement itself has one outlet and is outside our view.</p>
+        <p class="gap"><b>Rests on:</b> claims 7 and 11 (page 4); <span class="e">E-01, E-03, E-15</span>. <b>Gap:</b> Which keys, and whether anything was built or signed while the attackers had access. A notice of re-signed downloads or packages would raise confidence.</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id"><span class="nw">KJ-3</span></div>
+      <div>
+        <div class="hd"><h4>SAP’s response began on 18 or 19 November, about a week before the first report.</h4><span class="tags">Very likely <span class="chip k-m">Moderate</span></span></div>
+        <p>The last commit synced from SAP’s internal Gerrit to <span class="c">UI5/openui5</span> is dated 18 November, 14:58 UTC. In 2026 the sync had missed only two weekdays, both German public holidays; it has now missed six in a row. On 19 November commits in SAP’s public organisations fell by more than half in a day, while three control organisations showed no comparable fall. From 20 November, committers who had not signed before began to sign. Confidence is Moderate: a planned freeze or an outage of the sync would look the same, and SAP has given no date.</p>
+        <p class="gap"><b>Rests on:</b> <span class="e">E-01, E-02, E-06, E-15</span> (page 6). <b>Gap:</b> SAP’s detection date, and how long the attackers had access before it. A statement from SAP on either would replace this estimate.</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id"><span class="nw">KJ-4</span></div>
+      <div>
+        <div class="hd"><h4>The affected environment includes SAP’s internal GitHub Enterprise, not only github.com.</h4><span class="tags">Likely <span class="chip k-m">Moderate</span></span></div>
+        <p>A public SAP workflow that reads from <span class="c">github.tools.sap</span>, SAP’s internal GitHub, was paused on 26 November “until required repos unblock access”, and the sync that stopped also starts inside SAP. The public organisations kept working: direct pushes by people were back at their usual level by 24 November, and provenance-attested packages kept publishing. Confidence is Moderate: two artefacts point inward and none at the public organisations, but tampering there that was later removed would leave no trace.</p>
+        <p class="gap"><b>Rests on:</b> <span class="e">E-01, E-03, E-08</span> (page 6). <b>Gap:</b> Whether the “GitHub presence” in Der Spiegel’s report means github.com, <span class="c">github.tools.sap</span>, or both.</p>
+      </div>
+    </div>
+    <div class="kj">
+      <div class="id"><span class="nw">KJ-5</span></div>
+      <div>
+        <div class="hd"><h4>Whether altered code reached software that customers run cannot yet be assessed.</h4><span class="tags"><span class="chip c-un">Not assessed</span></span></div>
+        <p>We found no attacker commit, campaign or worm indicator, or unusual CI change in the surviving public history of 186 SAP repositories. We also found no public copy of non-public SAP code and no report of a tampered SAP release (to 08:10 UTC, 27 Nov). Both are statements about the evidence: deleted branches, rewritten history and internal repositories are outside our view, and SAP’s statement covers customer business data only.</p>
+        <p class="gap"><b>Rests on:</b> claim 2 (page 4); <span class="e">E-10, E-11, E-16, E-17</span> (page 6). <b>Gap:</b> The repository names and the period of access. A named repository that feeds a shipped product or a public package would warrant an advisory the same day.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The reported chain has three steps from one insider and one step nobody has reported</h2>
+  <figure>
+<svg viewBox="0 0 706 202" role="img" aria-label="The reported chain in five steps. Steps 1 to 3, reported by Der Spiegel citing an insider and not confirmed by SAP: employee authentication tokens are stolen, used against SAP’s presence on GitHub, and source code is copied and altered. Step 4, build and signing, is not reported. Step 5: SAP states it has no evidence of access to customer business data. Handelsblatt reports containment at steps 2 to 4: GitHub access restricted, automated development processes stopped, signing keys replaced.">
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1C2326"/></marker>
+  <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#56615F"/></marker>
+</defs>
+<text x="0" y="10" class="m b" font-size="8.6">Der Spiegel, citing an insider. SAP has not confirmed it.</text>
+<path d="M0,16 L0,20 L417,20 L417,16" fill="none" stroke="#9A8A3C" stroke-width="1.4"/>
+<text x="433.5" y="10" class="m b" font-size="8.6">Not reported</text>
+<path d="M433.5,16 L433.5,20 L561.5,20 L561.5,16" fill="none" stroke="#56615F" stroke-width="1.4"/>
+<text x="578" y="10" class="m b" font-size="8.6">SAP on record</text>
+<path d="M578,16 L578,20 L706,20 L706,16" fill="none" stroke="#1F7A46" stroke-width="1.4"/>
+
+<rect x="0" y="28" width="128" height="88" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1.6"/>
+<text x="8" y="44" class="m b" font-size="8.6">1 Tokens stolen</text>
+<text x="8" y="60" font-size="8.2">Authentication tokens of</text>
+<text x="8" y="72" font-size="8.2">SAP employees are stolen.</text>
+<text x="8" y="84" font-size="8.2">How is not reported.</text>
+<text x="8" y="107" class="m" fill="#6E6126" font-size="7.4">Reported · one insider</text>
+
+<rect x="144.5" y="28" width="128" height="88" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1.6"/>
+<text x="152.5" y="44" class="m b" font-size="8.6">2 GitHub reached</text>
+<text x="152.5" y="60" font-size="8.2">The tokens are used</text>
+<text x="152.5" y="72" font-size="8.2">against SAP’s presence</text>
+<text x="152.5" y="84" font-size="8.2">on GitHub.</text>
+<text x="152.5" y="107" class="m" fill="#6E6126" font-size="7.4">Reported</text>
+
+<rect x="289" y="28" width="128" height="88" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1.6"/>
+<text x="297" y="44" class="m b" font-size="8.6">3 Code copied, altered</text>
+<text x="297" y="60" font-size="8.2">Source code is copied</text>
+<text x="297" y="72" font-size="8.2">and manipulated. No</text>
+<text x="297" y="84" font-size="8.2">repository is named.</text>
+<text x="297" y="107" class="m" fill="#6E6126" font-size="7.4">Reported</text>
+
+<rect x="433.5" y="28" width="128" height="88" fill="#E3E8E8" stroke="#56615F" stroke-width="1.6" stroke-dasharray="5 3"/>
+<text x="441.5" y="44" class="m b" font-size="8.6">4 Build and signing</text>
+<text x="441.5" y="60" font-size="8.2">Did a change enter a</text>
+<text x="441.5" y="72" font-size="8.2">build or a signed</text>
+<text x="441.5" y="84" font-size="8.2">release? Not known.</text>
+<text x="441.5" y="107" class="m" fill="#56615F" font-size="7.4">Open · KJ-2, KJ-5</text>
+
+<rect x="578" y="28" width="128" height="88" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1.6"/>
+<text x="586" y="44" class="m b" font-size="8.6">5 Customers</text>
+<text x="586" y="60" font-size="8.2">“No evidence” so far of</text>
+<text x="586" y="72" font-size="8.2">access to customer</text>
+<text x="586" y="84" font-size="8.2">business data.</text>
+<text x="586" y="107" class="m" fill="#1F7A46" font-size="7.4">Confirmed statement</text>
+
+<line x1="128" y1="72" x2="142.5" y2="72" stroke="#1C2326" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="272.5" y1="72" x2="287" y2="72" stroke="#1C2326" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="417" y1="72" x2="431.5" y2="72" stroke="#56615F" stroke-width="1.4" stroke-dasharray="3 2" marker-end="url(#ag)"/>
+<line x1="561.5" y1="72" x2="576" y2="72" stroke="#56615F" stroke-width="1.4" stroke-dasharray="3 2" marker-end="url(#ag)"/>
+
+<line x1="208.5" y1="140" x2="208.5" y2="119" stroke="#1C2326" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="353" y1="140" x2="353" y2="119" stroke="#1C2326" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="497.5" y1="140" x2="497.5" y2="119" stroke="#1C2326" stroke-width="1.4" marker-end="url(#ah)"/>
+<rect x="144.5" y="140" width="417" height="40" fill="#1C2326"/>
+<text x="353" y="156" class="m b wt" text-anchor="middle" font-size="8.8">Containment reported by Handelsblatt, citing company sources</text>
+<text x="353" y="171" class="wt" text-anchor="middle" font-size="8.4">GitHub access restricted · automated development processes stopped · signing keys replaced</text>
+<text x="0" y="198" class="mu" font-size="8.2">Der Spiegel’s sources add that the attackers “possibly” used agentic AI. No report says where in this chain it applied, and Handelsblatt does not repeat it.</text>
+</svg>
+  </figure>
+  </section>
+</article>
+
+<!-- ==================== PAGE 4: WHAT IS REPORTED ==================== -->
+<article class="page" aria-label="Page 4 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 4 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span class="on">2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span>6 Reference</span></nav>
+
+  <p class="bridge"><span class="nw">KJ-1</span> and <span class="nw">KJ-2</span> rest on reporting. Three primary sources carry all of it: Der Spiegel’s insider, SAP’s statement to dpa, and Handelsblatt’s company sources. We read Handelsblatt in full, in machine translation, and Der Spiegel through agency summaries.</p>
+
+  <section>
+    <h2>SAP is on the record for two of the twelve claims in circulation</h2>
+    <table class="reg">
+      <colgroup><col class="c-n"><col class="c-cl"><col class="c-src"><col><col class="c-v"></colgroup>
+      <thead><tr><th>#</th><th>Claim</th><th>Rests on</th><th>Note</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1</td><td>SAP identified “suspicious activities” and took the necessary measures immediately.</td><td>SAP statement to dpa, 26 Nov</td><td>SAP’s own wording. Asked by Handelsblatt, SAP did not say whether every affected system is identified or the attack contained.</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td class="n">2</td><td>SAP has found no evidence of unauthorised access to customer business data.</td><td>SAP statement to dpa, 26 Nov</td><td>An evidence claim “at the current state” of the investigation, limited to business data.</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td class="n">3</td><td>The incident is “active” and carries the codename “Project Granite”.</td><td>Der Spiegel, citing a staff notice</td><td>The notice tells staff that information on the project “must be strictly held within SAP” (Der Spiegel, relayed by Handelsblatt; machine translation).</td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+        <tr><td class="n">4</td><td>Staff were asked to check whether to change their access credentials.</td><td>dpa, citing an internal message</td><td></td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+        <tr><td class="n">5</td><td>Attackers stole employee authentication tokens and used them to copy and manipulate SAP source code on GitHub.</td><td>Der Spiegel, one insider</td><td>Handelsblatt is more cautious: the tokens would have allowed access and changes. We found no altered code in public history (<span class="e">E-10, E-11, E-17</span>).</td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+        <tr><td class="n">6</td><td>Software development is affected, across numerous teams.</td><td>Handelsblatt, company circles</td><td>No team count given.</td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+        <tr><td class="n">7</td><td>SAP restricted GitHub access, stopped automated development processes and replaced signing keys.</td><td>Handelsblatt, company circles</td><td>We observed one stopped process (<span class="e">E-01</span>) and one access block (<span class="e">E-03</span>). The key replacement has one outlet and is outside our view.</td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+        <tr><td class="n">8</td><td>The attackers used agentic AI.</td><td>Der Spiegel, internal sources</td><td>Hedged as “possibly”; no mechanism; absent from Handelsblatt.</td><td class="v"><span class="chip c-un">Unconfirmed</span></td></tr>
+        <tr><td class="n">9</td><td>SAP “confirmed a cyberattack”.</td><td>Der Spiegel, through dts</td><td>Der Spiegel says SAP confirmed it on request. SAP’s statement to dpa says only “suspicious activities”.</td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+        <tr><td class="n">10</td><td>The breach took place “earlier this week”.</td><td>The Open Press, NewsBytes</td><td>The primary sources say only “in recent days”. SAP’s response is visible from 18–19 Nov, the week before (<span class="e">E-01</span>).</td><td class="v"><span class="chip c-un">Unconfirmed</span></td></tr>
+        <tr><td class="n">11</td><td>Every code change at SAP must now be cryptographically signed.</td><td>Handelsblatt, company circles</td><td>Corroborated in public: signed commits rose from 6% to 34% of direct pushes, starting on 20 Nov (<span class="e">E-15</span>).</td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+        <tr><td class="n">12</td><td>SAP gives developers an internal tool to check their own code archives for suspicious patterns.</td><td>Handelsblatt, company circles</td><td>SAP therefore holds indicators that it has not published. A pattern scan fits code-borne malware (page 9).</td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p class="bridge next">None of these sources gives a date, names a repository or says how the tokens were taken. The public record dates the response, on the next three pages.</p>
+</article>
+
+<!-- ==================== PAGE 5: TIMELINE ==================== -->
+<article class="page" aria-label="Page 5 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 5 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span class="on">3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span>6 Reference</span></nav>
+
+  <section>
+    <h2>Timeline: the public trail starts on 18 November, eight days before the first report</h2>
+    <figure>
+<svg viewBox="0 0 706 162" role="img" aria-label="Commits per day across 186 SAP repositories, 9 to 27 November 2026, with the 19 November slump of 138 commits, and commits per day synced from SAP’s internal Gerrit to UI5/openui5, which stop after 18 November. A release bot in a public repository continues.">
+<text x="0.0" y="26.0" class="m b" font-size="8.6">All commits per day</text>
+<text x="0.0" y="38.0" class="mu" font-size="7.8">186 repositories, all branches,</text>
+<text x="0.0" y="48.0" class="mu" font-size="7.8">by commit date (UTC)</text>
+<rect x="199.0" y="21.8" width="20.8" height="64.2" fill="#1C2326"/>
+<text x="209.4" y="18.8" class="m" text-anchor="middle" font-size="7">367</text>
+<text x="209.4" y="97.0" class="m" text-anchor="middle" font-size="7.4">9</text>
+<text x="209.4" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Mo</text>
+<rect x="225.8" y="16.5" width="20.8" height="69.5" fill="#1C2326"/>
+<text x="236.3" y="13.5" class="m" text-anchor="middle" font-size="7">397</text>
+<text x="236.3" y="97.0" class="m" text-anchor="middle" font-size="7.4">10</text>
+<text x="236.3" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Tu</text>
+<rect x="252.7" y="33.7" width="20.8" height="52.3" fill="#1C2326"/>
+<text x="263.1" y="30.7" class="m" text-anchor="middle" font-size="7">299</text>
+<text x="263.1" y="97.0" class="m" text-anchor="middle" font-size="7.4">11</text>
+<text x="263.1" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">We</text>
+<rect x="279.5" y="39.6" width="20.8" height="46.4" fill="#1C2326"/>
+<text x="289.9" y="36.6" class="m" text-anchor="middle" font-size="7">265</text>
+<text x="289.9" y="97.0" class="m" text-anchor="middle" font-size="7.4">12</text>
+<text x="289.9" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Th</text>
+<rect x="306.4" y="43.1" width="20.8" height="42.9" fill="#1C2326"/>
+<text x="316.8" y="40.1" class="m" text-anchor="middle" font-size="7">245</text>
+<text x="316.8" y="97.0" class="m" text-anchor="middle" font-size="7.4">13</text>
+<text x="316.8" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Fr</text>
+<rect x="333.2" y="75.2" width="20.8" height="10.8" fill="#BFC8C9"/>
+<text x="343.6" y="72.2" class="m" text-anchor="middle" font-size="7">62</text>
+<text x="343.6" y="97.0" class="m" text-anchor="middle" font-size="7.4">14</text>
+<text x="343.6" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Sa</text>
+<rect x="360.1" y="70.2" width="20.8" height="15.8" fill="#BFC8C9"/>
+<text x="370.5" y="67.2" class="m" text-anchor="middle" font-size="7">90</text>
+<text x="370.5" y="97.0" class="m" text-anchor="middle" font-size="7.4">15</text>
+<text x="370.5" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Su</text>
+<rect x="386.9" y="22.5" width="20.8" height="63.5" fill="#1C2326"/>
+<text x="397.3" y="19.5" class="m" text-anchor="middle" font-size="7">363</text>
+<text x="397.3" y="97.0" class="m" text-anchor="middle" font-size="7.4">16</text>
+<text x="397.3" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Mo</text>
+<rect x="413.7" y="29.0" width="20.8" height="57.0" fill="#1C2326"/>
+<text x="424.2" y="26.0" class="m" text-anchor="middle" font-size="7">326</text>
+<text x="424.2" y="97.0" class="m" text-anchor="middle" font-size="7.4">17</text>
+<text x="424.2" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Tu</text>
+<rect x="440.6" y="22.8" width="20.8" height="63.2" fill="#1C2326"/>
+<text x="451.0" y="19.8" class="m" text-anchor="middle" font-size="7">361</text>
+<text x="451.0" y="97.0" class="m" text-anchor="middle" font-size="7.4">18</text>
+<text x="451.0" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">We</text>
+<rect x="467.4" y="61.9" width="20.8" height="24.1" fill="#A8322D"/>
+<text x="477.8" y="58.9" class="m b" text-anchor="middle" fill="#A8322D" font-size="7">138</text>
+<text x="477.8" y="97.0" class="m" text-anchor="middle" font-size="7.4">19</text>
+<text x="477.8" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Th</text>
+<rect x="494.3" y="48.7" width="20.8" height="37.3" fill="#1C2326"/>
+<text x="504.7" y="45.7" class="m" text-anchor="middle" font-size="7">213</text>
+<text x="504.7" y="97.0" class="m" text-anchor="middle" font-size="7.4">20</text>
+<text x="504.7" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Fr</text>
+<rect x="521.1" y="77.8" width="20.8" height="8.2" fill="#BFC8C9"/>
+<text x="531.5" y="74.8" class="m" text-anchor="middle" font-size="7">47</text>
+<text x="531.5" y="97.0" class="m" text-anchor="middle" font-size="7.4">21</text>
+<text x="531.5" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Sa</text>
+<rect x="547.9" y="77.2" width="20.8" height="8.8" fill="#BFC8C9"/>
+<text x="558.4" y="74.2" class="m" text-anchor="middle" font-size="7">50</text>
+<text x="558.4" y="97.0" class="m" text-anchor="middle" font-size="7.4">22</text>
+<text x="558.4" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Su</text>
+<rect x="574.8" y="37.0" width="20.8" height="49.0" fill="#1C2326"/>
+<text x="585.2" y="34.0" class="m" text-anchor="middle" font-size="7">280</text>
+<text x="585.2" y="97.0" class="m" text-anchor="middle" font-size="7.4">23</text>
+<text x="585.2" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Mo</text>
+<rect x="601.6" y="41.4" width="20.8" height="44.6" fill="#1C2326"/>
+<text x="612.1" y="38.4" class="m" text-anchor="middle" font-size="7">255</text>
+<text x="612.1" y="97.0" class="m" text-anchor="middle" font-size="7.4">24</text>
+<text x="612.1" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Tu</text>
+<rect x="628.5" y="36.0" width="20.8" height="50.0" fill="#1C2326"/>
+<text x="638.9" y="33.0" class="m" text-anchor="middle" font-size="7">286</text>
+<text x="638.9" y="97.0" class="m" text-anchor="middle" font-size="7.4">25</text>
+<text x="638.9" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">We</text>
+<rect x="655.3" y="26.5" width="20.8" height="59.5" fill="#1C2326"/>
+<text x="665.7" y="23.5" class="m" text-anchor="middle" font-size="7">340</text>
+<text x="665.7" y="97.0" class="m" text-anchor="middle" font-size="7.4">26</text>
+<text x="665.7" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Th</text>
+<rect x="682.2" y="78.7" width="20.8" height="7.3" fill="#BFC8C9"/>
+<text x="692.6" y="75.7" class="m" text-anchor="middle" font-size="7">42</text>
+<text x="692.6" y="97.0" class="m" text-anchor="middle" font-size="7.4">27</text>
+<text x="692.6" y="106.0" class="m mu" text-anchor="middle" font-size="6.6">Fr</text>
+<line x1="196.0" y1="86.0" x2="706.0" y2="86.0" stroke="#1C2326" stroke-width="1"/>
+<text x="0.0" y="123.0" font-size="8">OpenUI5 sync from internal Gerrit</text>
+<text x="0.0" y="132.0" class="mu" font-size="7.2">commits per day, E-01</text>
+<rect x="198.0" y="116.0" width="22.8" height="17" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1"/>
+<text x="209.4" y="127.5" class="m b" text-anchor="middle" font-size="7.6">23</text>
+<rect x="224.8" y="116.0" width="22.8" height="17" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1"/>
+<text x="236.3" y="127.5" class="m b" text-anchor="middle" font-size="7.6">34</text>
+<rect x="251.7" y="116.0" width="22.8" height="17" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1"/>
+<text x="263.1" y="127.5" class="m b" text-anchor="middle" font-size="7.6">19</text>
+<rect x="278.5" y="116.0" width="22.8" height="17" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1"/>
+<text x="289.9" y="127.5" class="m b" text-anchor="middle" font-size="7.6">8</text>
+<rect x="305.4" y="116.0" width="22.8" height="17" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1"/>
+<text x="316.8" y="127.5" class="m b" text-anchor="middle" font-size="7.6">4</text>
+<text x="343.6" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="370.5" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<rect x="385.9" y="116.0" width="22.8" height="17" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1"/>
+<text x="397.3" y="127.5" class="m b" text-anchor="middle" font-size="7.6">19</text>
+<rect x="412.7" y="116.0" width="22.8" height="17" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1"/>
+<text x="424.2" y="127.5" class="m b" text-anchor="middle" font-size="7.6">12</text>
+<rect x="439.6" y="116.0" width="22.8" height="17" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1"/>
+<text x="451.0" y="127.5" class="m b" text-anchor="middle" font-size="7.6">14</text>
+<text x="477.8" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="504.7" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="531.5" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="558.4" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="585.2" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="612.1" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="638.9" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="665.7" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="692.6" y="127.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="0.0" y="145.0" font-size="8">Control: fundamental-bot</text>
+<text x="0.0" y="154.0" class="mu" font-size="7.2">release bot in a public repository</text>
+<rect x="198.0" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="209.4" y="149.5" class="m b" text-anchor="middle" font-size="7.6">1</text>
+<text x="236.3" y="149.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<rect x="251.7" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="263.1" y="149.5" class="m b" text-anchor="middle" font-size="7.6">1</text>
+<text x="289.9" y="149.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="316.8" y="149.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="343.6" y="149.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<rect x="359.1" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="370.5" y="149.5" class="m b" text-anchor="middle" font-size="7.6">2</text>
+<rect x="385.9" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="397.3" y="149.5" class="m b" text-anchor="middle" font-size="7.6">4</text>
+<rect x="412.7" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="424.2" y="149.5" class="m b" text-anchor="middle" font-size="7.6">3</text>
+<rect x="439.6" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="451.0" y="149.5" class="m b" text-anchor="middle" font-size="7.6">1</text>
+<rect x="466.4" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="477.8" y="149.5" class="m b" text-anchor="middle" font-size="7.6">7</text>
+<rect x="493.3" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="504.7" y="149.5" class="m b" text-anchor="middle" font-size="7.6">3</text>
+<rect x="520.1" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="531.5" y="149.5" class="m b" text-anchor="middle" font-size="7.6">1</text>
+<text x="558.4" y="149.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<rect x="573.8" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="585.2" y="149.5" class="m b" text-anchor="middle" font-size="7.6">2</text>
+<rect x="600.6" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="612.1" y="149.5" class="m b" text-anchor="middle" font-size="7.6">1</text>
+<rect x="627.5" y="138.0" width="22.8" height="17" fill="#DCEBE0" stroke="#1F7A46" stroke-width="1"/>
+<text x="638.9" y="149.5" class="m b" text-anchor="middle" font-size="7.6">4</text>
+<text x="665.7" y="149.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<text x="692.6" y="149.5" class="m mu" text-anchor="middle" font-size="7.6">·</text>
+<line x1="464.4" y1="6" x2="464.4" y2="158.0" stroke="#A8322D" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="469.4" y="10.0" class="m b" fill="#A8322D" font-size="7.8">last synced commit: 18 Nov, 14:58 UTC</text>
+</svg>
+    </figure>
+    <figure>
+<svg viewBox="0 0 706 64" role="img" aria-label="Strip of the 235 weekdays from 2 January to 26 November 2026. The OpenUI5 sync from SAP’s internal Gerrit ran on all but eight: 1 May, 25 May, and the six weekdays from 19 to 26 November.">
+<text x="0.0" y="30.0" class="m b" font-size="8.6">Every weekday of 2026</text>
+<text x="0.0" y="41.0" class="mu" font-size="7.8">dark: a commit synced from Gerrit</text>
+<text x="0.0" y="51.0" class="mu" font-size="7.8">red: none, E-02</text>
+<rect x="196.00" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="196.0" y1="48" x2="196.0" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="198.0" y="61.0" class="m mu" font-size="7">Jan</text>
+<rect x="198.17" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="200.34" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="202.51" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="204.68" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="206.85" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="209.02" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="211.19" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="213.36" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="215.53" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="217.70" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="219.87" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="222.04" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="224.21" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="226.38" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="228.55" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="230.72" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="232.89" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="235.06" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="237.23" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="239.40" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="241.57" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="241.6" y1="48" x2="241.6" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="243.6" y="61.0" class="m mu" font-size="7">Feb</text>
+<rect x="243.74" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="245.91" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="248.09" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="250.26" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="252.43" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="254.60" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="256.77" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="258.94" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="261.11" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="263.28" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="265.45" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="267.62" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="269.79" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="271.96" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="274.13" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="276.30" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="278.47" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="280.64" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="282.81" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="284.98" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="285.0" y1="48" x2="285.0" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="287.0" y="61.0" class="m mu" font-size="7">Mar</text>
+<rect x="287.15" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="289.32" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="291.49" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="293.66" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="295.83" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="298.00" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="300.17" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="302.34" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="304.51" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="306.68" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="308.85" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="311.02" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="313.19" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="315.36" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="317.53" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="319.70" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="321.87" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="324.04" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="326.21" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="328.38" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="330.55" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="332.72" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="332.7" y1="48" x2="332.7" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="334.7" y="61.0" class="m mu" font-size="7">Apr</text>
+<rect x="334.89" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="337.06" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="339.23" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="341.40" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="343.57" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="345.74" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="347.91" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="350.09" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="352.26" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="354.43" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="356.60" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="358.77" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="360.94" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="363.11" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="365.28" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="367.45" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="369.62" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="371.79" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="373.96" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="376.13" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="378.30" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="380.47" y="20" width="2.32" height="30" fill="#A8322D"/>
+<line x1="380.5" y1="48" x2="380.5" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="382.5" y="61.0" class="m mu" font-size="7">May</text>
+<rect x="382.64" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="384.81" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="386.98" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="389.15" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="391.32" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="393.49" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="395.66" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="397.83" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="400.00" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="402.17" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="404.34" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="406.51" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="408.68" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="410.85" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="413.02" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="415.19" y="20" width="2.32" height="30" fill="#A8322D"/>
+<rect x="417.36" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="419.53" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="421.70" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="423.87" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="426.04" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="426.0" y1="48" x2="426.0" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="428.0" y="61.0" class="m mu" font-size="7">Jun</text>
+<rect x="428.21" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="430.38" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="432.55" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="434.72" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="436.89" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="439.06" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="441.23" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="443.40" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="445.57" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="447.74" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="449.91" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="452.09" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="454.26" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="456.43" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="458.60" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="460.77" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="462.94" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="465.11" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="467.28" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="469.45" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="471.62" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="473.79" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="473.8" y1="48" x2="473.8" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="475.8" y="61.0" class="m mu" font-size="7">Jul</text>
+<rect x="475.96" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="478.13" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="480.30" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="482.47" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="484.64" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="486.81" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="488.98" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="491.15" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="493.32" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="495.49" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="497.66" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="499.83" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="502.00" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="504.17" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="506.34" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="508.51" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="510.68" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="512.85" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="515.02" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="517.19" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="519.36" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="521.53" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="523.70" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="523.7" y1="48" x2="523.7" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="525.7" y="61.0" class="m mu" font-size="7">Aug</text>
+<rect x="525.87" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="528.04" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="530.21" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="532.38" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="534.55" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="536.72" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="538.89" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="541.06" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="543.23" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="545.40" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="547.57" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="549.74" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="551.91" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="554.09" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="556.26" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="558.43" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="560.60" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="562.77" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="564.94" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="567.11" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="569.28" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="569.3" y1="48" x2="569.3" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="571.3" y="61.0" class="m mu" font-size="7">Sep</text>
+<rect x="571.45" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="573.62" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="575.79" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="577.96" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="580.13" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="582.30" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="584.47" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="586.64" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="588.81" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="590.98" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="593.15" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="595.32" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="597.49" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="599.66" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="601.83" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="604.00" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="606.17" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="608.34" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="610.51" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="612.68" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="614.85" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="617.02" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="617.0" y1="48" x2="617.0" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="619.0" y="61.0" class="m mu" font-size="7">Oct</text>
+<rect x="619.19" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="621.36" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="623.53" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="625.70" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="627.87" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="630.04" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="632.21" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="634.38" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="636.55" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="638.72" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="640.89" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="643.06" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="645.23" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="647.40" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="649.57" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="651.74" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="653.91" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="656.09" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="658.26" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="660.43" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="662.60" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="664.77" y="26" width="2.32" height="18" fill="#1C2326"/>
+<line x1="664.8" y1="48" x2="664.8" y2="54" stroke="#56615F" stroke-width="0.8"/>
+<text x="666.8" y="61.0" class="m mu" font-size="7">Nov</text>
+<rect x="666.94" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="669.11" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="671.28" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="673.45" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="675.62" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="677.79" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="679.96" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="682.13" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="684.30" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="686.47" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="688.64" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="690.81" y="26" width="2.32" height="18" fill="#1C2326"/>
+<rect x="692.98" y="20" width="2.32" height="30" fill="#A8322D"/>
+<rect x="695.15" y="20" width="2.32" height="30" fill="#A8322D"/>
+<rect x="697.32" y="20" width="2.32" height="30" fill="#A8322D"/>
+<rect x="699.49" y="20" width="2.32" height="30" fill="#A8322D"/>
+<rect x="701.66" y="20" width="2.32" height="30" fill="#A8322D"/>
+<rect x="703.83" y="20" width="2.32" height="30" fill="#A8322D"/>
+<text x="380.5" y="15.0" class="m" text-anchor="middle" fill="#A8322D" font-size="7.4">1 May</text>
+<text x="423.2" y="15.0" class="m" text-anchor="start" fill="#A8322D" font-size="7.4">25 May</text>
+<text x="706.0" y="15.0" class="m b" text-anchor="end" fill="#A8322D" font-size="7.4">19–26 Nov: six in a row</text>
+</svg>
+    </figure>
+    <figure>
+<svg viewBox="0 0 706 128" role="img" aria-label="Share of commits pushed directly by people that carry a signature, per day, 2 to 26 November 2026. About 6 percent before 19 November; 53 percent on 20 November and 57 percent on 26 November.">
+<text x="0.0" y="36.0" class="m b" font-size="8.6">Signed share of direct pushes</text>
+<text x="0.0" y="49.0" class="mu" font-size="7.6">commits pushed by people, per day (UTC),</text>
+<text x="0.0" y="60.0" class="mu" font-size="7.6">186 repositories, E-15</text>
+<text x="0.0" y="84.0" class="m b" font-size="7.6">First-time signers:</text>
+<text x="0.0" y="95.0" class="m" font-size="7.6">8 on 1–18 Nov, 29 from 19 Nov</text>
+<line x1="204" y1="98" x2="706" y2="98" stroke="#1C2326" stroke-width="1.2"/>
+<rect x="207.0" y="90.3" width="14" height="7.7" fill="#1C2326"/>
+<text x="214.0" y="87.3" class="m mu" text-anchor="middle" font-size="6.4">6%</text>
+<text x="214.0" y="108.0" class="m" text-anchor="middle" font-size="6.6">2</text>
+<rect x="227.1" y="96.0" width="14" height="2.0" fill="#1C2326"/>
+<text x="234.1" y="93.0" class="m mu" text-anchor="middle" font-size="6.4">2%</text>
+<text x="234.1" y="108.0" class="m" text-anchor="middle" font-size="6.6">3</text>
+<rect x="247.2" y="93.5" width="14" height="4.5" fill="#1C2326"/>
+<text x="254.2" y="90.5" class="m mu" text-anchor="middle" font-size="6.4">4%</text>
+<text x="254.2" y="108.0" class="m" text-anchor="middle" font-size="6.6">4</text>
+<rect x="267.2" y="83.7" width="14" height="14.3" fill="#1C2326"/>
+<text x="274.2" y="80.7" class="m mu" text-anchor="middle" font-size="6.4">12%</text>
+<text x="274.2" y="108.0" class="m" text-anchor="middle" font-size="6.6">5</text>
+<rect x="287.3" y="97.0" width="14" height="1.0" fill="#1C2326"/>
+<text x="294.3" y="94.0" class="m mu" text-anchor="middle" font-size="6.4">0%</text>
+<text x="294.3" y="108.0" class="m" text-anchor="middle" font-size="6.6">6</text>
+<rect x="307.4" y="97.0" width="14" height="1.0" fill="#BFC8C9"/>
+<text x="314.4" y="108.0" class="m mu" text-anchor="middle" font-size="6.6">7</text>
+<rect x="327.5" y="97.0" width="14" height="1.0" fill="#BFC8C9"/>
+<text x="334.5" y="108.0" class="m mu" text-anchor="middle" font-size="6.6">8</text>
+<rect x="347.6" y="85.8" width="14" height="12.2" fill="#1C2326"/>
+<text x="354.6" y="82.8" class="m mu" text-anchor="middle" font-size="6.4">10%</text>
+<text x="354.6" y="108.0" class="m" text-anchor="middle" font-size="6.6">9</text>
+<rect x="367.6" y="93.0" width="14" height="5.0" fill="#1C2326"/>
+<text x="374.6" y="90.0" class="m mu" text-anchor="middle" font-size="6.4">4%</text>
+<text x="374.6" y="108.0" class="m" text-anchor="middle" font-size="6.6">10</text>
+<rect x="387.7" y="95.3" width="14" height="2.7" fill="#1C2326"/>
+<text x="394.7" y="92.3" class="m mu" text-anchor="middle" font-size="6.4">2%</text>
+<text x="394.7" y="108.0" class="m" text-anchor="middle" font-size="6.6">11</text>
+<rect x="407.8" y="96.2" width="14" height="1.8" fill="#1C2326"/>
+<text x="414.8" y="93.2" class="m mu" text-anchor="middle" font-size="6.4">1%</text>
+<text x="414.8" y="108.0" class="m" text-anchor="middle" font-size="6.6">12</text>
+<rect x="427.9" y="89.8" width="14" height="8.2" fill="#1C2326"/>
+<text x="434.9" y="86.8" class="m mu" text-anchor="middle" font-size="6.4">7%</text>
+<text x="434.9" y="108.0" class="m" text-anchor="middle" font-size="6.6">13</text>
+<rect x="448.0" y="97.0" width="14" height="1.0" fill="#BFC8C9"/>
+<text x="455.0" y="108.0" class="m mu" text-anchor="middle" font-size="6.6">14</text>
+<rect x="468.0" y="97.0" width="14" height="1.0" fill="#BFC8C9"/>
+<text x="475.0" y="108.0" class="m mu" text-anchor="middle" font-size="6.6">15</text>
+<rect x="488.1" y="88.6" width="14" height="9.4" fill="#1C2326"/>
+<text x="495.1" y="85.6" class="m mu" text-anchor="middle" font-size="6.4">8%</text>
+<text x="495.1" y="108.0" class="m" text-anchor="middle" font-size="6.6">16</text>
+<rect x="508.2" y="76.4" width="14" height="21.6" fill="#1C2326"/>
+<text x="515.2" y="73.4" class="m mu" text-anchor="middle" font-size="6.4">18%</text>
+<text x="515.2" y="108.0" class="m" text-anchor="middle" font-size="6.6">17</text>
+<rect x="528.3" y="94.9" width="14" height="3.1" fill="#1C2326"/>
+<text x="535.3" y="91.9" class="m mu" text-anchor="middle" font-size="6.4">3%</text>
+<text x="535.3" y="108.0" class="m" text-anchor="middle" font-size="6.6">18</text>
+<rect x="548.4" y="88.1" width="14" height="9.9" fill="#1F7A46"/>
+<text x="555.4" y="85.1" class="m b" text-anchor="middle" font-size="6.4">8%</text>
+<text x="555.4" y="108.0" class="m" text-anchor="middle" font-size="6.6">19</text>
+<rect x="568.4" y="34.7" width="14" height="63.3" fill="#1F7A46"/>
+<text x="575.4" y="31.7" class="m b" text-anchor="middle" font-size="6.4">53%</text>
+<text x="575.4" y="108.0" class="m" text-anchor="middle" font-size="6.6">20</text>
+<rect x="588.5" y="90.5" width="14" height="7.5" fill="#BFC8C9"/>
+<text x="595.5" y="108.0" class="m mu" text-anchor="middle" font-size="6.6">21</text>
+<rect x="608.6" y="97.0" width="14" height="1.0" fill="#BFC8C9"/>
+<text x="615.6" y="108.0" class="m mu" text-anchor="middle" font-size="6.6">22</text>
+<rect x="628.7" y="65.3" width="14" height="32.7" fill="#1F7A46"/>
+<text x="635.7" y="62.3" class="m b" text-anchor="middle" font-size="6.4">27%</text>
+<text x="635.7" y="108.0" class="m" text-anchor="middle" font-size="6.6">23</text>
+<rect x="648.8" y="69.6" width="14" height="28.4" fill="#1F7A46"/>
+<text x="655.8" y="66.6" class="m b" text-anchor="middle" font-size="6.4">24%</text>
+<text x="655.8" y="108.0" class="m" text-anchor="middle" font-size="6.6">24</text>
+<rect x="668.8" y="66.5" width="14" height="31.5" fill="#1F7A46"/>
+<text x="675.8" y="63.5" class="m b" text-anchor="middle" font-size="6.4">26%</text>
+<text x="675.8" y="108.0" class="m" text-anchor="middle" font-size="6.6">25</text>
+<rect x="688.9" y="29.9" width="14" height="68.1" fill="#1F7A46"/>
+<text x="695.9" y="26.9" class="m b" text-anchor="middle" font-size="6.4">57%</text>
+<text x="695.9" y="108.0" class="m" text-anchor="middle" font-size="6.6">26</text>
+<line x1="545.9" y1="6" x2="545.9" y2="112" stroke="#A8322D" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="540.9" y="13.0" class="m" text-anchor="end" font-size="7.4">1–18 Nov: 124 of 2,087 signed (6%)</text>
+<text x="550.9" y="13.0" class="m b" text-anchor="start" fill="#1F7A46" font-size="7.4">19–27 Nov: 259 of 766 (34%)</text>
+<text x="204.0" y="122.0" class="m mu" font-size="6.8">November 2026 · weekends in grey</text>
+</svg>
+    </figure>
+    <div class="figrow">
+      <figure style="margin:0">
+<svg viewBox="0 0 420 88" role="img" aria-label="Change in default-branch commits from 18 to 19 November 2026: SAP’s four public organisations minus 54 percent, Grafana minus 6, Microsoft plus 10, Elastic plus 19.">
+<text x="0.0" y="10.0" class="m b" font-size="8.6">Default-branch commits, 19 Nov against 18 Nov (GitHub commit search, E-06)</text>
+<text x="0.0" y="30.0" class="b" font-size="8.2">SAP, four organisations</text>
+<rect x="169.4" y="22" width="80.6" height="11" fill="#A8322D"/>
+<text x="165.4" y="31.0" class="m b" text-anchor="end" fill="#A8322D" font-size="8">−54%</text>
+<text x="330.0" y="31.0" class="m mu" font-size="7.6">296 → 137</text>
+<text x="0.0" y="46.0" font-size="8.2">Grafana</text>
+<rect x="240.6" y="38" width="9.4" height="11" fill="#56615F"/>
+<text x="236.6" y="47.0" class="m b" text-anchor="end" fill="#56615F" font-size="8">−6%</text>
+<text x="330.0" y="47.0" class="m mu" font-size="7.6">331 → 310</text>
+<text x="0.0" y="62.0" font-size="8.2">Microsoft</text>
+<rect x="250.0" y="54" width="14.4" height="11" fill="#56615F"/>
+<text x="268.4" y="63.0" class="m b" text-anchor="start" fill="#56615F" font-size="8">+10%</text>
+<text x="330.0" y="63.0" class="m mu" font-size="7.6">2,067 → 2,266</text>
+<text x="0.0" y="78.0" font-size="8.2">Elastic</text>
+<rect x="250.0" y="70" width="27.9" height="11" fill="#56615F"/>
+<text x="281.9" y="79.0" class="m b" text-anchor="start" fill="#56615F" font-size="8">+19%</text>
+<text x="330.0" y="79.0" class="m mu" font-size="7.6">318 → 377</text>
+<line x1="250.0" y1="18" x2="250.0" y2="85" stroke="#1C2326" stroke-width="1"/>
+</svg>
+      </figure>
+      <p>The day after the last synced commit, work in SAP’s public organisations fell by more than half. Three unrelated organisations moved between −6% and +19% on the same day, and GitHub reported no incident. The cause is not established. A day later six developers signed a commit for the first time.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Response and disclosure, in order</h2>
+    <table class="tl">
+      <colgroup><col class="c-t"><col><col class="c-s"><col class="c-v"></colgroup>
+      <thead><tr><th>Time (UTC)</th><th>Event</th><th>Source</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="t">18 Nov 2026<br>14:58 (22:58 SGT)</td><td>Last commit synced from SAP’s internal Gerrit to <span class="c">UI5/openui5</span>.</td><td>E-01</td><td class="v"><span class="chip c-obs">Observed</span></td></tr>
+        <tr><td class="t">19 Nov 2026</td><td>Commits across SAP’s public organisations fall to 138, from 361 the day before.</td><td>E-06</td><td class="v"><span class="chip c-obs">Observed</span></td></tr>
+        <tr><td class="t">20 Nov 2026<br>05:43 (13:43 SGT)</td><td>Six committers who had not signed a commit since 1 October sign their first, from 05:43. Twenty-nine have done so by 26 Nov, counting two on 19 Nov.</td><td>E-15</td><td class="v"><span class="chip c-obs">Observed</span></td></tr>
+        <tr><td class="t">21 Nov 2026<br>09:10 (17:10 SGT)</td><td>On a Saturday, a UI5 repository removes the OpenUI5 Bot token from its release workflow.</td><td>E-04</td><td class="v"><span class="chip c-obs">Observed</span></td></tr>
+        <tr><td class="t">26 Nov 2026<br>12:03 (20:03 SGT)</td><td><span class="c">SAP/ai-sdk-java</span> pauses a job that reads from SAP’s internal GitHub, “until required repos unblock access”.</td><td>E-03</td><td class="v"><span class="chip c-obs">Observed</span></td></tr>
+        <tr><td class="t">26 Nov 2026<br>evening, CET</td><td>Der Spiegel publishes, saying the incident unsettled SAP “in recent days”. SAP gives its statement to dpa.</td><td>dpa, dts, Handelsblatt</td><td class="v"><span class="chip c-ok">Confirmed</span></td></tr>
+        <tr><td class="t">26 Nov 2026<br>23:21 (07:21 SGT, 27 Nov)</td><td>Handelsblatt adds that software development is affected and lists SAP’s countermeasures. The page timestamp of 00:21 is taken as CET.</td><td>Handelsblatt</td><td class="v"><span class="chip c-rep">Reported</span></td></tr>
+        <tr><td class="t">27 Nov 2026<br>08:10 (16:10 SGT)</td><td><span class="c">UI5/openui5</span> master is still at the commit of 18 Nov.</td><td>E-01</td><td class="v"><span class="chip c-obs">Observed</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+</article>
+
+<!-- ==================== PAGE 6: THE PUBLIC RECORD ==================== -->
+<article class="page" aria-label="Page 6 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 6 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span class="on">3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span>6 Reference</span></nav>
+
+  <p class="bridge"><span class="nw">KJ-2</span> to <span class="nw">KJ-5</span> rest on this page. No repository has been named, so we examined SAP’s public GitHub organisations as a whole: 13,897 commits on all branches since 1 October in 186 repositories, the refs of 295, npm publish records and GitHub’s search index.</p>
+
+  <section>
+    <h2>Five observations carry the judgements; five more are moderate or weak</h2>
+    <table class="ev">
+      <colgroup><col class="c-id"><col><col class="c-r"><col class="c-w"></colgroup>
+      <thead><tr><th>ID</th><th>What we observed</th><th>Reading</th><th>Weight</th></tr></thead>
+      <tbody>
+        <tr><td>E-01</td><td><span class="c">UI5/openui5</span> master last moved on 18 Nov at 14:58:03 UTC, at commit <span class="c">c586680fda</span>. Its committer is “Gerrit Code Review” at an <span class="c">sap.corp</span> address, as for 176 commits on 1–18 Nov. None has arrived since; the head was unchanged at 08:10 UTC, 27 Nov.</td><td>Changes merged on SAP’s internal Gerrit no longer reach the public repository.</td><td class="v"><span class="chip k-h">Strong</span></td></tr>
+        <tr><td>E-02</td><td>Of the 235 weekdays from 2 Jan to 26 Nov 2026, the sync missed eight: 1 May and 25 May, both German public holidays, and the six from 19 to 26 Nov.</td><td>Not a routine pause.</td><td class="v"><span class="chip k-h">Strong</span></td></tr>
+        <tr><td>E-03</td><td><span class="c">SAP/ai-sdk-java</span> commit <span class="c">caaf21e78</span> (26 Nov, 12:03 UTC) disables a weekly job “until required repos unblock access”. The job it triggers reads from <span class="c">github.tools.sap</span> with a stored token.</td><td>SAP restricted access to repositories on its internal GitHub. Fits claim 7.</td><td class="v"><span class="chip k-h">Strong</span></td></tr>
+        <tr><td>E-15</td><td>Of the commits pushed directly by people, 124 of 2,087 carried a signature on 1–18 Nov (6%) and 259 of 766 on 19–27 Nov (34%). The October share was 6%. Twenty-nine committers signed for the first time from 19 Nov, six of them on 20 Nov; 22 of the 29 had pushed unsigned before.</td><td>SAP began to require signed changes on or about 20 Nov. Fits claim 11.</td><td class="v"><span class="chip k-h">Strong</span></td></tr>
+        <tr><td>E-08</td><td>Direct pushes by people numbered 152, 156 and 141 on 24–26 Nov, against a weekday mean of 150 on 2–18 Nov. <span class="c">@ui5/webcomponents</span>, <span class="c">@sap-ai-sdk/orchestration</span> and <span class="c">@fundamental-ngx/core</span> published on 25–27 Nov with build-provenance attestations.</td><td>The public organisations were not frozen.</td><td class="v"><span class="chip k-h">Strong</span></td></tr>
+        <tr><td>E-06</td><td>138 commits on 19 Nov, against 245 to 397 on the weekdays of 2–18 Nov. Page 5 charts it against three control organisations.</td><td>Something specific to SAP slowed work that day.</td><td class="v"><span class="chip k-m">Moderate</span></td></tr>
+        <tr><td>E-04</td><td><span class="c">UI5/plugins-coding-agents</span> commit <span class="c">9c57d9f7d</span> (Saturday 21 Nov, 09:10 UTC) removes the <span class="c">GH_OPENUI5BOT</span> secret from its release workflow. Code search still lists the secret in four other UI5 repositories.</td><td>Fits credential clean-up. Routine tidying looks the same.</td><td class="v"><span class="chip k-l">Weak</span></td></tr>
+        <tr><td>E-05</td><td><span class="c">SAP/SapMachine</span> commit <span class="c">46017a54c</span> (18 Nov, 09:56 UTC) stops a public workflow reading from <span class="c">github.tools.sap</span> with a <span class="c">GHE_PAT</span> secret.</td><td>Five hours before the last sync. It closes an older GitHub Pages request (#1930), so routine work explains it as well.</td><td class="v"><span class="chip k-l">Weak</span></td></tr>
+        <tr><td>E-07</td><td><span class="c">@sapui5/distribution-metadata</span> last published 16 days before the cut-off; its longest earlier gap in 2026 was 14. <span class="c">@openui5/sap.ui.core</span> is at 10 days, inside its 2026 range.</td><td>At or near normal. Adds little.</td><td class="v"><span class="chip k-l">Weak</span></td></tr>
+        <tr><td>E-09</td><td>Human-authored commits that change <span class="c">.github/</span> and whose subject mentions pinning, hardening, permissions, injection, OIDC or token removal: 19 in 13 repositories in the week of 23 Nov, against 3 to 7 a week since 5 Oct. One maintainer wrote nine.</td><td>A keyword match. A response to the wfx campaign looks the same.</td><td class="v"><span class="chip k-l">Weak</span></td></tr>
+      </tbody>
+    </table>
+    <p class="small muted" style="margin-top:5px">Weight is our grading. Strong: specific to SAP, and no routine explanation fits. Moderate: specific to SAP, cause not established. Weak: fits the incident, and a routine explanation fits as well.</p>
+  </section>
+
+  <section>
+    <h2>No attacker commit, worm indicator or leaked copy survives in public</h2>
+    <p><b>Campaign indicators.</b> The branch names, commit messages, file names and probe pull-request title of the wfx campaign appear nowhere in the 218,637 refs of 295 repositories or in the commits of the campaign window (<span class="e">E-10</span>). The repository indicators of the Shai-Hulud worm family are absent too: its commit message, its loader and payload file names, its workflow file, its temporary branch and its forged co-author trailer (<span class="e">E-17</span>).</p>
+    <p><b>Unusual pushes.</b> Of 2,573 non-merge commits pushed directly by 334 committers since 2 November, six came from a UTC offset unusual for their committer, and none of the six touches CI, build or dependency files (<span class="e">E-11</span>). Three bot identities went quiet after 18 November; each gap is inside that bot’s own range since 1 October, so we set them aside (<span class="e">E-12</span>).</p>
+    <p><b>Copies.</b> A clone leaves no public trace, so we looked for what a copy leaves when it is republished. Forks of SAP’s repositories did not rise after 18 November: 51, 36 and 40 a week from 2 November, and 26 on 23–27 November. Five same-named repositories that are not forks share commit history with SAP’s; all five mirror public TechEd workshop samples. No repository is named or described as a leak of SAP code (<span class="e">E-16</span>).</p>
+    <div class="callout">
+      <h3>What this silence cannot prove</h3>
+      <p>This is surviving public history. Clones, deleted branches, force-pushes, private and internal repositories and Actions logs are outside it. Code copied from a non-public repository would show in public only if someone republished it, and a change that the attacker or SAP later removed would leave no trace. The 186 repositories are those pushed since 1 November, not every SAP repository.</p>
+    </div>
+  </section>
+</article>
+
+<!-- ==================== PAGE 7: WHAT A TOKEN REACHES ==================== -->
+<article class="page" aria-label="Page 7 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 7 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span class="on">3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span>6 Reference</span></nav>
+
+  <p class="bridge">No malware has been published, so this page maps what the stolen thing opens. It rests on SAP’s own public workflow files, not on anything the attacker left.</p>
+
+  <section>
+    <h2>What a developer token reaches: four bridges between SAP’s internal systems and the public</h2>
+    <figure>
+<svg viewBox="0 0 706 268" role="img" aria-label="SAP’s GitHub estate as public data shows it. Inside SAP: an internal Gerrit, an internal GitHub Enterprise at github.tools.sap, and internal builds. Public: github.com organisations and the npm registry. Four bridges cross the boundary: the Gerrit sync to UI5/openui5, stopped after 18 November; stored tokens in nine public workflow files that reach the internal GitHub; internal builds published to npm without provenance; and public GitHub Actions builds published with provenance.">
+<defs><marker id="esk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1C2326"/></marker><marker id="esr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#A8322D"/></marker><marker id="esg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1F7A46"/></marker></defs>
+<text x="0.0" y="11.0" class="m b" font-size="8.4">Inside SAP: not visible to us</text>
+<text x="706.0" y="11.0" class="m b" text-anchor="end" font-size="8.4">Public</text>
+<rect x="0" y="18" width="206" height="232" fill="#E3E8E8" stroke="#56615F" stroke-dasharray="5 3"/>
+<rect x="12" y="30" width="182" height="44" fill="#EEF0EA" stroke="#1C2326" stroke-width="1.2"/>
+<text x="20.0" y="44.0" class="b" font-size="8.2">Internal Gerrit</text>
+<text x="20.0" y="56.0" class="m" font-size="7.2">committer @sap.corp</text>
+<rect x="12" y="104" width="182" height="56" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.2"/>
+<text x="20.0" y="118.0" class="b" font-size="8.2">Internal GitHub Enterprise</text>
+<text x="20.0" y="130.0" class="m" font-size="7.2">github.tools.sap</text>
+<text x="20.0" y="140.5" class="m" font-size="7.2">access blocked by 26 Nov (E-03)</text>
+<rect x="12" y="190" width="182" height="48" fill="#EEF0EA" stroke="#1C2326" stroke-width="1.2"/>
+<text x="20.0" y="204.0" class="b" font-size="8.2">Internal builds and signing</text>
+<text x="20.0" y="216.0" class="m" font-size="7.2">keys reportedly replaced (claim 7)</text>
+<rect x="500" y="30" width="206" height="56" fill="#F2DEDB" stroke="#A8322D" stroke-width="1.2"/>
+<text x="508.0" y="44.0" class="b" font-size="8.2">github.com: UI5/openui5</text>
+<text x="508.0" y="56.0" class="m" font-size="7.2">master frozen at c586680fda</text>
+<text x="508.0" y="66.5" class="m" font-size="7.2">since 18 Nov, 14:58 UTC</text>
+<rect x="500" y="104" width="206" height="56" fill="#EEF0EA" stroke="#1C2326" stroke-width="1.2"/>
+<text x="508.0" y="118.0" class="b" font-size="8.2">github.com: public workflows</text>
+<text x="508.0" y="130.0" class="m" font-size="7.2">SAP, cap-js, UI5, SAP-samples</text>
+<text x="508.0" y="140.5" class="m" font-size="7.2">GitHub Actions kept running</text>
+<rect x="500" y="190" width="206" height="48" fill="#EEF0EA" stroke="#1C2326" stroke-width="1.2"/>
+<text x="508.0" y="204.0" class="b" font-size="8.2">npm registry</text>
+<text x="508.0" y="216.0" class="m" font-size="7.2">24 SAP packages checked (E-14)</text>
+<line x1="194" y1="52" x2="497" y2="52" stroke="#A8322D" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#esr)"/>
+<text x="346.0" y="36.0" class="m b" text-anchor="middle" fill="#A8322D" font-size="7.6">B1 · sync of merged changes</text>
+<text x="346.0" y="47.0" class="m" text-anchor="middle" fill="#A8322D" font-size="7.2">stopped after 18 Nov (E-01, E-02)</text>
+<line x1="455" y1="45" x2="465" y2="59" stroke="#A8322D" stroke-width="2.2"/><line x1="465" y1="45" x2="455" y2="59" stroke="#A8322D" stroke-width="2.2"/>
+<line x1="500" y1="124" x2="197" y2="124" stroke="#1C2326" stroke-width="1.6" marker-end="url(#esk)"/>
+<text x="346.0" y="108.0" class="m b" text-anchor="middle" font-size="7.6">B2 · stored tokens for the internal GitHub</text>
+<text x="346.0" y="119.0" class="m" text-anchor="middle" font-size="7.2">9 workflow files in 5 repositories (E-13)</text>
+<text x="346.0" y="137.0" class="m mu" text-anchor="middle" font-size="6.9">one paused 26 Nov (E-03) · one token dropped 18 Nov (E-05)</text>
+<path d="M194,222 L497,222" fill="none" stroke="#B8530A" stroke-width="1.6" marker-end="url(#esk)"/>
+<text x="346.0" y="206.0" class="m b" text-anchor="middle" fill="#B8530A" font-size="7.6">B3 · internal builds published to npm</text>
+<text x="346.0" y="217.0" class="m" text-anchor="middle" fill="#B8530A" font-size="7.2">@sap/*, @openui5, @sapui5, mbt: no provenance (E-14)</text>
+<line x1="603" y1="160" x2="603" y2="187" stroke="#1F7A46" stroke-width="1.6" marker-end="url(#esg)"/>
+<text x="610.0" y="172.0" class="m b" text-anchor="start" fill="#1F7A46" font-size="7.2">B4 · built in public,</text>
+<text x="610.0" y="182.0" class="m" text-anchor="start" fill="#1F7A46" font-size="7.2">with provenance (E-08)</text>
+<text x="0.0" y="264.0" class="mu" font-size="7.8">The four bridges are the paths we can see from public data. Which of them the attacker used, if any, is not known.</text>
+</svg>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Three kinds of copyable credential sit in SAP’s public workflows; two kinds cannot be copied</h2>
+    <table class="cred">
+      <colgroup><col class="c-k"><col><col class="c-l"><col class="c-r"></colgroup>
+      <thead><tr><th>Credential</th><th>Seen in SAP’s public workflows</th><th>Lifetime</th><th>Reach if stolen</th></tr></thead>
+      <tbody>
+        <tr><td>Stored bot token</td><td><span class="c">GH_OPENUI5BOT</span> in the release workflows of five UI5 repositories; one removed it on 21 Nov (<span class="e">E-04</span>)</td><td>Until rotated</td><td>Whatever the bot account can write</td></tr>
+        <tr><td>Stored token for the internal GitHub</td><td><span class="c">GH_TOOLS_TOKEN</span> and <span class="c">GHE_PAT</span>; nine workflow files in five repositories call <span class="c">github.tools.sap</span> (<span class="e">E-03, E-05, E-13</span>)</td><td>Until rotated</td><td>Internal repositories, from a public runner</td></tr>
+        <tr><td>Stored signing key</td><td><span class="c">PGP_PRIVATE_KEY</span> imported by the release workflow of <span class="c">SAP/ai-sdk-java</span> (<span class="e">E-13</span>)</td><td>Until replaced</td><td>Signatures that consumers trust</td></tr>
+        <tr><td>Job token</td><td><span class="c">GITHUB_TOKEN</span>, issued to every workflow run</td><td>One job</td><td>One repository, as far as <span class="c">permissions</span> allows</td></tr>
+        <tr><td>OIDC identity</td><td>The 11 packages that publish with provenance (<span class="e">E-14</span>)</td><td>Minutes</td><td>Nothing: bound to one workflow</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:6px">The first three are files or strings that work wherever they are copied to. Anyone who can change a workflow that receives one can print it. The last two exist only while a job runs. This is our reading of public configuration; it does not show which credentials the attacker held.</p>
+  </section>
+
+  <section>
+    <div class="two">
+      <div class="bigtile">
+        <div class="big">11 of 24<small>SAP npm packages whose latest version carries a provenance attestation; checked 27 Nov 2026 (<span class="e">E-14</span>)</small></div>
+        <div>
+          <p>None of the nine <span class="c">@sap/*</span> packages we checked carries one, nor do <span class="c">@openui5/sap.ui.core</span>, <span class="c">@sapui5/distribution-metadata</span>, <span class="c">@ui5/cli</span> or <span class="c">mbt</span>.</p>
+          <p><span class="c">mbt</span> was one of four packages poisoned in April. The three <span class="c">@cap-js</span> packages poisoned with it now publish with provenance.</p>
+        </div>
+      </div>
+      <div class="bigtile">
+        <div class="big">34%<small>of direct pushes by people carry a signature since 19 Nov, up from 6% on 1–18 Nov (<span class="e">E-15</span>)</small></div>
+        <div>
+          <p>Before the rule, 59 unsigned direct pushes changed a workflow file on 1–18 Nov. One more from a stolen token would not have stood out.</p>
+          <p>Another 22 followed on 19–27 Nov.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</article>
+
+<!-- ==================== PAGE 8: KILL CHAIN AND CONTROLS ==================== -->
+<article class="page" aria-label="Page 8 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 8 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span class="on">4 The chain and controls</span><span>5 What to do</span><span>6 Reference</span></nav>
+
+  <section>
+    <h2>The kill chain: seven stages, four reported, two open, one observed</h2>
+    <figure>
+<svg viewBox="0 0 706 236" role="img" aria-label="Seven stages: token theft, access, copy and alter are reported by one insider; build and distribution are open; SAP’s response is observed from 18 November. Below, who could have stopped each stage.">
+<defs><marker id="kca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1C2326"/></marker></defs>
+<text x="0.0" y="12.0" class="mu" font-size="7.6">Stages 1 to 4 rest on one insider (claim 5). Stages 5 and 6 are unreported. Stage 7 is the only one we observed.</text>
+<rect x="0" y="20" width="92" height="120" fill="#EEF0EA" stroke="#1C2326"/>
+<rect x="0" y="20" width="92" height="20" fill="#1C2326"/>
+<text x="6.0" y="34.0" class="m b wt" font-size="8">1 Token theft</text>
+<text x="6.0" y="56.0" font-size="7.8">Employee tokens</text>
+<text x="6.0" y="67.0" font-size="7.8">stolen by a</text>
+<text x="6.0" y="78.0" font-size="7.8">route nobody</text>
+<text x="6.0" y="89.0" font-size="7.8">has reported</text>
+<text x="6.0" y="106.0" class="m mu" font-size="7">before 18 Nov</text>
+<rect x="6" y="116" width="52" height="13" fill="#CDBA62"/>
+<text x="32.0" y="125.5" class="m b" text-anchor="middle" font-size="7">Reported</text>
+<line x1="92" y1="80" x2="100" y2="80" stroke="#1C2326" stroke-width="1.3" marker-end="url(#kca)"/>
+<rect x="102" y="20" width="92" height="120" fill="#EEF0EA" stroke="#1C2326"/>
+<rect x="102" y="20" width="92" height="20" fill="#1C2326"/>
+<text x="108.0" y="34.0" class="m b wt" font-size="8">2 Access</text>
+<text x="108.0" y="56.0" font-size="7.8">Tokens used on</text>
+<text x="108.0" y="67.0" font-size="7.8">SAP’s GitHub;</text>
+<text x="108.0" y="78.0" font-size="7.8">internal GitHub</text>
+<text x="108.0" y="89.0" font-size="7.8">likely (KJ-4)</text>
+<text x="108.0" y="106.0" class="m mu" font-size="7">date unknown</text>
+<rect x="108" y="116" width="52" height="13" fill="#CDBA62"/>
+<text x="134.0" y="125.5" class="m b" text-anchor="middle" font-size="7">Reported</text>
+<line x1="194" y1="80" x2="202" y2="80" stroke="#1C2326" stroke-width="1.3" marker-end="url(#kca)"/>
+<rect x="204" y="20" width="92" height="120" fill="#EEF0EA" stroke="#1C2326"/>
+<rect x="204" y="20" width="92" height="20" fill="#1C2326"/>
+<text x="210.0" y="34.0" class="m b wt" font-size="8">3 Copy</text>
+<text x="210.0" y="56.0" font-size="7.8">Source code</text>
+<text x="210.0" y="67.0" font-size="7.8">copied; no</text>
+<text x="210.0" y="78.0" font-size="7.8">repository</text>
+<text x="210.0" y="89.0" font-size="7.8">named</text>
+<text x="210.0" y="106.0" class="m mu" font-size="7">date unknown</text>
+<rect x="210" y="116" width="52" height="13" fill="#CDBA62"/>
+<text x="236.0" y="125.5" class="m b" text-anchor="middle" font-size="7">Reported</text>
+<line x1="296" y1="80" x2="304" y2="80" stroke="#1C2326" stroke-width="1.3" marker-end="url(#kca)"/>
+<rect x="306" y="20" width="92" height="120" fill="#EEF0EA" stroke="#1C2326"/>
+<rect x="306" y="20" width="92" height="20" fill="#1C2326"/>
+<text x="312.0" y="34.0" class="m b wt" font-size="8">4 Alter</text>
+<text x="312.0" y="56.0" font-size="7.8">Source code</text>
+<text x="312.0" y="67.0" font-size="7.8">manipulated; none</text>
+<text x="312.0" y="78.0" font-size="7.8">found in public</text>
+<text x="312.0" y="89.0" font-size="7.8">history (E-10)</text>
+<text x="312.0" y="106.0" class="m mu" font-size="7">date unknown</text>
+<rect x="312" y="116" width="52" height="13" fill="#CDBA62"/>
+<text x="338.0" y="125.5" class="m b" text-anchor="middle" font-size="7">Reported</text>
+<line x1="398" y1="80" x2="406" y2="80" stroke="#1C2326" stroke-width="1.3" marker-end="url(#kca)"/>
+<rect x="408" y="20" width="92" height="120" fill="#E3E8E8" stroke="#56615F" stroke-dasharray="5 3"/>
+<rect x="408" y="20" width="92" height="20" fill="#56615F"/>
+<text x="414.0" y="34.0" class="m b wt" font-size="8">5 Build and sign</text>
+<text x="414.0" y="56.0" font-size="7.8">Did a change</text>
+<text x="414.0" y="67.0" font-size="7.8">enter a build or</text>
+<text x="414.0" y="78.0" font-size="7.8">a signed release?</text>
+<text x="414.0" y="89.0" font-size="7.8">Not reported</text>
+<text x="414.0" y="106.0" class="m mu" font-size="7">not known</text>
+<rect x="414" y="116" width="32" height="13" fill="#BFC8C9"/>
+<text x="430.0" y="125.5" class="m b" text-anchor="middle" font-size="7">Open</text>
+<line x1="500" y1="80" x2="508" y2="80" stroke="#1C2326" stroke-width="1.3" marker-end="url(#kca)"/>
+<rect x="510" y="20" width="92" height="120" fill="#E3E8E8" stroke="#56615F" stroke-dasharray="5 3"/>
+<rect x="510" y="20" width="92" height="20" fill="#56615F"/>
+<text x="516.0" y="34.0" class="m b wt" font-size="8">6 Distribution</text>
+<text x="516.0" y="56.0" font-size="7.8">No tampered</text>
+<text x="516.0" y="67.0" font-size="7.8">product, package</text>
+<text x="516.0" y="78.0" font-size="7.8">or service is</text>
+<text x="516.0" y="89.0" font-size="7.8">reported (KJ-5)</text>
+<text x="516.0" y="106.0" class="m mu" font-size="7">none seen</text>
+<rect x="516" y="116" width="32" height="13" fill="#BFC8C9"/>
+<text x="532.0" y="125.5" class="m b" text-anchor="middle" font-size="7">Open</text>
+<line x1="602" y1="80" x2="610" y2="80" stroke="#1C2326" stroke-width="1.3" marker-end="url(#kca)"/>
+<rect x="612" y="20" width="94" height="120" fill="#DCEBE0" stroke="#1F7A46"/>
+<rect x="612" y="20" width="94" height="20" fill="#1F7A46"/>
+<text x="618.0" y="34.0" class="m b wt" font-size="8">7 Response</text>
+<text x="618.0" y="56.0" font-size="7.8">Sync stopped;</text>
+<text x="618.0" y="67.0" font-size="7.8">internal access</text>
+<text x="618.0" y="78.0" font-size="7.8">blocked; keys</text>
+<text x="618.0" y="89.0" font-size="7.8">reportedly replaced</text>
+<text x="618.0" y="106.0" class="m mu" font-size="7">from 18 Nov</text>
+<rect x="618" y="116" width="52" height="13" fill="#1F7A46"/>
+<text x="644.0" y="125.5" class="m b wt" text-anchor="middle" font-size="7">Observed</text>
+<text x="0.0" y="162.0" class="m b" font-size="8.2">Who could have stopped each stage</text>
+<rect x="0" y="170" width="500" height="20" fill="#E3E8E8" stroke="#56615F" stroke-width="0.8"/>
+<text x="8.0" y="183.5" font-size="8">Publisher: short-lived tokens, SSO and IP allow list, rulesets, releases built and attested in CI</text>
+<rect x="510" y="196" width="92" height="36" fill="#DCEBE0" stroke="#1F7A46" stroke-width="0.8"/>
+<text x="516.0" y="207.5" font-size="7.2">Consumer: lockfile,</text>
+<text x="516.0" y="217.5" font-size="7.2">provenance check,</text>
+<text x="516.0" y="227.5" font-size="7.2">cooldown</text>
+<rect x="612" y="196" width="94" height="36" fill="#EEF0EA" stroke="#56615F" stroke-width="0.8"/>
+<text x="618.0" y="207.5" font-size="7.2">Downstream: watch</text>
+<text x="618.0" y="217.5" font-size="7.2">the upstream’s</text>
+<text x="618.0" y="227.5" font-size="7.2">default branch</text>
+</svg>
+    </figure>
+  </section>
+  <section>
+    <h2>Walking the chain: what is known at each stage, and the control that answers it</h2>
+    <p class="small">Nothing public shows how SAP’s own controls were set. C-1 to C-7 are the equivalent controls for a team that develops, publishes or consumes code on GitHub. The files and our test results are in Appendix C (page 15); the queries are in Appendix B (page 12).</p>
+    <table class="chain">
+      <colgroup><col class="c-s"><col><col class="c-l"><col class="c-c"><col class="c-a"></colgroup>
+      <thead><tr><th>Stage</th><th>What is known</th><th>Lesson</th><th>Control</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>1 Token theft<span>Reported</span></td><td>Employee tokens were stolen; the route is unreported (claim 5). Copyable tokens are in routine use in SAP’s public workflows (<span class="e">E-04, E-13</span>).</td><td>A token that does not exist cannot be stolen. Give each job its own short-lived token.</td><td><b>C-1</b> job token or per-job App token<br>release-pr.yml</td><td>A-6</td></tr>
+        <tr><td>2 Access<span>Reported</span></td><td>A stolen token works from any network unless the organisation says otherwise. SAP restricted GitHub access (claim 7; <span class="e">E-03</span>).</td><td>Require SSO authorisation for every token; alert on first use from a new network.</td><td><b>C-2</b> audit-log queries by token<br>B-7</td><td>A-5</td></tr>
+        <tr><td>3 Copy<span>Reported</span></td><td>Code was copied (claim 5). A clone leaves no public trace, and GitHub keeps Git events for seven days. We found no republished copy (<span class="e">E-16</span>).</td><td>Stream Git events out of GitHub; alert on one actor cloning many repositories.</td><td><b>C-3</b> bulk-clone query<br>B-8</td><td>A-8</td></tr>
+        <tr><td>4 Alter<span>Reported</span></td><td>Code was altered (claim 5). We found none in 186 public repositories (<span class="e">E-10, E-11, E-17</span>). SAP now requires signed changes (claim 11; <span class="e">E-15</span>).</td><td>Require a pull request, a second approver and signed commits; watch for the push that bypasses them.</td><td><b>C-4</b> ruleset and push-watch.yml</td><td>A-7</td></tr>
+        <tr><td>5 Build and sign<span>Open</span></td><td>Not reported. SAP reportedly replaced signing keys (claim 7). Thirteen of 24 SAP npm packages carry no provenance (<span class="e">E-14</span>).</td><td>Build in CI from a protected tag, attest the build, publish by OIDC.</td><td><b>C-5</b> release.yml</td><td>A-9</td></tr>
+        <tr><td>6 Distribution<span>Open</span></td><td>No tampered SAP release is reported (<span class="nw">KJ-5</span>).</td><td>Install from a lockfile, run no install scripts, verify signatures. Pin: eight days passed before the news.</td><td><b>C-6</b> ci.yml, dependabot.yml</td><td>A-2, A-3</td></tr>
+        <tr><td>7 Response<span>Observed</span></td><td>The sync stopped on 18 Nov, signing began on 20 Nov and internal access was blocked by 26 Nov (<span class="e">E-01, E-15, E-03</span>).</td><td>Watch the default branch of each upstream. A stopped branch is news before the news.</td><td><b>C-7</b> upstream-watch.yml</td><td>A-1</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <p class="bridge next">The chain says what was done. The next page takes the two things nobody has explained: how the tokens were taken, and the AI remark.</p>
+</article>
+
+<!-- ==================== PAGE 9: TOKEN ROUTES, THE AI REMARK, ATT&CK ==================== -->
+<article class="page" aria-label="Page 9 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 9 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span class="on">4 The chain and controls</span><span>5 What to do</span><span>6 Reference</span></nav>
+
+  <section>
+    <h2>A Shai-Hulud-family worm fits the reporting most closely, and we found no trace of it</h2>
+    <p>The Shai-Hulud family, which researchers link to TeamPCP, poisoned four SAP npm packages in April and spread again in August. Its marker is still appearing: 206 repositories carrying it were created on GitHub on 24–27 November, under one account that matches no SAP committer (<span class="e">E-17</span>). Its August variant used stolen GitHub tokens to commit hook files into repositories its victims could write to. The commit message was <span class="c">chore: update config</span>, with a forged co-author trailer naming an AI coding agent and a start-up hook for that agent (reference 18).</p>
+    <p>That behaviour matches four reported details: tokens stolen from many employees, code altered on GitHub, “possibly by means of agentic AI”, and a tool that lets developers check their code for suspicious patterns (claims 5, 6, 8 and 12). Three things weigh against it. None of the worm’s indicators is in SAP’s 186 public repositories. The worm steals secrets, and the report says source code was copied. SAP has named no malware. We treat it as the hypothesis to test first (Q-1), not as a finding.</p>
+    <table class="rt">
+      <colgroup><col class="c-r"><col class="c-f"><col></colgroup>
+      <thead><tr><th>Route</th><th>Fits what is public because</th><th>Would be confirmed by</th></tr></thead>
+      <tbody>
+        <tr><td><b>R-1</b> A package-borne stealer or worm</td><td>Mini Shai-Hulud took GitHub tokens through SAP’s own packages in April; the family alters repositories with the tokens it steals</td><td>SAP naming the family, or publishing the patterns in its scanning tool</td></tr>
+        <tr><td><b>R-2</b> Another infostealer on developer machines</td><td>“Numerous teams” fits credentials taken from several people</td><td>SAP reporting endpoint malware or a malicious IDE extension</td></tr>
+        <tr><td><b>R-3</b> Phishing or OAuth-app abuse</td><td>One lure or one over-privileged app yields tokens for many employees at once</td><td>A consent or device-code lure; a third-party app revoked across SAP</td></tr>
+        <tr><td><b>R-4</b> An automation or AI-agent identity</td><td>Copyable credentials for bots and for the internal GitHub sit in public workflows (<span class="e">E-04, E-13</span>)</td><td>SAP naming a bot, CI or agent credential</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:6px">The AI remark has two other readings: an agent drove the stolen tokens, as in the Microsoft agent-framework case of 17 November (reference 16), or an agent’s own identity was the stolen one (R-4). A claim about tooling is not a claim about the actor.</p>
+  </section>
+
+  <section>
+    <h2>ATT&amp;CK mapping: six techniques, none confirmed by SAP</h2>
+    <figure>
+<svg viewBox="0 0 706 176" role="img" aria-label="ATT&amp;CK matrix. Resource development: T1588.007, unconfirmed. Initial access: T1078.004, reported, and T1195.002, open. Credential access: T1528, reported. Collection: T1213.003, reported. Impact: T1565.001, reported.">
+<rect x="0.0" y="0" width="136" height="20" fill="#1C2326"/>
+<text x="68.0" y="13.5" class="m b wt" text-anchor="middle" font-size="8">Resource development</text>
+<rect x="0.0" y="20" width="136" height="150" fill="none" stroke="#C3C9C3"/>
+<rect x="5.0" y="26" width="126" height="66" fill="#E3E8E8" stroke="#56615F" stroke-width="1.2"/>
+<text x="11.0" y="39.0" class="m b" font-size="8">T1588.007</text>
+<text x="11.0" y="51.0" font-size="7.6">Obtain Capabilities:</text>
+<text x="11.0" y="61.0" font-size="7.6">Artificial Intelligence</text>
+<text x="11.0" y="86.0" class="m mu" font-size="6.9">Unconfirmed · claim 8</text>
+<rect x="142.5" y="0" width="136" height="20" fill="#1C2326"/>
+<text x="210.5" y="13.5" class="m b wt" text-anchor="middle" font-size="8">Initial access</text>
+<rect x="142.5" y="20" width="136" height="150" fill="none" stroke="#C3C9C3"/>
+<rect x="147.5" y="26" width="126" height="66" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1.2"/>
+<text x="153.5" y="39.0" class="m b" font-size="8">T1078.004</text>
+<text x="153.5" y="51.0" font-size="7.6">Valid Accounts:</text>
+<text x="153.5" y="61.0" font-size="7.6">Cloud Accounts</text>
+<text x="153.5" y="86.0" class="m mu" font-size="6.9">Reported · claim 5</text>
+<rect x="147.5" y="98" width="126" height="66" fill="#F4F5F0" stroke="#56615F" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="153.5" y="111.0" class="m b" font-size="8">T1195.002</text>
+<text x="153.5" y="123.0" font-size="7.6">Compromise Software</text>
+<text x="153.5" y="133.0" font-size="7.6">Supply Chain</text>
+<text x="153.5" y="158.0" class="m mu" font-size="6.9">Open · KJ-5</text>
+<rect x="285.0" y="0" width="136" height="20" fill="#1C2326"/>
+<text x="353.0" y="13.5" class="m b wt" text-anchor="middle" font-size="8">Credential access</text>
+<rect x="285.0" y="20" width="136" height="150" fill="none" stroke="#C3C9C3"/>
+<rect x="290.0" y="26" width="126" height="66" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1.2"/>
+<text x="296.0" y="39.0" class="m b" font-size="8">T1528</text>
+<text x="296.0" y="51.0" font-size="7.6">Steal Application</text>
+<text x="296.0" y="61.0" font-size="7.6">Access Token</text>
+<text x="296.0" y="86.0" class="m mu" font-size="6.9">Reported · claim 5</text>
+<rect x="427.5" y="0" width="136" height="20" fill="#1C2326"/>
+<text x="495.5" y="13.5" class="m b wt" text-anchor="middle" font-size="8">Collection</text>
+<rect x="427.5" y="20" width="136" height="150" fill="none" stroke="#C3C9C3"/>
+<rect x="432.5" y="26" width="126" height="66" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1.2"/>
+<text x="438.5" y="39.0" class="m b" font-size="8">T1213.003</text>
+<text x="438.5" y="51.0" font-size="7.6">Data from Information</text>
+<text x="438.5" y="61.0" font-size="7.6">Repositories: Code</text>
+<text x="438.5" y="71.0" font-size="7.6">Repositories</text>
+<text x="438.5" y="86.0" class="m mu" font-size="6.9">Reported · claim 5</text>
+<rect x="570.0" y="0" width="136" height="20" fill="#1C2326"/>
+<text x="638.0" y="13.5" class="m b wt" text-anchor="middle" font-size="8">Impact</text>
+<rect x="570.0" y="20" width="136" height="150" fill="none" stroke="#C3C9C3"/>
+<rect x="575.0" y="26" width="126" height="66" fill="#F3EED6" stroke="#9A8A3C" stroke-width="1.2"/>
+<text x="581.0" y="39.0" class="m b" font-size="8">T1565.001</text>
+<text x="581.0" y="51.0" font-size="7.6">Data Manipulation:</text>
+<text x="581.0" y="61.0" font-size="7.6">Stored Data</text>
+<text x="581.0" y="71.0" font-size="7.6">Manipulation</text>
+<text x="581.0" y="86.0" class="m mu" font-size="6.9">Reported · claim 5</text>
+</svg>
+    </figure>
+    <p class="small">Four techniques restate claim 5 and inherit its status: Reported, from one insider. T1195.002 marks the open question of <span class="nw">KJ-5</span> and applies only if altered code reached a release. T1588.007 marks the unconfirmed AI remark.</p>
+  </section>
+
+  <section>
+    <h2>Attribution: none</h2>
+    <p>Three hypotheses remain open: a state-linked intrusion for source code or an implant, financially motivated theft for extortion or sale, and spill-over from a token-harvesting campaign. The reporting we read carries no claim, demand or leak, and no public evidence is inconsistent with any of the three. The worm fit above favours spill-over without excluding the others: a stolen token can be sold or reused by a second actor. An implant in altered code or overlap with tracked infrastructure would favour the first; a demand or a sale the second; SAP naming an earlier campaign the third.</p>
+  </section>
+</article>
+
+<!-- ==================== PAGE 10: RESPONSE AND SIGNPOSTS ==================== -->
+<article class="page" aria-label="Page 10 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 10 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span class="on">5 What to do</span><span>6 Reference</span></nav>
+
+  <section>
+    <h2>Response: hold the advisory, pin SAP dependencies, and harden your own GitHub organisation</h2>
+    <table class="act resp">
+      <colgroup><col class="c-id"><col><col class="c-ow"><col class="c-hz"><col class="c-ck"></colgroup>
+      <thead><tr><th>ID</th><th>Action</th><th>Owner</th><th>Horizon</th><th>Check</th></tr></thead>
+      <tbody>
+        <tr class="tier"><td colspan="5">National CERT and CTI desk</td></tr>
+        <tr><td>A-1</td><td>Hold the constituency advisory. Review the six signposts below daily, and run upstream-watch on <span class="c">UI5/openui5</span> (C-7): movement past <span class="c">c586680fda</span> shows the sync has restarted, and rewritten history is signpost T-4.</td><td>CTI desk</td><td>Daily, until SAP states the scope</td><td>Signposts logged each day; watch job green</td></tr>
+        <tr class="tier"><td colspan="5">If you build on SAP’s open-source packages</td></tr>
+        <tr><td>A-2</td><td>Pin SAP-published dependencies (<span class="c">@cap-js/*</span>, <span class="c">@sap/*</span>, <span class="c">@ui5/*</span>, <span class="c">@openui5/*</span>, <span class="c">mbt</span>) to lockfile versions. Defer upgrades to releases published since 1 Nov 2026. That date is our bracket: SAP’s response is visible from 18 Nov, and the start of attacker access is unknown.</td><td>Development leads</td><td>Now, until SAP states the scope</td><td>Lockfile diff shows no SAP package raised since 1 Nov</td></tr>
+        <tr><td>A-3</td><td>Install in CI with lifecycle scripts off and verify registry signatures and provenance (C-6). Record which of your SAP packages carry no provenance.</td><td>Development leads</td><td>7 days</td><td><span class="c">npm audit signatures</span> passes in CI</td></tr>
+        <tr class="tier"><td colspan="5">If you run SAP</td></tr>
+        <tr><td>A-4</td><td>Keep signature verification on for SAP software archives and packages. If SAP did replace signing keys (claim 7), a key-change notice will follow. Escalate any verification failure and do not bypass it.</td><td>SAP Basis and platform teams</td><td>Standing</td><td>No signature check disabled or overridden</td></tr>
+        <tr class="tier"><td colspan="5">Harden your own GitHub organisation</td></tr>
+        <tr><td>A-5</td><td>Review the audit log for token use from unfamiliar networks. Revoke long-lived classic tokens, and require approval and an expiry date for fine-grained tokens (C-2).</td><td>Organisation owners</td><td>7 days</td><td>Audit-log search by <span class="c">hashed_token</span> leaves no unexplained IP</td></tr>
+        <tr><td>A-6</td><td>Replace stored bot tokens in workflows with the job token, or with a GitHub App token minted per job (C-1).</td><td>Platform team</td><td>30 days</td><td>No stored user or bot token named in any workflow</td></tr>
+        <tr><td>A-7</td><td>Require a pull request, a second approver and signed commits on default branches by ruleset, put CODEOWNERS on <span class="c">.github/</span>, and deploy push-watch (C-4).</td><td>Platform team</td><td>30 days</td><td>A direct test push is refused</td></tr>
+        <tr><td>A-8</td><td>Stream the audit log, Git events included, to the SIEM, and alert on the behaviours on page 11 (C-3).</td><td>SOC</td><td>30 days</td><td>A test clone of ten repositories raises an alert</td></tr>
+        <tr><td>A-9</td><td>Build releases only in CI from a tag, attest provenance and publish by OIDC, so that no signing key or registry token is stored (C-5).</td><td>Release owners</td><td>90 days</td><td>Attestation on every new release</td></tr>
+        <tr><td>A-10</td><td>Search your repositories for the Shai-Hulud-family indicators (B-6). Its marker repositories were still being created this week, whatever its link to SAP.</td><td>Platform team</td><td>7 days</td><td>No hit, or every hit explained</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:6px">Ordered by who must act first. A-1 to A-4 respond to this incident and are precautionary, because <span class="nw">KJ-5</span> is open. A-5 to A-10 address the reported technique, stolen developer tokens, in your own organisation, whatever SAP later discloses. The queries are in Appendix B (page 12).</p>
+  </section>
+
+  <section>
+    <h2>Signposts: any one of six events would turn this report into an advisory</h2>
+    <table class="sig">
+      <colgroup><col class="c-id"><col><col class="c-t"><col class="c-wt"></colgroup>
+      <thead><tr><th>ID</th><th>Signpost</th><th>What it would tell us</th><th>Where to watch</th></tr></thead>
+      <tbody>
+        <tr><td>T-1</td><td>SAP or a researcher names a repository that feeds a shipped product or a public package</td><td>The scope; answers Q-2</td><td>SAP security notes and News Center; vendor blogs</td></tr>
+        <tr><td>T-2</td><td>A tampered SAP release, package or cloud component is confirmed</td><td><span class="nw">KJ-5</span> resolved; advisory the same day</td><td>npm advisories; OSV; SAP notes</td></tr>
+        <tr><td>T-3</td><td>SAP publishes indicators, such as the patterns in its scanning tool, or re-signs downloads or packages</td><td>Confirms <span class="nw">KJ-2</span>; answers Q-1 and Q-4</td><td>SAP support portal; registry metadata</td></tr>
+        <tr><td>T-4</td><td><span class="c">UI5/openui5</span> master moves, or its history or tags are rewritten</td><td>The sync restored, or tampering being removed</td><td>upstream-watch (C-7)</td></tr>
+        <tr><td>T-5</td><td>An actor leaks or offers SAP source code</td><td>Confirms copying (claim 5); favours theft for sale or extortion</td><td>Leak sites; dark-web monitoring</td></tr>
+        <tr><td>T-6</td><td>BSI, CISA or another national authority issues guidance</td><td>An authoritative scope</td><td>Authority feeds</td></tr>
+      </tbody>
+    </table>
+  </section>
+</article>
+
+<!-- ==================== PAGE 11: INDICATORS, GAPS, ATTRIBUTION ==================== -->
+<article class="page" aria-label="Page 11 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 11 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span class="on">5 What to do</span><span>6 Reference</span></nav>
+
+  <section>
+    <h2>Indicators: behaviour only, because SAP has published none</h2>
+    <p class="small">These behaviours describe developer-token abuse in any GitHub organisation. Event names come from GitHub’s audit-log reference (reference 7). Git events are absent from the web interface and are kept for seven days through the REST API, so stream them.</p>
+    <table class="ind">
+      <colgroup><col class="c-i"><col><col class="c-w"></colgroup>
+      <thead><tr><th>Behaviour</th><th>What it means</th><th>Where to watch</th></tr></thead>
+      <tbody>
+        <tr><td>A token’s first use from a new network: same <span class="c">hashed_token</span>, new actor IP</td><td>A copied token in use</td><td>Audit-log stream, IP disclosure on</td></tr>
+        <tr><td><span class="c">git.clone</span> or <span class="c">repo.download_zip</span> across many repositories by one actor within minutes</td><td>Bulk copying of source code</td><td>Audit-log stream with Git events (B-8)</td></tr>
+        <tr><td><span class="c">git.push</span> to a default branch for a commit with no merged pull request</td><td>A change that skipped review</td><td>push-watch (C-4)</td></tr>
+        <tr><td><span class="c">repository_ruleset.update</span>, <span class="c">repository_ruleset.destroy</span> or <span class="c">workflows.disable_workflow</span> shortly before a push</td><td>Protections removed first</td><td>Audit log</td></tr>
+        <tr><td><span class="c">personal_access_token.access_granted</span> or <span class="c">org_credential_authorization.grant</span> that nobody requested</td><td>A new token gaining access</td><td>Audit log</td></tr>
+        <tr><td>A commit <span class="c">chore: update config</span> that adds <span class="c">setup.mjs</span> or a start-up hook under <span class="c">.claude/</span> or <span class="c">.vscode/</span>; a branch <span class="c">dependabot/github_actions/format/setup-formatter</span></td><td>The August Shai-Hulud variant acting with a stolen token. Later variants rename files</td><td>B-6; reference 18</td></tr>
+        <tr><td>An upstream default branch that stops, or whose history or tags change</td><td>The vendor responding, or cleaning up</td><td>upstream-watch (C-7)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Intelligence gaps: seven questions that would change our judgements</h2>
+    <table class="gaps">
+      <colgroup><col class="c-id"><col><col class="c-w"><col class="c-kj"></colgroup>
+      <thead><tr><th>ID</th><th>Question</th><th>Why it matters</th><th>Tests</th></tr></thead>
+      <tbody>
+        <tr><td>Q-1</td><td>How were the tokens taken, and was a Shai-Hulud-family worm involved?</td><td>Separates routes R-1 to R-4 and sets the right control</td><td><span class="nw">KJ-1</span></td></tr>
+        <tr><td>Q-2</td><td>Which repositories were read or changed, on github.com, on github.tools.sap, or on both?</td><td>A repository that feeds a product or package triggers an advisory</td><td><span class="nw">KJ-4</span>, <span class="nw">KJ-5</span></td></tr>
+        <tr><td>Q-3</td><td>When did attacker access begin, and when did SAP detect it?</td><td>Sets the window of releases to distrust</td><td><span class="nw">KJ-3</span></td></tr>
+        <tr><td>Q-4</td><td>Did altered code enter a build, and which signing keys were replaced?</td><td>Decides whether shipped software is in question</td><td><span class="nw">KJ-2</span>, <span class="nw">KJ-5</span></td></tr>
+        <tr><td>Q-5</td><td>Why is the OpenUI5 sync still stopped nine days on?</td><td>A long stop suggests clean-up or rebuilding, not only caution</td><td><span class="nw">KJ-3</span>, <span class="nw">KJ-4</span></td></tr>
+        <tr><td>Q-6</td><td>What role did AI play, if any?</td><td>Sets how fast detection must be</td><td>Claim 8</td></tr>
+        <tr><td>Q-7</td><td>Who is responsible, and has any source code been leaked or offered?</td><td>Attribution, and confirmation of copying</td><td>Claim 5</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</article>
+
+<!-- ==================== PAGE 12: REFERENCES AND APPENDIX B ==================== -->
+<article class="page" aria-label="Page 12 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 12 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span class="on">6 Reference</span></nav>
+
+  <section class="refs">
+    <h2>References and source grades</h2>
+    <p>Admiralty grades. SAP’s statement as relayed by dpa: B2. Claims from unnamed insiders: B3. Research teams’ own analysis: B2. Aggregators: C3. heise online: B2. GitHub documentation: A1. Public git and registry records read by us (Appendix A): A1. All were read on 27 Nov 2026.</p>
+    <div class="refcols">
+      <div>
+        <h3>The incident</h3>
+        <ol>
+          <li>t-online (dpa), “SAP meldet IT-Vorfall”, 27 Nov 2026. SAP’s statement and a summary of Der Spiegel.<br><span class="u">https://www.t-online.de/digital/aktuelles/id_101548548/sap-meldet-it-vorfall-haben-verdaechtige-aktivitaeten-identifiziert-.html</span></li>
+          <li>Handelsblatt (C. Kerkmann), “SAP: IT-Sicherheitsvorfall”, 27 Nov 2026. Read in full, in translation.<br><span class="u">https://www.handelsblatt.com/technik/ki/sap-it-sicherheitsvorfall-haben-verdaechtige-aktivitaeten-identifiziert/100273138.html</span></li>
+          <li>regionalheute.de (dts), “SAP von IT-Sicherheitsvorfall betroffen”, 26 Nov 2026. Summary of Der Spiegel.<br><span class="u">https://regionalheute.de/sap-von-it-sicherheitsvorfall-betroffen-1795724461/</span></li>
+          <li>Cybersecurity News, “SAP Confirms Security Incident…”, 27 Nov 2026. C3; derived from Der Spiegel.<br><span class="u">https://cybersecuritynews.com/sap-security-incident/</span></li>
+          <li>The Open Press, 27 Nov 2026. C3; source of claim 10.<br><span class="u">https://theopenpress.in/article/sap-cyberattack-source-code-breach-customer-data-safe</span></li>
+          <li>SAP News Center, checked 27 Nov 2026; no notice found.<br><span class="u">https://news.sap.com/</span></li>
+        </ol>
+        <h3>GitHub and method</h3>
+        <ol start="7">
+          <li>GitHub Docs, “Audit log events for your organization” (event names on pages 11 and 12).<br><span class="u">https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/audit-log-events-for-your-organization</span></li>
+          <li>GitHub Docs, “Identifying audit log events performed by an access token” (A-5).<br><span class="u">https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/identifying-audit-log-events-performed-by-an-access-token</span></li>
+          <li>GitHub Status, incident history feed, read 27 Nov 2026 (E-06).<br><span class="u">https://www.githubstatus.com/history.atom</span></li>
+        </ol>
+      </div>
+      <div>
+        <h3>Context</h3>
+        <ol start="10">
+          <li>Snyk, “A Mini Shai-Hulud Has Appeared”, 29 Apr 2026.<br><span class="u">https://snyk.io/de/blog/bun-based-stealer-hits-sap-cap-js-mbt-npm-packages/</span></li>
+          <li>SecurityWeek, “SAP NPM Packages Targeted in Supply Chain Attack”, Apr 2026.<br><span class="u">https://www.securityweek.com/sap-npm-packages-targeted-in-supply-chain-attack/</span></li>
+          <li>The Hacker News, “SAP-Related npm Packages Compromised”, Apr 2026.<br><span class="u">https://thehackernews.com/2026/04/sap-npm-packages-compromised-by-mini.html</span></li>
+          <li>Wiz, “Supply Chain Campaign Targets SAP npm Packages”, updated 30 Apr 2026.<br><span class="u">https://www.wiz.io/de-de/blog/mini-shai-hulud-supply-chain-sap-npm</span></li>
+          <li>Akeyless, “wfx GitHub Attack: 61,000 Repos Scanned for Secrets”, Nov 2026. Counts vary by vendor.<br><span class="u">https://www.akeyless.io/blog/wfx-github-accounts-ci-cd-secrets-attack/</span></li>
+          <li>Endor Labs, “Hijacked GitHub Accounts Push ‘wfx’ CI Secret Stealer”, Nov 2026. Source of the indicators in E-10.<br><span class="u">https://www.endorlabs.com/learn/github-actions-supply-chain-attack-targeting-ci-secrets-at-scale</span></li>
+          <li>Douglas Mun, “Ghost in the Release Pipeline: Microsoft agent-framework PyPI compromise”, CTI report v1.0, 19 Nov 2026.<br><span class="u">TLP:CLEAR; companion report by the same author</span></li>
+          <li>heise online (M. Masiero), “Malicious npm packages: SAP software compromised”, 4 May 2026. Mini Shai-Hulud detail and SAP Security Note 3747787.<br><span class="u">https://www.heise.de/en/news/Malicious-npm-packages-SAP-software-compromised-11281020.html</span></li>
+          <li>JFrog Security Research, “Major Shai Hulud campaign strikes npm again”, 4 Aug 2026. Source of the indicators in E-17.<br><span class="u">https://research.jfrog.com/post/shai-hulud-is-back-august/</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="snip">
+    <h2>Appendix B: commands and queries</h2>
+    <p class="small">Test before use. B-1 to B-4 read public data and need no credentials. B-5 and B-6 run in a clone of any repository. We ran B-1 to B-6 as printed. B-7 and B-8 need an organisation owner’s token and GitHub Enterprise Cloud, and we could not run them.</p>
+    <div class="two">
+      <div>
+        <h3>B-1 · Is the OpenUI5 sync still stopped? (E-01)</h3>
+        <div class="rule-box">git ls-remote https://github.com/UI5/openui5 \
+  refs/heads/master
+# c586680fda4fa2c4b0bdc055a00ea39ff51e30c2 = still stopped</div>
+        <h3>B-2 · Days with no synced commit in 2026 (E-02)</h3>
+        <div class="rule-box">git clone --bare --filter=blob:none \
+  --shallow-since=2026-01-01 --single-branch \
+  https://github.com/UI5/openui5 o.git
+TZ=UTC git -C o.git log master \
+  --committer="Gerrit Code Review" \
+  --date=format-local:%F --format=%cd | sort -u &gt; days.txt
+# weekdays missing from days.txt are the gaps</div>
+        <h3>B-3 · Does a package version carry provenance? (E-14)</h3>
+        <div class="rule-box">curl -s https://registry.npmjs.org/mbt/1.2.53 \
+  | jq '.dist.attestations // "none"'
+npm audit signatures      # in a project, after npm ci</div>
+        <h3>B-4 · Public workflows that call an internal host (E-13)</h3>
+        <div class="rule-box"># GitHub code search, signed in
+github.tools.sap org:SAP path:.github/workflows</div>
+      </div>
+      <div>
+        <h3>B-5 · Signed and unsigned direct pushes per day (E-15)</h3>
+        <div class="rule-box">git log --all --since=2026-11-01 --date=format:%F \
+  --format='%H %cd %cn' | while read -r sha day who; do
+  [ "$who" = "GitHub" ] &amp;&amp; continue
+  git cat-file commit "$sha" | sed '/^$/q' | grep -q '^gpgsig' \
+    &amp;&amp; echo "$day signed" || echo "$day unsigned"
+done | sort | uniq -c</div>
+        <h3>B-6 · Shai-Hulud-family indicators (E-17, A-10)</h3>
+        <div class="rule-box">git log --all --since=2026-08-01 --format='%h %cI %s' \
+  --grep='^chore: update config$' \
+  --grep='claude@users.noreply.github.com'
+git log --all --since=2026-08-01 --format='%h %cI %s' -- \
+  ':(glob)**/setup.mjs' ':(glob)**/math_init.js' \
+  ':(glob)**/Math_Symbol.js' ':(glob)**/codeql_analysis.yml'
+git ls-remote origin \
+  'refs/heads/dependabot/github_actions/format/*'</div>
+        <h3>B-7 · What one token did (A-5, C-2)</h3>
+        <div class="rule-box">gh api --paginate "/orgs/$ORG/audit-log?include=all\
+&amp;phrase=hashed_token:\"$HASH\"" \
+  --jq '.[] | [.["@timestamp"], .action, .actor_ip] | @tsv'</div>
+        <h3>B-8 · Bulk clones in the last seven days (A-8, C-3)</h3>
+        <div class="rule-box">gh api --paginate \
+  "/orgs/$ORG/audit-log?include=git&amp;phrase=action:git.clone" \
+  --jq '.[].actor' | sort | uniq -c | sort -rn | head</div>
+      </div>
+    </div>
+  </section>
+</article>
+
+<!-- ==================== PAGE 13: APPENDIX A ==================== -->
+<article class="page" aria-label="Page 13 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 13 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span class="on">6 Reference</span></nav>
+
+  <section>
+    <h2>Appendix A: evidence register, seventeen observations reproducible from public data</h2>
+    <p class="small">Each row gives the artefact and the command or query that reproduces it. All were collected between 05:55 and 08:10 UTC on 27 November 2026 and will change as SAP’s repositories move. E-01 to E-05 rest on single commits and are exact. E-06, E-08 and E-15 are approximate, because commit dates are set by the committer and search counts come from GitHub’s index.</p>
+    <table class="reg2">
+      <colgroup><col class="c-id"><col class="c-a"><col></colgroup>
+      <thead><tr><th>ID</th><th>Artefact and value</th><th>How to reproduce</th></tr></thead>
+      <tbody>
+        <tr><td>E-01</td><td><span class="c"><span class="nw">UI5/openui5</span></span> master head <span class="c"><span class="nw">c586680fda4fa2c4b0bdc055a00ea39ff51e30c2</span></span>, committed <span class="nw">2026-11-18T14:58:03Z</span> by “Gerrit Code Review” at <span class="c"><span class="nw">sap.corp</span></span>. 176 such commits on master on 1–18 Nov; none after.</td><td><span class="c"><span class="nw">git</span> <span class="nw">ls-remote</span> <span class="nw">https://github.com/UI5/openui5</span> <span class="nw">refs/heads/master</span></span><br><span class="c"><span class="nw">git</span> <span class="nw">log</span> <span class="nw">master</span> <span class="nw">--committer=&quot;Gerrit</span> <span class="nw">Code</span> <span class="nw">Review&quot;</span> <span class="nw">--format=&quot;%H</span> <span class="nw">%cI&quot;</span></span></td></tr>
+        <tr><td>E-02</td><td>3,048 Gerrit-committed commits on master since 2 Jan 2026. 235 weekdays to 26 Nov; eight without one: 1 May, 25 May, 19, 20, 23, 24, 25 and 26 Nov.</td><td><span class="c"><span class="nw">git</span> <span class="nw">log</span> <span class="nw">master</span> <span class="nw">--since=2026-01-01</span> <span class="nw">--committer=&quot;Gerrit</span> <span class="nw">Code</span> <span class="nw">Review&quot;</span> <span class="nw">--format=%cI</span></span>, grouped by UTC date.</td></tr>
+        <tr><td>E-03</td><td><span class="c"><span class="nw">SAP/ai-sdk-java</span></span> commit <span class="c"><span class="nw">caaf21e7822779d4b5ea666b42e3c1f6971eaa38</span></span>, <span class="nw">2026-11-26T12:03:30Z</span>, comments out the schedule of <span class="c"><span class="nw">weekly-spec-update.yaml</span></span>. In its parent, <span class="c"><span class="nw">spec-update.yaml</span></span> line 65 sets <span class="c"><span class="nw">API_BASE_URL</span></span> to <span class="c"><span class="nw">https://github.tools.sap/api/v3/repos</span></span> and line 144 passes <span class="c"><span class="nw">secrets.GH_TOOLS_TOKEN</span></span>.</td><td><span class="c"><span class="nw">git</span> <span class="nw">show</span> <span class="nw">caaf21e78</span></span><br><span class="c"><span class="nw">git</span> <span class="nw">show</span> <span class="nw">caaf21e78^:.github/workflows/spec-update.yaml</span></span></td></tr>
+        <tr><td>E-04</td><td><span class="c"><span class="nw">UI5/plugins-coding-agents</span></span> commit <span class="c"><span class="nw">9c57d9f7de4b39e1da018a24e700032cc6bde704</span></span>, <span class="nw">2026-11-21T09:10:54Z</span>, deletes <span class="c"><span class="nw">token:</span> <span class="nw">${{secrets.GH_OPENUI5BOT}}</span></span> and <span class="c"><span class="nw">environment:</span> <span class="nw">release</span></span>. Code search returns five <span class="c"><span class="nw">release-please.yml</span></span> files in the UI5 organisation, this repository included (the index lags).</td><td><span class="c"><span class="nw">git</span> <span class="nw">show</span> <span class="nw">9c57d9f7d</span></span><br>Code search: <span class="c"><span class="nw">GH_OPENUI5BOT</span> <span class="nw">org:UI5</span></span></td></tr>
+        <tr><td>E-05</td><td><span class="c"><span class="nw">SAP/SapMachine</span></span> commit <span class="c"><span class="nw">46017a54c4b77c5d8a87945840656bf50f75e7f8</span></span>, <span class="nw">2026-11-18T09:56:06Z</span>, replaces a checkout from <span class="c"><span class="nw">https://github.tools.sap</span></span> using <span class="c"><span class="nw">secrets.GHE_PAT</span></span> with one from <span class="c"><span class="nw">https://github.com</span></span>.</td><td><span class="c"><span class="nw">git</span> <span class="nw">show</span> <span class="nw">46017a54c</span></span></td></tr>
+        <tr><td>E-06</td><td>All-branch commits on 16–20 Nov: 363, 326, 361, 138, 213. Weekdays of 2–18 Nov: mean 326, range 245–397. Default-branch commits on 18 and 19 Nov: SAP’s four organisations 296 and 137; Microsoft 2,067 and 2,266; Elastic 318 and 377; Grafana 331 and 310. GitHub’s feed lists no Git, pull-request, Actions or API incident on 19 Nov.</td><td>Clones: <span class="c"><span class="nw">git</span> <span class="nw">log</span> <span class="nw">--all</span> <span class="nw">--since=2026-10-01</span> <span class="nw">--format=&quot;%H</span> <span class="nw">%cI&quot;</span></span>, de-duplicated by hash.<br>Search: <span class="c"><span class="nw">GET</span> <span class="nw">/search/commits?q=org:SAP+committer-date:2026-11-19</span></span>, likewise for each organisation and day.</td></tr>
+        <tr><td>E-07</td><td><span class="c"><span class="nw">@sapui5/distribution-metadata</span></span>: last publish <span class="nw">2026-11-11T16:15Z</span>; longest earlier gap between publish days in 2026, 14 days. <span class="c"><span class="nw">@openui5/sap.ui.core</span></span>: last publish <span class="nw">2026-11-17T18:30Z</span>; gaps of up to 14 days in 2026.</td><td><span class="c"><span class="nw">curl</span> <span class="nw">https://registry.npmjs.org/@sapui5%2Fdistribution-metadata</span></span>, field <span class="c"><span class="nw">time</span></span>.</td></tr>
+        <tr><td>E-08</td><td>Provenance attestations (SLSA v1) on <span class="c"><span class="nw">@ui5/webcomponents@2.16.7</span></span> (26 Nov, 12:29Z), <span class="c"><span class="nw">@fundamental-ngx/core@0.66.2-rc.6</span></span> (25 Nov, 18:35Z) and the 27 Nov nightly of <span class="c"><span class="nw">@sap-ai-sdk/orchestration</span></span> (01:14Z). Direct pushes by people: 152, 156, 141 on 24–26 Nov; weekday mean 150 on 2–18 Nov.</td><td>Registry field <span class="c"><span class="nw">versions[v].dist.attestations</span></span>.<br>Clones: commits whose committer is neither GitHub nor a bot identity.</td></tr>
+        <tr><td>E-09</td><td>19 commits in 13 repositories in the week of 23 Nov; 3 to 7 a week from 5 Oct to 22 Nov. Examples: <span class="c"><span class="nw">fd0b42900</span></span>, <span class="c"><span class="nw">e4d1c30b1</span></span>, <span class="c"><span class="nw">e3fceb441</span></span>, <span class="c"><span class="nw">c9841d1b4</span></span>, <span class="c"><span class="nw">50554a3a7</span></span>.</td><td>Non-merge, human-authored commits that touch <span class="c"><span class="nw">.github/</span></span> and whose subject matches pin, harden, permission, injection, OIDC, SHA, auto-merge or token removal.</td></tr>
+        <tr><td>E-10</td><td>218,637 refs in 295 repositories (6,803 branches, 83,190 tags, 127,909 pull-request refs): no branch named <span class="c"><span class="nw">wfx-*</span></span>, <span class="c"><span class="nw">chore/[a-z0-9]{8}</span></span> or <span class="c"><span class="nw">ci-check-[0-9]{4}</span></span>. No pull request titled “dependency audit notes”. No file named <span class="c"><span class="nw">.ci-xxxxxx.sh</span></span>, <span class="c"><span class="nw">build-audit-*.yml</span></span>, <span class="c"><span class="nw">setup.mjs</span></span> or <span class="c"><span class="nw">execution.js</span></span>. One subject begins “ci: restore”, dated 9 Oct, a month before the campaign.</td><td><span class="c"><span class="nw">git</span> <span class="nw">ls-remote</span></span> per repository.<br>Search: <span class="c"><span class="nw">is:pr</span> <span class="nw">&quot;dependency</span> <span class="nw">audit</span> <span class="nw">notes&quot;</span></span> in the four organisations.<br><span class="c"><span class="nw">git</span> <span class="nw">log</span> <span class="nw">--all</span> <span class="nw">--name-only</span></span> against Endor Labs’ list (reference 15).</td></tr>
+      </tbody>
+    </table>
+  </section>
+</article>
+
+<!-- ==================== PAGE 14: APPENDIX A, CONTINUED ==================== -->
+<article class="page" aria-label="Page 14 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 14 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span class="on">6 Reference</span></nav>
+
+  <section>
+    <h2>Appendix A, continued</h2>
+    <table class="reg2">
+      <colgroup><col class="c-id"><col class="c-a"><col></colgroup>
+      <thead><tr><th>ID</th><th>Artefact and value</th><th>How to reproduce</th></tr></thead>
+      <tbody>
+        <tr><td>E-11</td><td>2,573 non-merge commits pushed directly by 334 committers since 2 Nov. Six, from two committers, carry a UTC offset that the committer used in under 10% of pushes since 26 Oct; none touches CI, build or dependency files. Three unsigned commits come from one committer who signs 90% or more of the time; all three change source files only.</td><td>Clones: committer UTC offset and signature header, per committer with eight or more pushes since 26 Oct, the day after the European clock change.</td></tr>
+        <tr><td>E-12</td><td>Set aside. Longest run of commit-free weekdays, 1 Oct–18 Nov against 19–26 Nov: OpenUI5 Bot 2 and 3, SapMachine release automation 6 and 4, SAP Cloud SDK Bot 12 and 6. OpenUI5 Bot writes to <span class="c"><span class="nw">gh-pages</span></span> of <span class="c"><span class="nw">UI5/cli</span></span> after merges to main, and main had none on 19–23 Nov.</td><td>Clones: commits per UTC date by committer name.</td></tr>
+        <tr><td>E-13</td><td>Nine workflow files in five public repositories call <span class="c"><span class="nw">github.tools.sap</span></span>: <span class="c"><span class="nw">SAP/spartacus</span></span> (2), <span class="c"><span class="nw">SAP/SapMachine-infrastructure</span></span> (2), <span class="c"><span class="nw">SAP/ai-sdk-js</span></span> (2), <span class="c"><span class="nw">SAP/ai-sdk-java</span></span> (1), <span class="c"><span class="nw">SAP-samples/teched2026-XP266</span></span> (2). None in cap-js or UI5. In <span class="c"><span class="nw">SAP/ai-sdk-java</span></span> at <span class="c"><span class="nw">caaf21e78</span></span>, <span class="c"><span class="nw">perform-release.yaml</span></span> line 151 imports <span class="c"><span class="nw">secrets.PGP_PRIVATE_KEY</span></span>.</td><td>Code search: <span class="c"><span class="nw">github.tools.sap</span> <span class="nw">org:SAP</span> <span class="nw">path:.github/workflows</span></span>, likewise for each organisation (default branches only).<br><span class="c"><span class="nw">git</span> <span class="nw">show</span> <span class="nw">caaf21e78:.github/workflows/perform-release.yaml</span></span></td></tr>
+        <tr><td>E-14</td><td>Latest versions of 24 SAP npm packages, 27 Nov: 11 carry a provenance attestation, 13 do not. Without: nine <span class="c"><span class="nw">@sap/*</span></span> packages (<span class="c"><span class="nw">cds</span></span>, <span class="c"><span class="nw">cds-dk</span></span>, <span class="c"><span class="nw">cds-compiler</span></span>, <span class="c"><span class="nw">xssec</span></span>, <span class="c"><span class="nw">approuter</span></span>, <span class="c"><span class="nw">hana-client</span></span>, <span class="c"><span class="nw">ux-ui5-tooling</span></span>, <span class="c"><span class="nw">generator-fiori</span></span>, <span class="c"><span class="nw">eslint-plugin-cds</span></span>), <span class="c"><span class="nw">@openui5/sap.ui.core</span></span>, <span class="c"><span class="nw">@sapui5/distribution-metadata</span></span>, <span class="c"><span class="nw">@ui5/cli</span></span>, <span class="c"><span class="nw">mbt</span></span>.</td><td>Registry field <span class="c"><span class="nw">versions[v].dist.attestations</span></span> for each package.<br><span class="c"><span class="nw">npm</span> <span class="nw">audit</span> <span class="nw">signatures</span></span> in a project that installs them.</td></tr>
+        <tr><td>E-15</td><td>Commits pushed directly by people, merges included, on all branches of 186 repositories. A person is a committer that is neither GitHub’s own web-flow identity nor an automation identity. October: 231 of 3,645 signed (6.3%). 1–18 Nov: 124 of 2,087 (5.9%). 19–27 Nov: 259 of 766 (33.8%), or 29% without the heaviest signer. Committers who signed for the first time since 1 Oct: 8 on 1–18 Nov and 29 from 19 Nov (two on 19 Nov, six on 20 Nov, the first of those at 05:43 UTC). 81 unsigned direct pushes changed a workflow file since 1 Nov, in 30 repositories: 59 before 19 Nov, 22 after.</td><td>Clones: the <span class="c"><span class="nw">gpgsig</span></span> header of <span class="c"><span class="nw">git</span> <span class="nw">cat-file</span> <span class="nw">commit</span></span>, per commit, by committer date (B-5), after dropping automation committers by name; <span class="c"><span class="nw">git</span> <span class="nw">log</span> <span class="nw">--name-only</span></span> for the files.</td></tr>
+        <tr><td>E-16</td><td>Search for forks and same-named repositories created since 1 Oct, for 276 of SAP’s 294 repository names (18 are too generic to search). 385 same-named forks: 51, 36 and 40 in the weeks from 2, 9 and 16 Nov, 26 on 23–27 Nov; the peak, 95, was the week of 26 Oct. Fifteen accounts forked three or more. Of the same-named repositories that are not forks, 18 with distinctive names were created since 1 Nov; five share commit hashes with SAP’s, all <span class="c"><span class="nw">SAP-samples/teched2026-*</span></span> workshop repositories, four of them mirrored by one account within 21 minutes on 24 Nov. Searches for leak-style names and descriptions returned nothing.</td><td>Repository search: <span class="c"><span class="nw">NAME</span> <span class="nw">in:name</span> <span class="nw">fork:true</span> <span class="nw">created:>=2026-10-01</span></span>, exact-name matches only.<br><span class="c"><span class="nw">git</span> <span class="nw">ls-remote</span></span> of each candidate, compared ref by ref with its SAP namesake.<br>The search index is not guaranteed complete, and a renamed copy would be missed.</td></tr>
+        <tr><td>E-17</td><td>Shai-Hulud-family repository indicators from JFrog’s analysis of the August 2026 variant (reference 18): commit message <span class="c"><span class="nw">chore:</span> <span class="nw">update</span> <span class="nw">config</span></span>; files <span class="c"><span class="nw">setup.mjs</span></span>, <span class="c"><span class="nw">math_init.js</span></span>, <span class="c"><span class="nw">Math_Symbol.js</span></span>, <span class="c"><span class="nw">codeql_analysis.yml</span></span>; branch <span class="c"><span class="nw">dependabot/github_actions/format/setup-formatter</span></span>; trailer <span class="c"><span class="nw">claude@users.noreply.github.com</span></span>. None in 13,897 commits or 218,637 refs. Two commits change <span class="c"><span class="nw">.claude/settings.json</span></span>; both are ordinary configuration. Separately, 206 repositories described “Shai-Hulud: Here We Go Again” were created on 24–27 Nov under one account, which matches none of the 181 GitHub logins we derived from SAP committers. We read their metadata only.</td><td>B-6 in each clone; branch names in the collected refs.<br>Repository search: <span class="c"><span class="nw">&quot;Shai-Hulud&quot;</span> <span class="nw">in:name,description</span> <span class="nw">created:>=2026-11-01</span></span>.<br>A November variant with new file names would be missed.</td></tr>
+      </tbody>
+    </table>
+  </section>
+</article>
+
+<!-- ==================== PAGE 15: APPENDIX C ==================== -->
+<article class="page" aria-label="Page 15 of 15">
+  <header class="run"><span class="tlp">TLP:CLEAR</span><span class="mid">CTI Report: SAP developer tokens and “Project Granite”, 27 Nov 2026</span><span>Page 15 of 15</span></header>
+  <nav class="nav" aria-label="Sections"><span>1 Judgements</span><span>2 What is reported</span><span>3 The public record</span><span>4 The chain and controls</span><span>5 What to do</span><span class="on">6 Reference</span></nav>
+
+  <section>
+    <h2>Appendix C: GitHub controls, two files in full and two excerpts</h2>
+    <p class="small">Pin every action to a full commit SHA, replace the placeholder names, and test in your own repository first. For C-7, create <span class="c">.github/upstream-tags.txt</span> with <span class="c">git ls-remote --tags "$UPSTREAM" | sort -k2</span>. For C-4, adopt commit signing before you enable the watch. C-6 is three settings for a consumer’s CI: <span class="c">npm ci --ignore-scripts</span>, <span class="c">npm audit signatures</span>, and a Dependabot <span class="c">cooldown</span> of three days.</p>
+    <div class="gfile"><div class="gh"><span>.github/workflows/upstream-watch.yml</span><span>C-7 · consumers and CERTs · tested live</span></div><div class="gcols"><pre><span class="cm"># C-7: watch an upstream you depend on. Alert when its branch</span>
+<span class="cm"># moves, when history is rewritten, or when a release tag moves.</span>
+name: upstream-watch
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      UPSTREAM: https://github.com/UI5/openui5
+      BRANCH: master
+      <span class="cm"># the last head you reviewed</span>
+      PINNED: c586680fda4fa2c4b0bdc055a00ea39ff51e30c2
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - name: Branch moved, history rewritten, or tag moved</pre><pre>        run: |
+          msg=""
+          head=$(git ls-remote "$UPSTREAM" "refs/heads/$BRANCH" \
+                   | cut -f1)
+          if [ "$head" != "$PINNED" ]; then
+            git init -q up
+            git -C up fetch -q --filter=tree:0 "$UPSTREAM" "$BRANCH"
+            if git -C up merge-base --is-ancestor \
+                 "$PINNED" FETCH_HEAD 2&gt;/dev/null; then
+              msg+="$BRANCH moved to $head. "
+            else
+              msg+="HISTORY REWRITTEN at $head. "
+            fi
+          fi
+          git ls-remote --tags "$UPSTREAM" | sort -k2 &gt; tags.now
+          moved=$(sort -k2 .github/upstream-tags.txt \
+                    | join -1 2 -2 2 - tags.now \
+                    | awk '$2 != $3 {print $1}' | tr '\n' ' ')
+          [ -z "$moved" ] || msg+="TAGS MOVED: $moved"
+          [ -z "$msg" ] &amp;&amp; exit 0
+          echo "::error::$msg"
+          n=$(gh issue list --state open --json number \
+                --jq length --search "upstream-watch in:title")
+          [ "$n" -gt 0 ] || gh issue create \
+            --title "upstream-watch: $BRANCH changed" --body "$msg"
+          exit 1</pre></div></div>
+    <div class="gfile"><div class="gh"><span>.github/workflows/push-watch.yml</span><span>C-4 · publishers · logic tested</span></div><div class="gcols"><pre><span class="cm"># C-4: catch a push to the default branch that skipped review.</span>
+<span class="cm"># Rulesets should prevent it; this fires when a token with</span>
+<span class="cm"># bypass rights pushes anyway.</span>
+name: push-watch
+on:
+  push: { branches: [main] }
+
+permissions: {}
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BEFORE: ${{ github.event.before }}
+      AFTER: ${{ github.sha }}</pre><pre>    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0, persist-credentials: false }
+      - name: Each pushed commit is signed and came through a PR
+        run: |
+          bad=""
+          for sha in $(git rev-list "$BEFORE..$AFTER"); do
+            git cat-file commit "$sha" | sed '/^$/q' \
+              | grep -q '^gpgsig' || bad+="$sha unsigned. "
+            n=$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/pulls" \
+                  --jq 'map(select(.merged_at != null)) | length')
+            [ "$n" -gt 0 ] || bad+="$sha has no merged PR. "
+          done
+          wf=$(git diff --name-only "$BEFORE" "$AFTER" -- .github/ \
+                 | tr '\n' ' ')
+          [ -z "$wf" ] || echo "::warning::CI files changed: $wf"
+          [ -z "$bad" ] &amp;&amp; exit 0
+          echo "::error::$bad"
+          gh issue create --title "Unreviewed push to main" \
+            --body "$bad CI files: ${wf:-none}. See the audit log."
+          exit 1</pre></div></div>
+    <div class="two">
+      <div class="gha"><div class="gh"><span>C-1 · everyone · release-pr.yml</span><span>excerpt</span></div><div class="one-pre"><pre>permissions: {}             <span class="cm"># jobs get only what they declare</span>
+jobs:
+  release-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      <span class="cm"># No "token:" input. The job's own GITHUB_TOKEN is enough.</span>
+      - uses: googleapis/release-please-action@v4</pre></div></div>
+      <div class="gha"><div class="gh"><span>C-5 · publishers · release.yml</span><span>excerpt</span></div><div class="one-pre"><pre>- run: npm pack
+- uses: actions/attest-build-provenance@v2
+  with: { subject-path: "*.tgz" }
+publish:
+  needs: build
+  environment: npm        <span class="cm"># required reviewers, tags v* only</span>
+  permissions:
+    id-token: write       <span class="cm"># short-lived identity for npm</span>
+  steps:
+    - run: npm publish ./*.tgz --provenance --access public</pre></div></div>
+    </div>
+  </section>
+  <section>
+    <h2>How we tested them, 27 November 2026</h2>
+    <table class="tested">
+      <colgroup><col class="c-c"><col><col class="c-r"></colgroup>
+      <thead><tr><th>Control</th><th>Test</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>All five workflows</td><td>actionlint 1.7.12 with shellcheck 0.11.0; zizmor 1.33.1</td><td>No findings; 14 unpinned actions to pin</td></tr>
+        <tr><td>C-7</td><td>Live against <span class="c">UI5/openui5</span>: pinned at the head, five commits back, at an unknown commit, with one tag altered</td><td>Quiet; “master moved”; “HISTORY REWRITTEN”; “TAGS MOVED”</td></tr>
+        <tr><td>C-4</td><td>Signature and CI-file checks on the last 60 commits of <span class="c">SAP/open-ux-tools</span> main</td><td>20 flagged unsigned; four workflow changes listed. Pull-request lookup not run</td></tr>
+        <tr><td>C-6</td><td><span class="c">npm audit signatures</span> in a scratch project with three SAP packages</td><td>135 verified registry signatures; 10 verified attestations</td></tr>
+        <tr><td>Not run here</td><td>C-1, C-5, harden-runner blocking, the C-4 ruleset, B-7 and B-8</td><td>Test in your environment</td></tr>
+      </tbody>
+    </table>
+  </section>
+</article>
+
+</main>
+<script>
+(function(){
+  function fit(){
+    var w = window.innerWidth || document.documentElement.clientWidth;
+    var s = Math.min(1, (w - 24) / 794);
+    document.documentElement.style.setProperty('--fit', s > 0.3 ? s.toFixed(3) : '0.3');
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  window.addEventListener('beforeprint', function(){ document.documentElement.style.setProperty('--fit','1'); });
+  window.addEventListener('afterprint', fit);
+})();
+</script>
+</body>
+</html>
