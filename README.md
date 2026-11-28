@@ -1,5 +1,129 @@
 # **Guidebooks and Resources in this Repository**
 
+# **Ghost in the Gateway — Azure API Management Classic Secret Theft**
+**TLP:CLEAR | v1.0 | 28 November 2026**
+
+Anatomy of the Azure API Management Classic flaw Microsoft closed on 19 November 2026 — the one Norway's NSM tied to intrusions at Equinor and Skagerak Energi. What the gateway held, the likely way in, why the fix revoked nothing, and what APIM owners should rotate and hunt this week.
+
+→ A single SAS management key — no Entra sign-in, no RBAC, nothing in the Activity log — was the likely path to the management plane
+→ The gateway's secrets open internal and partner APIs and model endpoints (Azure OpenAI and others), so key material is the asset, not the box
+→ Closing the flaw does not rotate what may already be stolen; owners must rotate keys and hunt independently
+
+Every judgement carries its own confidence rating and is typed as reporting, observation, or assessment. Prepared from Microsoft's disclosure and Norway's NSM reporting.
+
+
+# **Ghost in the Granite — SAP Developer Tokens and "Project Granite"**
+**TLP:CLEAR | v1.0 | 27 November 2026**
+
+SAP developer tokens reportedly stolen and used to copy and alter source code on GitHub; SAP confirms only "suspicious activities." The trail in SAP's own public repositories starts eight days before the first report, and nothing yet shows altered code reaching customers.
+
+→ A UI5 release workflow dropped an OpenUI5 Bot token on 19 November; the public-repository trail opens 18 November, eight days ahead of the first report
+→ Commits across SAP's public organisations fell by more than half in a single day (26 November) — a measurable operational response
+→ Built from first-hand observation of SAP's public GitHub organisations, timestamped to UTC, with confidence labelled inline
+
+No customer-facing impact is yet demonstrated; the report separates what is observed from what is reported and what is assessed.
+
+
+# **Ghost in the Health Check — Microsoft Entra Connect Health Breach**
+**TLP:CLEAR | v1.0 | 27 November 2026**
+
+Anatomy of the Microsoft Entra Connect Health breach Microsoft disclosed to customers on 20 November 2026: what the API gave away, why it is a target list and not a break-in, why it is not the Microsoft 365 outage, and what tenant administrators should do this week.
+
+→ The flaw sat in Microsoft's cloud API — the on-premises health agents played no part and need no remediation
+→ What leaked is reconnaissance-grade metadata: global-administrator and technical-contact emails, tenant ID/name/initial domain, licence tier, directory-sync state, and counts of AD FS / AD DS servers — a target list, not credentials
+→ Flaw live 23 July – 19 November 2026; Microsoft committed to notifying affected tenants within 90 days, by 25 February 2027
+
+A plain-language account that draws the line between a data-exposure flaw and an authenticated break-in, and tells administrators what rotation does and does not buy.
+
+
+# **Ghost in the Front End — The Microsoft 365 Outage of 12–13 November 2026**
+**TLP:CLEAR | v3.0 (post-PIR) | 23 November 2026**
+
+Anatomy of the Microsoft 365 outage of 12–13 November 2026, updated with Microsoft's final post-incident report: what failed, how Microsoft's own automation spread it, why recovery took a day, why it was not an attack, and what defenders should change.
+
+The outage reached users only through the primary Microsoft 365 network gateway and took down Outlook and Outlook.com, Teams calendars, Copilot over work data, Defender for Office 365, Purview DLP and audit, and Intune check-in. The report traces how an automated change propagated the fault system-wide, why rollback was slow, and why this was a reliability failure rather than a security event — then draws defender-facing lessons about blast radius and automated change control. Revised against Microsoft's final PIR of 20 November 2026.
+
+
+# **Ghost in the Loop — Agentic AI Attack Frameworks Compared**
+**TLP:CLEAR | v1.0 | 23 November 2026**
+
+A CTI capability assessment of five open-source agentic offensive frameworks — ARTEX, CyberStrikeAI, Cairn, PentAGI, and HexStrike AI — that now let one operator run intrusions at machine speed against dozens of targets at once. None brings a new class of attack; they chain the weaknesses defenders already know, faster than human-paced triage can react.
+
+→ **0 of 5** check whether they are allowed to attack a target — none enforces target authorisation in code by default
+→ **<3 h** from first targeting to privileged cloud access in the strongest case; **200+** organisations worked from a single ARTEX console
+→ All five are noisy, so defenders who detect behaviour (tempo per identity, calibration probes, tool-family mixing, long-window sequences) and close basic hygiene gaps are likely to catch all five; IP and hash blocklists will not, because the agents rotate both automatically
+
+The five differ in three ways that matter to a defender: how much the framework decides without a human, what it refuses, and what it leaves in logs. 30 pages, confidence labelled throughout.
+
+
+# **Ghost in the Config — PHP November 2026 Security Release Advisory**
+**TLP:CLEAR | v1.4 | 20 November 2026**
+
+A vulnerability advisory for the PHP November 2026 security release: 7 Critical, 4 High, and 6 Moderate CVEs, led by phpAfterShell (CVE-2026-126714) and the FastCGI-reachable CVE-2026-129289 (Critical, CVSS 9.2).
+
+→ Upgrade every PHP runtime that serves web requests to 8.5.13 / 8.4.28 / 8.3.37 / 8.2.36 / 8.6.0 and restart its workers within 72 hours
+→ Do PHP-FPM hosts behind persistent FastCGI connections **first, within 24 hours** — there CVE-2026-129289 lets one unauthenticated request run attacker-supplied PHP code
+→ A public lab exploit exists for CVE-2026-129496; no in-the-wild exploitation or KEV entry as of 20 November 2026
+
+Includes an ease-of-exploitation ranking, a section on exploit code and patch availability across Debian/Red Hat/SUSE/Ubuntu, a splice diagram and patch timeline, and secure-coding lessons drawn from the seven Critical php-src fixes. Every statement is typed as reporting, observation, or assessment; confirm fixed versions against your vendor's advisory before acting.
+
+
+# **Ghost in the Release Pipeline — Microsoft agent-framework PyPI Compromise**
+**TLP:CLEAR | v1.0 | 19 November 2026**
+
+How a stolen Microsoft release credential and an open-source AI pentest agent shipped a credential stealer as Microsoft's own `agent-framework` package on PyPI on 17 November 2026 — and what consumers and publishers should change.
+
+→ A stolen ESRP client certificate and key let the malicious build clear Microsoft's own release approval and malware scan — a trusted-publisher signal that no longer held
+→ The operation was driven by the Cairn AI agent on a Pi harness with a GLM model, retrying four minutes after an initial HTTP 403, from AWS Singapore infrastructure
+→ Three victim installs observed; the report ties the agent-framework compromise to the broader agentic-tooling abuse documented in *Ghost in the Loop*
+
+A stage-by-stage account of how a signing-and-scanning release pipeline was walked through by an autonomous agent, with defender guidance for both package consumers and publishers.
+
+
+# **Ghost in the Snippet — Malicious JavaScript via Optimizely Web**
+**TLP:CLEAR Flash Report | v2.0 | 16 November 2026**
+
+Malicious JavaScript served through Optimizely Web on 16 November 2026: how one flaw at a script vendor put a theft kit inside the pages of 178 organisations, what it took, and what defenders should do.
+
+The chain ran entirely through trusted delivery: an unauthorised party exploited a flaw in the Experimentation signup flow to gain write access, wrote a one-line loader into a project's `projectJS` field, and `cdn.optimizely.com` served it as usual under its own name — so the snippet ran as first-party code with the host site's full reach into the page. A flash report on a supply-chain compromise where the attacker never touched the victims' own infrastructure, with the defender actions that follow from that.
+
+
+# **Ghost in the Cutover — How One Router Swap Grounded US Air Travel**
+**TLP:CLEAR | 16 November 2026**
+
+On 13 November 2026, new routers at two remote FAA sites flooded the network behind 17 of 22 en route centres, holding departures nationwide. It was neither an attack nor GPS interference — and any operator moving legacy circuits onto IP faces the same risk.
+
+→ New routers at El Dorado, Arkansas and Amarillo, Texas sat on the shared FTI network; 17 of 22 en route centres went unstable, Indianapolis first
+→ Not a cyberattack and not jamming — a cutover from legacy TDM to IP that flooded the shared network
+→ A migration-risk case study for anyone retiring TDM circuits onto IP, with the failure walked through end to end
+
+A reliability post-mortem rather than a threat report: what happened, why the blast radius was national, and what the pattern teaches operators mid-migration.
+
+
+# **Apple Uses AI to Correctly Guess Who's in My Family**
+**TLP:CLEAR | Educational technical brief | 10 November 2026**
+
+On 10 November 2026 I checked Dario Pasquini and Michał Bazyli's analysis of Apple's Personal Knowledge Graph against my own Mac, using only `sqlite3` in read-only mode. Every structural claim held. The store sits in `~/Library/IntelligencePlatform` behind Full Disk Access, and `entityTagging.db` scores 3,561 people across 17 relationship columns.
+
+→ The ranking finds family by **surname** and misses the spouse: all seven contacts sharing the owner's surname scored ≥0.95 on `family`; the contact whose name includes "Wife" scored 0.469, below seven contacts outside the family name
+→ Any process holding Full Disk Access can read that ranking — the privacy surface is the point
+→ A hands-on verification of a third-party finding on a real machine, with the on-disk schema and scoring laid out
+
+A short, reproducible privacy brief on macOS: what Apple's on-device knowledge graph infers, where it lives, and who can read it.
+
+
+# **DireWolf Ransomware — Static Analysis of a Go-Based Windows Encryptor**
+**TLP:CLEAR | 12 September 2026**
+
+A UPX-packed, 64-bit Go ransomware executable that encrypts local and mapped drives with per-file ephemeral X25519 key agreement and raw ChaCha20, inhibits Windows recovery, and suppresses 59 processes and 75 services. Fourteen findings, each confirmed by static disassembly.
+
+→ Per-file ephemeral X25519 + ChaCha20 with **no key-recovery path**, and no message authentication; only the first 1 MiB of each file is encrypted
+→ Thirteen recovery-inhibition commands, event-log clearing with an EventLog-service kill, self-deletion, and forced reboot
+→ Parallel encryption across 11 goroutine launch sites; ships detection rules and adjudicated false positives
+
+Static analysis only — no stage was executed and no adversary infrastructure was contacted. At least one hostname in the indicators is a compromised victim site and must not be treated as attacker infrastructure.
+
+
 # **Static Analysis — Sality Parasitic File Infector in a Signed Oracle jusched.exe**
 **TLP:CLEAR | 10 September 2026**
 
@@ -137,6 +261,14 @@ The worm's source code is public (as of May 12, 2026). A criminal contest is act
 No single trust signal — not hash pinning, not SLSA provenance, not official namespace, not verified publisher badge — has survived this campaign period intact.
 
 
+# **SEA-LION Translation Sidecar — Local Southeast Asian Language Translation for Threat Intelligence**
+**20 May 2026**
+
+Bringing Southeast Asia's native-language cybersecurity media into a unified English intelligence picture — locally, privately, and without cloud API costs. A dedicated, locally-hosted SEA-LION model (built by AI Singapore) translates every non-English article ingested by the Singapore Cyberspace Monitor platform into English automatically, in real time, on-device, at zero marginal cost per translation.
+
+The write-up covers why the obvious path failed first — `aisingapore/Gemma-SEA-LION-v4.5-E2B-IT` is not in Ollama's catalogue and its HuggingFace repo is not GGUF/llama.cpp-compatible — and the sidecar architecture that solved it: a separate inference service speaking Bahasa Indonesia, Thai, Khmer, Burmese and the other ASEAN languages that national CERTs and regulators actually publish in, so their advisories stop being invisible to English-speaking analysts. The reasoning, the dead ends, and the working setup are all documented.
+
+
 # **The Harness Era Survey - A Critical Survey of LLM-Driven Vulnerability Research**
 
 What does the landscape of #LLM #vulnerability #research look like in mid-2026? This survey analyzed 28 systems across academia, industry, competition teams, and commercial products to find out.
@@ -157,6 +289,14 @@ No cloud GPUs. No API costs. Entirely on an Apple Silicon laptop, LoRA fine-tuni
 Final results: Easy puzzles: 81%; Medium: 33%; Hard: 0% solved.
 
 I've written up the full journey: every mistake, every fix, and the failure modes that aren't well covered in the standard AI courses and tutorials. Everything is documented, including the full source. Learn and share!
+
+
+# **C Secure Coding Lecture — CVE-2026-31431 "Copy Fail" Linux Kernel LPE**
+**TLP:CLEAR | 11 May 2026**
+
+A 42-page secure-coding lecture that treats CVE-2026-31431 — a Linux-kernel local privilege escalation — not as a war story but as a teaching case. The CVE is preserved in full technical detail and used to teach the secure-coding patterns the bug violates and the testing strategies that would have caught it.
+
+The chapters cover the five intersecting subsystems (page cache, scatterlists, `splice()`, AF_ALG/AEAD, the `authencesn` template); the anatomy of the four-byte write from a 2017 in-place optimisation and why only `authencesn` triggers it; the exploit path to setuid via `/etc/passwd`; eight secure-coding principles violated, each with a code example; a line-by-line secure rewrite of `_aead_recvmsg()` and `crypto_authenc_esn_decrypt()` shown beside the vulnerable original; an honest look at why eight years of syzkaller missed it and what fuzzing would have found it; a reusable fuzzing lab (QEMU, KASAN, syzkaller, a custom page-cache integrity oracle) with three harnesses; and CodeQL/Smatch static-analysis rules that would have flagged the composition in review. Includes a fact-check and errata against the source post.
 
 
 # **Self-paced technical course covering Claude Code and Cowork — Anthropic's agentic AI tools for developers and knowledge workers**
